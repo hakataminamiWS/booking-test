@@ -1,0 +1,83 @@
+name: Deploy to Lolipop
+
+# 実行トリガー
+on:
+  push:
+    branches:
+      - main # main ブランチに push したときに自動実行
+  workflow_dispatch: # 手動トリガーを有効化
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. コード取得
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. PHP セットアップ
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, bcmath, xml, ctype
+
+      # 3. Composer インストール & vendor 作成
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader
+        env:
+          COMPOSER_CACHE_DIR: ${{ github.workspace }}/.composer/cache
+
+      # 4. Composer キャッシュ
+      - name: Cache Composer
+        uses: actions/cache@v3
+        with:
+          path: ${{ github.workspace }}/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      # 5. Node.js セットアップ
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+
+      # 6. npm インストール + ビルド
+      - name: Install npm dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      # 7. npm キャッシュ
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # 8. Laravel キャッシュクリア
+      - name: Clear Laravel caches
+        run: |
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan cache:clear
+
+      # 9. FTP デプロイ
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_PATH }}
+          exclude: |
+            .git*
+            node_modules/
+            .github/
+            .env
