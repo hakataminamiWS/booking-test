@@ -66,6 +66,13 @@ jobs:
           php artisan route:clear
           php artisan view:clear
           php artisan cache:clear
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: dummy
+          DB_USERNAME: dummy
+          DB_PASSWORD: dummy
 
       # 9. FTP デプロイ
       - name: Deploy via FTP
