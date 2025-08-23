@@ -80,9 +80,10 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: ${{ secrets.FTP_PATH }}
+          server-dir: /booking/
           exclude: |
-            .git*
-            node_modules/
-            .github/
-            .env
+            **/node_modules/**
+            **/.git/**
+            **/.github/**
+            **/tests/**
+            **/storage/**
