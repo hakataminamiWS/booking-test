@@ -24,19 +24,19 @@ jobs:
           extensions: mbstring, bcmath, xml, ctype
 
       # 3. Composer インストール & vendor 作成
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader
-        env:
-          COMPOSER_CACHE_DIR: ${{ github.workspace }}/.composer/cache
+    #   - name: Install Composer dependencies
+    #     run: composer install --no-dev --optimize-autoloader
+    #     env:
+    #       COMPOSER_CACHE_DIR: ${{ github.workspace }}/.composer/cache
 
       # 4. Composer キャッシュ
-      - name: Cache Composer
-        uses: actions/cache@v3
-        with:
-          path: ${{ github.workspace }}/.composer/cache
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-
+    #   - name: Cache Composer
+    #     uses: actions/cache@v3
+    #     with:
+    #       path: ${{ github.workspace }}/.composer/cache
+    #       key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+    #       restore-keys: |
+    #         ${{ runner.os }}-composer-
 
       # 5. Node.js セットアップ
       - name: Set up Node.js
@@ -87,3 +87,4 @@ jobs:
             **/.github/**
             **/tests/**
             **/storage/**
+            **/vendor/**
