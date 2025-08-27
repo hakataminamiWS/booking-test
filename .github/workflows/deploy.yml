@@ -59,18 +59,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      # 8. Laravel キャッシュクリア
-      - name: Clear Laravel caches
-        run: |
-          php artisan config:clear
-          php artisan route:clear
-          php artisan view:clear
-        #   php artisan cache:clear
-        # env:
-        #   DB_CONNECTION: sqlite
-        #   DB_DATABASE: /tmp/dummy.sqlite
-        #   DB_USERNAME: ""
-        #   DB_PASSWORD: ""
+    #   # 8. Laravel キャッシュクリア
+    #   - name: Clear Laravel caches
+    #     run: |
+    #       php artisan config:clear
+    #       php artisan route:clear
+    #       php artisan view:clear
+    #       php artisan cache:clear
+    #     env:
+    #       DB_CONNECTION: sqlite
+    #       DB_DATABASE: /tmp/dummy.sqlite
+    #       DB_USERNAME: ""
+    #       DB_PASSWORD: ""
 
       # 9. FTP デプロイ
       - name: Deploy via FTP
