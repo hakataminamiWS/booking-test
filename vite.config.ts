@@ -3,8 +3,8 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
 import vue from "@vitejs/plugin-vue";
+import vuetify from 'vite-plugin-vuetify'; // ★ インポート
 import vueDevTools from "vite-plugin-vue-devtools";
-// import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
     plugins: [
@@ -12,8 +12,8 @@ export default defineConfig({
             input: ["resources/css/app.css", "resources/js/app.ts"],
             refresh: true,
         }),
-        // tailwindcss(),
         vue(),
+        vuetify({ autoImport: true }), // ★ プラグインを有効化
         vueDevTools(),
     ],
     resolve: {

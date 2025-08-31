@@ -1,260 +1,181 @@
 <template>
-  <v-container fluid>
-    <h1>予約フォーム</h1>
-    <p class="mb-4">ご希望の日付、担当者、サービス、時間を選択してください。</p>
+    <v-container>
+        <form :action="action" method="POST">
+            <!-- CSRFトークン -->
+            <input type="hidden" name="_token" :value="csrfToken" />
 
-    <form :action="action" method="POST">
-      <input type="hidden" name="_token" :value="csrfToken">
+            <!-- 送信する予約データ -->
+            <input
+                type="hidden"
+                name="date"
+                :value="form.date?.toISOString().split('T')[0]"
+            />
+            <input type="hidden" name="staff_id" :value="form.staff?.id" />
+            <input type="hidden" name="staff_name" :value="form.staff?.name" />
+            <input type="hidden" name="service_id" :value="form.service?.id" />
+            <input
+                type="hidden"
+                name="service_name"
+                :value="form.service?.name"
+            />
+            <input type="hidden" name="time" :value="form.time" />
 
-      <v-row>
-        <!-- 1. 日付選択 (カレンダー) -->
-        <v-col cols="12" md="4">
-          <div v-if="display.mdAndUp.value || step === 'date'">
-            <v-date-picker
-              v-model="selectedDate"
-              title="日付を選択"
-            ></v-date-picker>
-          </div>
-        </v-col>
+            <!-- Step 1: 日付選択 -->
+            <v-card v-if="step === 1" class="mx-auto" max-width="600">
+                <v-card-title class="text-h6 font-weight-bold"
+                    >1. ご希望の来店日を選択</v-card-title
+                >
+                <v-divider></v-divider>
+                <v-card-text class="d-flex justify-center">
+                    <v-date-picker
+                        :model-value="form.date"
+                        :allowed-dates="allowedDates"
+                        @update:model-value="handleDateChange"
+                    ></v-date-picker>
+                </v-card-text>
+            </v-card>
 
-        <!-- 2. 担当者・サービス・時間選択 -->
-        <v-col cols="12" md="8">
-          <div v-if="selectedDate && (display.mdAndUp.value || step === 'details')">
-            <!-- SP用：戻るボタン -->
-            <v-btn
-              v-if="display.smAndDown.value"
-              @click="goBackToCalendar"
-              class="mb-4"
-              prepend-icon="mdi-arrow-left"
-            >
-              日付選択に戻る
-            </v-btn>
+            <!-- Step 2: 詳細入力 -->
+            <v-card v-if="step === 2" class="mx-auto" max-width="600">
+                <v-card-title class="text-h6 font-weight-bold"
+                    >2. 詳細を入力</v-card-title
+                >
+                <v-divider></v-divider>
+                <v-card-text>
+                    <v-select
+                        v-model="form.staff"
+                        :items="staffOptions"
+                        item-title="name"
+                        item-value="id"
+                        label="担当者"
+                        return-object
+                        class="mb-4"
+                        :loading="loading.staff"
+                        @update:model-value="fetchAvailability"
+                    ></v-select>
 
-            <!-- 担当者選択 -->
-            <div>
-              <h2>担当者を選択</h2>
-              <div v-if="loading.staff">
-                <v-progress-circular indeterminate></v-progress-circular>
-                <span>担当者を取得中...</span>
-              </div>
-              <v-select
-                v-else
-                v-model="selectedStaff"
-                :items="staffList"
-                item-title="name"
-                item-value="id"
-                label="担当者"
-                return-object
-                :disabled="!staffList.length"
-              ></v-select>
-            </div>
+                    <v-select
+                        v-model="form.service"
+                        :items="serviceOptions"
+                        item-title="name"
+                        item-value="id"
+                        label="サービス"
+                        return-object
+                        :loading="loading.service"
+                        @update:model-value="fetchAvailability"
+                    ></v-select>
 
-            <!-- サービス選択 -->
-            <div v-if="selectedStaff" class="mt-4">
-              <h2>サービスを選択</h2>
-              <div v-if="loading.services">
-                <v-progress-circular indeterminate></v-progress-circular>
-                <span>サービスを取得中...</span>
-              </div>
-              <v-select
-                v-else
-                v-model="selectedService"
-                :items="serviceList"
-                item-title="name"
-                item-value="id"
-                label="サービス"
-                return-object
-                :disabled="!serviceList.length"
-              ></v-select>
-            </div>
-
-            <!-- 時間選択 -->
-            <div v-if="selectedService" class="mt-4">
-              <h2>時間を選択</h2>
-              <div v-if="loading.slots">
-                <v-progress-circular indeterminate></v-progress-circular>
-                <span>空き時間を取得中...</span>
-              </div>
-              <div v-else-if="Object.keys(groupedTimeSlots).length > 0">
-                <div v-for="(slotsInHour, hour) in groupedTimeSlots" :key="hour" class="mb-3">
-                  <p class="text-subtitle-1 font-weight-bold">{{ hour }}:00</p>
-                  <v-chip-group v-model="selectedTime" column>
-                    <v-chip
-                      v-for="slot in slotsInHour"
-                      :key="slot.time"
-                      :value="slot.time"
-                      filter
-                      variant="outlined"
+                    <div v-if="form.staff && form.service" class="mt-4">
+                        <p class="font-weight-medium mb-2">
+                            ご希望の時間を選択
+                        </p>
+                        <p v-if="loading.availability">空き時間を検索中...</p>
+                        <v-chip-group
+                            v-else
+                            v-model="form.time"
+                            mandatory
+                            filter
+                            selected-class="text-primary"
+                        >
+                            <v-chip
+                                v-for="timeSlot in availableTimes"
+                                :key="timeSlot"
+                                :value="timeSlot"
+                                >{{ timeSlot }}</v-chip
+                            >
+                        </v-chip-group>
+                        <p
+                            v-if="
+                                !loading.availability &&
+                                availableTimes.length === 0
+                            "
+                            class="text-grey"
+                        >
+                            選択可能な時間がありません。
+                        </p>
+                    </div>
+                </v-card-text>
+                <v-divider></v-divider>
+                <v-card-actions>
+                    <v-btn @click="step--">戻る</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        color="primary"
+                        @click="step++"
+                        :disabled="isNextDisabled"
+                        >次へ</v-btn
                     >
-                      {{ slot.time }}
-                    </v-chip>
-                  </v-chip-group>
-                </div>
-              </div>
-              <p v-else>選択可能な時間がありません。</p>
-            </div>
+                </v-card-actions>
+            </v-card>
 
-            <!-- 予約ボタン -->
-            <v-btn v-if="isSubmittable" type="submit" color="primary" class="mt-6" :disabled="!isSubmittable" block>
-              予約を確定する
-            </v-btn>
-          </div>
-        </v-col>
-      </v-row>
-
-      <!-- 送信データ -->
-      <input type="hidden" name="date" :value="formattedDate">
-      <input type="hidden" name="staff_id" :value="selectedStaff?.id">
-      <input type="hidden" name="service_id" :value="selectedService?.id">
-      <input type="hidden" name="time" :value="selectedTime">
-
-    </form>
-  </v-container>
+            <!-- Step 3: 内容確認 -->
+            <v-card v-if="step === 3" class="mx-auto" max-width="600">
+                <v-card-title class="text-h6 font-weight-bold"
+                    >3. 予約内容の確認</v-card-title
+                >
+                <v-divider></v-divider>
+                <v-list lines="one">
+                    <v-list-item
+                        title="日付"
+                        :subtitle="formattedDate"
+                    ></v-list-item>
+                    <v-list-item
+                        title="担当者"
+                        :subtitle="form.staff?.name"
+                    ></v-list-item>
+                    <v-list-item
+                        title="サービス"
+                        :subtitle="form.service?.name"
+                    ></v-list-item>
+                    <v-list-item
+                        title="時間"
+                        :subtitle="form.time"
+                    ></v-list-item>
+                </v-list>
+                <v-divider></v-divider>
+                <v-card-actions>
+                    <v-btn @click="step--">戻る</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn type="submit" color="primary">予約を確定する</v-btn>
+                </v-card-actions>
+            </v-card>
+        </form>
+    </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useDisplay } from 'vuetify';
+import { ref, onMounted } from "vue";
+import { useBookingForm } from "../composables/useBookingForm";
 
-// --- 型定義 ---
-interface Staff { id: number; name: string; }
-interface Service { id: number; name: string; duration: number; }
-interface TimeSlot { time: string; available: boolean; }
+// Props
+const props = defineProps<{
+    shopId: string;
+    action: string;
+}>();
 
-// --- Props ---
-const props = defineProps({
-  action: { type: String, required: true },
-  apiAvailability: { type: String, required: true }
-});
+// CSRFトークンを格納するref
+const csrfToken = ref("");
 
-// --- Vuetify Display ---
-const display = useDisplay();
+// ロジックをコンポーザブルから注入
+const {
+    step,
+    form,
+    staffOptions,
+    serviceOptions,
+    availableTimes,
+    loading,
+    formattedDate,
+    isNextDisabled,
+    allowedDates,
+    handleDateChange,
+    fetchAvailability,
+} = useBookingForm(props);
 
-// --- リアクティブな状態 ---
-const step = ref<'date' | 'details'>('date');
-const csrfToken = ref('');
-const selectedDate = ref<Date | null>(null);
-const selectedStaff = ref<Staff | null>(null);
-const selectedService = ref<Service | null>(null);
-const selectedTime = ref<string | null>(null);
-const staffList = ref<Staff[]>([]);
-const serviceList = ref<Service[]>([]);
-const timeSlots = ref<TimeSlot[]>([]);
-const loading = ref({ staff: false, services: false, slots: false });
-
-// --- コンピュートプロパティ ---
-const formattedDate = computed(() => {
-  if (!selectedDate.value) return '';
-  const d = selectedDate.value;
-  return `${d.getFullYear()}-${('0' + (d.getMonth() + 1)).slice(-2)}-${('0' + d.getDate()).slice(-2)}`;
-});
-
-const isSubmittable = computed(() => {
-  return !!(selectedDate.value && selectedStaff.value && selectedService.value && selectedTime.value);
-});
-
-const groupedTimeSlots = computed(() => {
-  // 1. 利用可能なスロットをフィルタリング
-  const availableSlots = timeSlots.value.filter(slot => slot.available);
-
-  // 2. 時間ごとにグループ化
-  return availableSlots.reduce((acc, slot) => {
-    const hour = slot.time.substring(0, 2);
-    if (!acc[hour]) {
-      acc[hour] = [];
-    }
-    acc[hour].push(slot);
-    return acc;
-  }, {} as Record<string, TimeSlot[]>);
-});
-
-// --- ライフサイクル ---
+// コンポーネントがマウントされた時にmetaタグからCSRFトークンを取得
 onMounted(() => {
-  csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-});
-
-// --- メソッド ---
-const goBackToCalendar = () => {
-  step.value = 'date';
-};
-
-// --- ウォッチャー ---
-watch(selectedDate, async (newDate, oldDate) => {
-  if (newDate && display.smAndDown.value) {
-    step.value = 'details';
-  }
-  if (!newDate) {
-    selectedStaff.value = null;
-    staffList.value = [];
-    return;
-  }
-  if (oldDate && newDate.getTime() === oldDate.getTime()) {
-    return;
-  }
-
-  selectedStaff.value = null;
-  staffList.value = [];
-  loading.value.staff = true;
-  try {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    staffList.value = [
-      { id: 1, name: '山田 太郎' },
-      { id: 2, name: '鈴木 花子' },
-    ];
-  } catch (error) {
-    console.error('担当者リストの取得に失敗しました:', error);
-  } finally {
-    loading.value.staff = false;
-  }
-});
-
-watch(selectedStaff, async (newStaff) => {
-  selectedService.value = null;
-  serviceList.value = [];
-  if (!newStaff) return;
-
-  loading.value.services = true;
-  try {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    serviceList.value = [
-      { id: 1, name: 'カット', duration: 60 },
-      { id: 2, name: 'カラー', duration: 90 },
-      { id: 3, name: 'パーマ', duration: 120 },
-    ];
-  } catch (error) {
-    console.error('サービスリストの取得に失敗しました:', error);
-  } finally {
-    loading.value.services = false;
-  }
-});
-
-watch(selectedService, async (newService) => {
-  selectedTime.value = null;
-  timeSlots.value = [];
-  if (!newService || !selectedDate.value || !selectedStaff.value) return;
-
-  loading.value.slots = true;
-  try {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const slots: TimeSlot[] = [];
-    const startTime = 9 * 60, endTime = 17 * 60, interval = 15;
-    for (let minutes = startTime; minutes < endTime; minutes += interval) {
-      const hour = Math.floor(minutes / 60);
-      const minute = minutes % 60;
-      const time = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-      const available = Math.random() > 0.3;
-      slots.push({ time, available });
+    const tokenElement = document.querySelector('meta[name="csrf-token"]');
+    if (tokenElement) {
+        csrfToken.value = tokenElement.getAttribute("content") || "";
     }
-    timeSlots.value = slots;
-  } catch (error) {
-    console.error('時間枠の取得に失敗しました:', error);
-  } finally {
-    loading.value.slots = false;
-  }
 });
 </script>
-
-<style scoped>
-/* 必要に応じてスタイルを追加 */
-</style>

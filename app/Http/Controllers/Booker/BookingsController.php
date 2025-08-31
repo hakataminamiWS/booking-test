@@ -10,17 +10,29 @@ use Illuminate\Support\Facades\Validator;
 class BookingsController extends Controller
 {
     /**
+     * 予約一覧
+     */
+    public function index($shop_id)
+    {
+        $bookings = [
+            (object)['id' => 1, 'booking_date' => '2025-09-10', 'booking_time' => '10:00', 'status' => 'confirmed'],
+            (object)['id' => 2, 'booking_date' => '2025-09-15', 'booking_time' => '14:30', 'status' => 'confirmed'],
+        ];
+        return view('booker.bookings.index', compact('shop_id', 'bookings'));
+    }
+
+    /**
      * 予約フォームのビューを表示します。
      */
-    public function create()
+    public function create($shop_id)
     {
-        return view('booker.bookings.create');
+        return view('booker.bookings.create', ['shop_id' => $shop_id]);
     }
 
     /**
      * プレビュー処理
      */
-    public function preview(Request $request)
+    public function preview(Request $request, $shop_id)
     {
         $validated = $request->validate([
             'date' => ['required', 'date_format:Y-m-d'],
@@ -32,20 +44,20 @@ class BookingsController extends Controller
         // バリデーション済みのデータをセッションに保存
         $request->session()->put('booking_data', $validated);
 
-        return redirect()->route('booker.bookings.confirm');
+        return redirect()->route('booker.bookings.confirm', ['shop_id' => $shop_id]);
     }
 
     /**
      * 確認画面表示
      */
-    public function confirm(Request $request)
+    public function confirm(Request $request, $shop_id)
     {
         // セッションからデータを取得（なければ空の配列）
         $bookingData = $request->session()->get('booking_data', []);
 
         // セッションにデータがなければ、作成画面に戻す
         if (empty($bookingData)) {
-            return redirect()->route('booker.bookings.create');
+            return redirect()->route('booker.bookings.create', ['shop_id' => $shop_id]);
         }
 
         // --- ダミーデータ ---
@@ -74,6 +86,7 @@ class BookingsController extends Controller
 
 
         return view('booker.bookings.confirm', [
+            'shop_id' => $shop_id,
             'bookingData' => $displayData
         ]);
     }
@@ -82,40 +95,86 @@ class BookingsController extends Controller
     /**
      * 予約をDBに保存します。
      */
-    public function store(Request $request)
+    public function store(Request $request, $shop_id)
     {
-        // セッションから検証済みのデータを取得
-        $bookingData = $request->session()->get('booking_data');
+        $validated = $request->validate([
+            'date' => ['required', 'date_format:Y-m-d'],
+            'staff_id' => ['required', 'integer'],
+            'staff_name' => ['required', 'string'],
+            'service_id' => ['required', 'integer'],
+            'service_name' => ['required', 'string'],
+            'time' => ['required', 'date_format:H:i'],
+        ]);
 
-        // セッションにデータがなければ、不正なアクセスとして作成画面に戻す
-        if (empty($bookingData)) {
-            return redirect()->route('booker.bookings.create')->with('error', '予約セッションの有効期限が切れました。もう一度お試しください。');
-        }
+        // 将来ここでDBへの保存と重複チェックを行う
+        Log::info("予約が作成されました: shop_id={$shop_id}", $validated);
 
-        // ここで実際にデータベースに予約を保存する処理を記述します
-        Log::info('予約が作成されました:', $bookingData);
+        // 完了ページにリダイレクトする際に、予約内容をセッションに一時保存する
+        return redirect()->route('booker.bookings.complete', ['shop_id' => $shop_id])
+            ->with('bookingDetails', $validated);
+    }
 
-        // 使用済みのセッションデータを削除
-        $request->session()->forget('booking_data');
+    /**
+     * 予約詳細
+     */
+    public function show($shop_id, $booking_id)
+    {
+        // ダミーの予約詳細データ
+        $bookingDetails = [
+            'id' => $booking_id,
+            'date' => '2025-09-10',
+            'time' => '10:00',
+            'staff_name' => '山田 太郎',
+            'service_name' => 'カット (60分)',
+            'status' => 'confirmed',
+            'notes' => '特にありません。'
+        ];
 
-        // 完了画面にリダイレクトします
-        return redirect()->route('booker.bookings.complete')
-            ->with('status', 'ご予約が完了しました。');
+        return view('booker.bookings.show', compact('shop_id', 'booking_id', 'bookingDetails'));
+    }
+
+    /**
+     * 予約変更
+     */
+    public function edit($shop_id, $booking_id)
+    {
+        // TODO: Implement edit method.
+        return response("Edit booking for shop {$shop_id}, booking {$booking_id}");
+    }
+
+    /**
+     * 予約更新
+     */
+    public function update(Request $request, $shop_id, $booking_id)
+    {
+        // TODO: Implement update method.
+        return response("Update booking for shop {$shop_id}, booking {$booking_id}");
     }
 
     /**
      * 予約完了ページを表示します。
      */
-    public function complete()
+    public function complete(Request $request, $shop_id)
     {
-        return view('booker.bookings.complete');
+        // セッションからフラッシュデータを取得
+        $bookingDetails = $request->session()->get('bookingDetails');
+
+        // セッションに予約情報がなければ、不正なアクセスとして作成画面に戻す
+        if (!$bookingDetails) {
+            return redirect()->route('booker.bookings.create', ['shop_id' => $shop_id]);
+        }
+
+        return view('booker.bookings.complete', [
+            'shop_id' => $shop_id,
+            'bookingDetails' => $bookingDetails
+        ]);
     }
 
     /**
      * VueコンポーネントからのAjaxリクエストに応答して、
      * 特定の日付の空き状況を返します (APIエンドポイント)。
      */
-    public function getAvailability(Request $request)
+    public function getAvailability(Request $request, $shop_id)
     {
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date_format:Y-m-d'],
