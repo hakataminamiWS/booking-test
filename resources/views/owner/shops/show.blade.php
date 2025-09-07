@@ -1,15 +1,5 @@
-@extends('app')
-
-@section('title', '店舗詳細')
+@extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div
-        id="app"
-        data-page="owner-shops-show"
-        data-shop-id="{{ $shop_id }}"
-        data-shop-details='@json($shopDetails)'
-    >
-    </div>
-</div>
+<div id="owner-shops-show" data-shop="{{ $shop->toJson() }}"></div>
 @endsection

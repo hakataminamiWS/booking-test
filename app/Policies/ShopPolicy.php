@@ -12,7 +12,8 @@ class ShopPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true; // Anyone can view shops for now
+        // オーナーは自身の関連する店舗のみ閲覧可能
+        return $user->shops()->exists();
     }
 
     /**
@@ -20,7 +21,8 @@ class ShopPolicy
      */
     public function view(User $user, Shop $shop): bool
     {
-        return true; // Anyone can view a specific shop for now
+        // オーナーは自身の店舗のみ閲覧可能
+        return $user->isOwnerOf($shop);
     }
 
     /**
@@ -28,7 +30,7 @@ class ShopPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isAdmin(); // Only admins can create shops
+        return $user->isAdmin(); // 管理者のみが作成可能
     }
 
     /**
@@ -36,7 +38,8 @@ class ShopPolicy
      */
     public function update(User $user, Shop $shop): bool
     {
-        return $user->isAdmin() || $user->isOwnerOf($shop); // Admins or shop owners can update
+        // オーナーは自身の店舗のみ更新可能
+        return $user->isOwnerOf($shop);
     }
 
     /**
@@ -44,6 +47,7 @@ class ShopPolicy
      */
     public function delete(User $user, Shop $shop): bool
     {
-        return $user->isAdmin() || $user->isOwnerOf($shop); // Admins or shop owners can delete
+        // 管理者のみが削除可能
+        return $user->isAdmin();
     }
 }

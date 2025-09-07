@@ -34,7 +34,9 @@ Route::prefix('shops/{shop}/staff')->name('staff.')->group(function () {
 Route::prefix('owner')->name('owner.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Owner\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/shops', [App\Http\Controllers\Owner\ShopsController::class, 'index'])->name('shops.index');
-    Route::get('/shops/{shop_id}', [App\Http\Controllers\Owner\ShopsController::class, 'show'])->name('shops.show');
+    Route::get('/shops/{shop}', [App\Http\Controllers\Owner\ShopsController::class, 'show'])->name('shops.show');
+    Route::get('/shops/{shop}/edit', [App\Http\Controllers\Owner\ShopsController::class, 'edit'])->name('shops.edit');
+    Route::put('/shops/{shop}', [App\Http\Controllers\Owner\ShopsController::class, 'update'])->name('shops.update');
     Route::get('/shops/{shop_id}/staff', [App\Http\Controllers\Owner\StaffController::class, 'index'])->name('shops.staff.index');
     Route::get('/shops/{shop_id}/staff/{staff_id}/edit', [App\Http\Controllers\Owner\StaffController::class, 'edit'])->name('shops.staff.edit');
     Route::get('/contracts', [App\Http\Controllers\Owner\ContractsController::class, 'index'])->name('contracts.index');
@@ -46,6 +48,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('owners/{owner_id}', [App\Http\Controllers\Admin\OwnersController::class, 'show'])->name('owners.show');
     Route::get('contracts', [App\Http\Controllers\Admin\ContractsController::class, 'index'])->name('contracts.index');
     Route::get('contracts/{contract_id}', [App\Http\Controllers\Admin\ContractsController::class, 'show'])->name('contracts.show');
+    Route::resource('shops', App\Http\Controllers\Admin\ShopsController::class);
+    Route::delete('shops/{shop}/force-delete', [App\Http\Controllers\Admin\ShopsController::class, 'forceDelete'])->name('shops.forceDelete');
 });
 
 
