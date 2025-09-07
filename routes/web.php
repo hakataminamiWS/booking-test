@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 // 1. Booker（予約者向け）
-Route::prefix('shops/{shop_id}/bookings')->name('booker.bookings.')->group(function () {
+Route::prefix('shops/{shop}/bookings')->name('booker.bookings.')->group(function () {
     Route::get('/', [App\Http\Controllers\Booker\BookingsController::class, 'index'])->name('index');
     Route::get('/new', [App\Http\Controllers\Booker\BookingsController::class, 'create'])->name('create');
     Route::post('/', [App\Http\Controllers\Booker\BookingsController::class, 'store'])->name('store');
@@ -20,7 +20,7 @@ Route::prefix('shops/{shop_id}/bookings')->name('booker.bookings.')->group(funct
 });
 
 // 2. Staff（店舗スタッフ向け）
-Route::prefix('shops/{shop_id}/staff')->name('staff.')->group(function () {
+Route::prefix('shops/{shop}/staff')->name('staff.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('dashboard');
     Route::get('bookings', [App\Http\Controllers\Staff\BookingsController::class, 'index'])->name('bookings.index');
     Route::get('bookings/new', [App\Http\Controllers\Staff\BookingsController::class, 'create'])->name('bookings.create'); // 新規予約作成フォーム
@@ -51,5 +51,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 // API Routes
 Route::prefix('api')->name('api.')->group(function () {
-    Route::get('/shops/{shop_id}/availability', [App\Http\Controllers\Booker\BookingsController::class, 'getAvailability'])->name('booker.availability');
+    Route::get('/shops/{shop}/availability', [App\Http\Controllers\Booker\BookingsController::class, 'getAvailability'])->name('booker.availability');
+    Route::get('/shops/{shop}/menus', [App\Http\Controllers\Api\MenuController::class, 'index'])->name('shops.menus.index');
+    Route::get('/shops/{shop}/staff', [App\Http\Controllers\Api\StaffController::class, 'index'])->name('shops.staff.index');
+    Route::get('/shops/{shop}/available-slots', [App\Http\Controllers\Api\AvailabilityController::class, 'index'])->name('shops.available-slots.index');
 });

@@ -1,4 +1,4 @@
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
 
 // このコンポーザブルは、予約フォームの状態とロジックを管理します。
@@ -48,11 +48,8 @@ export function useBookingForm(props: { shopId: string; action: string; }) {
         loading.staff = true;
         try {
             console.log(`Fetching staff for shop ${props.shopId} on ${form.date.toISOString().split('T')[0]}`);
-            await new Promise(resolve => setTimeout(resolve, 500)); // ダミーAPI
-            staffOptions.value = [
-                { id: 1, name: '山田 太郎' },
-                { id: 2, name: '鈴木 花子' },
-            ];
+            const response = await axios.get(`/api/shops/${props.shopId}/staff`);
+            staffOptions.value = response.data;
         } catch (e) {
             console.error(e);
         } finally {
@@ -64,11 +61,8 @@ export function useBookingForm(props: { shopId: string; action: string; }) {
         loading.service = true;
         try {
             console.log(`Fetching services for shop ${props.shopId}`);
-            await new Promise(resolve => setTimeout(resolve, 500)); // ダミーAPI
-            serviceOptions.value = [
-                { id: 1, name: 'カット (60分)', duration: 60 },
-                { id: 2, name: 'カラー (90分)', duration: 90 },
-            ];
+            const response = await axios.get(`/api/shops/${props.shopId}/menus`);
+            serviceOptions.value = response.data;
         } catch (e) {
             console.error(e);
         } finally {
@@ -82,8 +76,16 @@ export function useBookingForm(props: { shopId: string; action: string; }) {
         availableTimes.value = [];
         try {
             console.log(`Fetching availability for...`, form);
-            await new Promise(resolve => setTimeout(resolve, 800)); // ダミーAPI
-            availableTimes.value = ['10:00', '10:30', '11:00', '14:00', '15:00'];
+            const response = await axios.get(`/api/shops/${props.shopId}/available-slots`, {
+                params: {
+                    date: form.date.toISOString().split('T')[0],
+                    menu_id: form.service.id,
+                    staff_id: form.staff?.id, // Pass staff_id if selected
+                }
+            });
+            availableTimes.value = response.data.map((slot: string) => {
+                return new Date(slot).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+            });
         } catch (e) {
             console.error(e);
         } finally {
@@ -104,6 +106,11 @@ export function useBookingForm(props: { shopId: string; action: string; }) {
         fetchServices();
         step.value = 2;
     };
+
+    // Initial data fetch
+    onMounted(() => {
+        fetchServices(); // Fetch services on mount
+    });
 
     // 公開する状態とメソッド
     return {

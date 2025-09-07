@@ -16,8 +16,8 @@ class BookingsController extends Controller
         // ダミーの予約データ
         $bookings = [
             (object)['id' => 1, 'booker_name' => '田中 太郎', 'booking_date' => '2025-09-01', 'booking_time' => '10:00', 'status' => 'confirmed'],
-            (object)['id' => 2, 'booker_name' => '鈴木 次郎', 'booking_date' => '2025-09-01', 'booking_time' => '11:30', 'status' => 'pending'],
-            (object)['id' => 3, 'booker_name' => '佐藤 三郎', 'booking_date' => '2025-09-02', 'booking_time' => '14:00', 'status' => 'canceled'],
+            (object)['id' => 2, 'booker_name' => '鈴木 花子', 'booking_date' => '2025-09-01', 'booking_time' => '11:30', 'status' => 'pending'],
+            (object)['id' => 3, 'booker_name' => '佐藤 健', 'booking_date' => '2025-09-02', 'booking_time' => '14:00', 'status' => 'canceled'],
         ];
 
         return view('staff.bookings.index', compact('shop_id', 'bookings'));

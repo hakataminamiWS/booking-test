@@ -6,6 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\BookingFormRequest;
+use App\Models\Menu;
+use App\Models\Shop;
+use App\Models\Booking;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class BookingsController extends Controller
 {
@@ -95,23 +101,64 @@ class BookingsController extends Controller
     /**
      * 予約をDBに保存します。
      */
-    public function store(Request $request, $shop_id)
+    public function store(BookingFormRequest $request, Shop $shop)
     {
-        $validated = $request->validate([
-            'date' => ['required', 'date_format:Y-m-d'],
-            'staff_id' => ['required', 'integer'],
-            'staff_name' => ['required', 'string'],
-            'service_id' => ['required', 'integer'],
-            'service_name' => ['required', 'string'],
-            'time' => ['required', 'date_format:H:i'],
-        ]);
+        $validated = $request->validated();
+        $menu = Menu::find($validated['menu_id']);
 
-        // 将来ここでDBへの保存と重複チェックを行う
-        Log::info("予約が作成されました: shop_id={$shop_id}", $validated);
+        $booking = DB::transaction(function () use ($shop, $menu, $validated) {
+            // Check for conflicting bookings with a pessimistic lock
+            $newBookingStart = Carbon::parse($validated['start_at']);
+            $newBookingEnd = $newBookingStart->copy()->addMinutes($menu->duration);
 
-        // 完了ページにリダイレクトする際に、予約内容をセッションに一時保存する
-        return redirect()->route('booker.bookings.complete', ['shop_id' => $shop_id])
-            ->with('bookingDetails', $validated);
+            $conflictingBookingExists = false;
+            $existingBookings = $shop->bookings()
+                ->whereDate('start_at', $newBookingStart->toDateString()) // Only check for the same day
+                ->with('menu') // Eager load menu to get duration
+                ->lockForUpdate() // Lock relevant rows
+                ->get();
+
+            foreach ($existingBookings as $existingBooking) {
+                $existingBookingStart = Carbon::parse($existingBooking->start_at);
+                $existingBookingEnd = $existingBookingStart->copy()->addMinutes($existingBooking->menu->duration);
+
+                // Check for overlap
+                if ($newBookingStart->lt($existingBookingEnd) && $newBookingEnd->gt($existingBookingStart)) {
+                    $conflictingBookingExists = true;
+                    break;
+                }
+            }
+
+            if ($conflictingBookingExists) {
+                return false;
+            }
+
+            // Create the booking
+            $newBooking = $shop->bookings()->create([
+                'menu_id' => $menu->id,
+                'staff_id' => $validated['staff_id'] ?? null,
+                'start_at' => $validated['start_at'],
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'tel' => $validated['tel'],
+                'gender_preference' => $validated['gender_preference'] ?? null,
+                'booker_id' => auth()->id(), // Assign logged in user, or null
+            ]);
+
+            $this->dispatchBookingConfirmationEmail($newBooking);
+            $this->dispatchBookingConfirmationSms($newBooking);
+
+            return $newBooking;
+        });
+
+        if (!$booking) {
+            return back()
+                ->withInput()
+                ->withErrors(['availability' => '申し訳ありませんが、ご希望の時間は埋まってしまいました。別の日時を選択してください。']);
+        }
+
+        return redirect()->route('booker.bookings.complete', ['shop' => $shop->id])
+            ->with('bookingDetails', $booking->toArray());
     }
 
     /**
@@ -199,5 +246,17 @@ class BookingsController extends Controller
                 'message' => "申し訳ありません。{$date}は定休日です。"
             ]);
         }
+    }
+
+    private function dispatchBookingConfirmationEmail(Booking $booking): void
+    {
+        // TODO: メール送信処理は現在保留中
+        // Mail::to($booking->email)->queue(new BookingMail($booking));
+    }
+
+    private function dispatchBookingConfirmationSms(Booking $booking): void
+    {
+        // TODO: SMS送信処理は現在保留中
+        // TwilioなどのSMS APIを利用
     }
 }

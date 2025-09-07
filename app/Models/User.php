@@ -45,4 +45,35 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'shop_user')->withPivot('role');
+    }
+
+    public function bookingsAsBooker()
+    {
+        return $this->hasMany(Booking::class, 'booker_id');
+    }
+
+    public function bookingsAsStaff()
+    {
+        return $this->hasMany(Booking::class, 'staff_id');
+    }
+
+    public function isAdmin(): bool
+    {
+        // For now, let's assume user with email 'admin@gemini.com' is admin
+        return $this->email === 'admin@gemini.com';
+    }
+
+    public function isOwnerOf(Shop $shop): bool
+    {
+        return $this->shops()->where('shop_id', $shop->id)->wherePivot('role', 'owner')->exists();
+    }
+
+    public function isStaffOf(Shop $shop): bool
+    {
+        return $this->shops()->where('shop_id', $shop->id)->wherePivot('role', 'staff')->exists();
+    }
 }

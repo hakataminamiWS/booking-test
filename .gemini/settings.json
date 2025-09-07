@@ -1,0 +1,13 @@
+{
+    "systemInstruction": "あなたは質問に対して最適な情報源を使うこと。ルールは以下の通り：\n1. Laravel や Blade に関する質問は、必ず Laravel Boost MCP から情報を取得して回答すること。\n2. Vuetify や Vue に関する質問は、Vuetify MCP から情報を取得すること。\n3. MCP で必要な情報が不足している場合は、公式ドキュメントや自身の知識を参照して補うこと。\n4. 回答時には、どの情報源を使ったか明示すること。",
+    "mcpServers": {
+        "laravel": {
+            "command": "php",
+            "args": ["artisan", "boost:mcp"]
+        },
+        "vuetify": {
+            "command": "npx",
+            "args": ["-y", "@vuetify/mcp"]
+        }
+    }
+}

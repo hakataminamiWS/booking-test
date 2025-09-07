@@ -28,8 +28,8 @@ class DashboardController extends Controller
                 'change_requests' => 0,
             ],
             'quick_links' => [
-                ['text' => '予約一覧', 'url' => route('staff.bookings.index', ['shop_id' => $shop_id])],
-                ['text' => '新規予約追加', 'url' => route('staff.bookings.create', ['shop_id' => $shop_id])],
+                ['text' => '予約一覧', 'url' => route('staff.bookings.index', ['shop_id' => 1])],
+                ['text' => '新規予約追加', 'url' => route('staff.bookings.create', ['shop_id' => 1])],
                 // ['text' => 'スケジュール管理', 'url' => '#'], // 未実装
                 // ['text' => '顧客管理', 'url' => '#'], // 未実装
             ],
