@@ -28,8 +28,8 @@ class ShopPruneDeleted extends Command
     {
         $this->info('物理削除対象の店舗を検索中...');
 
-        $deletedShops = Shop::onlyTrashed()
-                            ->where('deleted_at', '<=', now()->subDays(30))
+        $deletedShops = Shop::where('status', 'deleting')
+                            ->where('updated_at', '<=', now()->subDays(30))
                             ->get();
 
         if ($deletedShops->isEmpty()) {
@@ -38,7 +38,7 @@ class ShopPruneDeleted extends Command
         }
 
         foreach ($deletedShops as $shop) {
-            $shop->forceDelete();
+            $shop->delete(); // 物理削除
             $this->info('店舗ID: ' . $shop->id . ' (' . $shop->name . ') を物理削除しました。');
         }
 

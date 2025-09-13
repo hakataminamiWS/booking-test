@@ -16,7 +16,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ShopSeeder::class,
             MenuSeeder::class,
-            ShopUserSeeder::class,
+            UserRoleSeeder::class,
         ]);
+
+        if (app()->environment() !== 'production') {
+            $this->call(TestUserSeeder::class);
+        }
     }
 }

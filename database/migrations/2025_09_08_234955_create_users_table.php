@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,9 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shops', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->char('public_id', 26)->unique();
+            $table->boolean('is_guest')->default(false);
             $table->timestamps();
         });
     }
@@ -23,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shops');
+        if (! App::environment(['dev', 'staging'])) {
+            throw new \Exception('This migration can only be rolled back in dev or staging environments.');
+        }
+
+        Schema::dropIfExists('users');
     }
 };

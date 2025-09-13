@@ -12,14 +12,14 @@ class MenuSeeder extends Seeder
      */
     public function run(): void
     {
-        $shop = \App\Models\Shop::where('name', 'Gemini Hair Salon')->first();
+        $shop = \App\Models\Shop::where('slug', 'gemini-hair-salon')->first();
 
         if ($shop) {
             $shop->menus()->createMany([
-                ['name' => 'カット', 'duration' => 60],
-                ['name' => 'カラー', 'duration' => 90],
-                ['name' => 'パーマ', 'duration' => 120],
-                ['name' => 'トリートメント', 'duration' => 30],
+                ['name' => 'カット', 'price' => 5000, 'duration' => 60],
+                ['name' => 'カラー', 'price' => 7000, 'duration' => 90],
+                ['name' => 'パーマ', 'price' => 8000, 'duration' => 120],
+                ['name' => 'トリートメント', 'price' => 4000, 'duration' => 30],
             ]);
         }
     }

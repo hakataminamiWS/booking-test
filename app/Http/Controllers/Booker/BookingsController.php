@@ -10,6 +10,7 @@ use App\Http\Requests\BookingFormRequest;
 use App\Models\Menu;
 use App\Models\Shop;
 use App\Models\Booking;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -233,8 +234,71 @@ class BookingsController extends Controller
 
         $date = $request->input('date');
 
-        // ここで実際にDBをチェックして空き状況を確認するロジックを実装します
-        // この例では、単純なダミーロジックを使用します
+        // 1. 店舗の予約受付開始・終了時刻を取得
+        $shopAcceptanceStartTime = Carbon::parse($shop->booking_acceptance_start_time);
+        $shopAcceptanceEndTime = Carbon::parse($shop->booking_acceptance_end_time);
+
+        // 2. 潜在的な予約開始時間を生成
+        $potentialSlots = [];
+        $interval = $shop->slot_interval_minutes; // 店舗ごとの予約間隔
+
+        $currentSlot = $date->copy()->setTime($shopAcceptanceStartTime->hour, $shopAcceptanceStartTime->minute);
+        $endOfDay = $date->copy()->setTime($shopAcceptanceEndTime->hour, $shopAcceptanceEndTime->minute);
+
+        while ($currentSlot->lte($endOfDay)) {
+            $potentialSlots[] = $currentSlot->copy();
+            $currentSlot->addMinutes($interval);
+        }
+
+        // 3. 既存の予約を取得
+        $existingBookings = $shop->bookings()
+            ->whereDate('start_at', $date->toDateString())
+            ->when($staff, function ($query) use ($staff) {
+                return $query->where('staff_id', $staff->id);
+            })
+            ->with('menu') // 予約の所要時間を取得するため
+            ->get();
+
+        // 4. 空き時間枠をフィルタリング
+        $availableSlots = [];
+        foreach ($potentialSlots as $slot) {
+            $slotEnd = $slot->copy()->addMinutes($menu->duration);
+
+            // 予約受付期限のチェック (店舗ごと)
+            $shopBookingDeadline = Carbon::now()->addMinutes($shop->booking_deadline_minutes);
+            if ($slot->lt($shopBookingDeadline)) {
+                continue; // 予約受付期限を過ぎている
+            }
+
+            // 予約受付期限のチェック (メニューごと)
+            $menuBookingDeadline = Carbon::now()->addMinutes($menu->booking_deadline_minutes);
+            if ($slot->lt($menuBookingDeadline)) {
+                continue; // メニューの予約受付期限を過ぎている
+            }
+
+            // 既存の予約との競合チェック
+            $isConflict = false;
+            foreach ($existingBookings as $existingBooking) {
+                $existingBookingStart = Carbon::parse($existingBooking->start_at);
+                $existingBookingEnd = $existingBookingStart->copy()->addMinutes($existingBooking->menu->duration);
+
+                if ($slot->lt($existingBookingEnd) && $slotEnd->gt($existingBookingStart)) {
+                    $isConflict = true;
+                    break;
+                }
+            }
+
+            if ($isConflict) {
+                continue; // 競合する予約がある
+            }
+
+            // 予約開始時刻が現在時刻より前でないことを確認
+            if ($slot->lt(Carbon::now())) {
+                continue;
+            }
+
+            $availableSlots[] = $slot->toIso8601String();
+        }
         $is_available = !in_array(date('w', strtotime($date)), [0, 1]); // 日曜日と月曜日を定休日とする
 
         if ($is_available) {

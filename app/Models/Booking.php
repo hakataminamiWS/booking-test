@@ -11,15 +11,21 @@ class Booking extends Model
 
     protected $fillable = [
         'shop_id',
+        'booker_id',
         'menu_id',
-        'staff_id',
+        'menu_name',
+        'menu_price',
+        'menu_duration',
+        'requested_staff_id',
+        'requested_staff_name',
+        'assigned_staff_id',
+        'assigned_staff_name',
         'start_at',
+        'status',
         'name',
         'email',
         'tel',
-        'gender_preference',
-        'booker_id',
-        'status',
+        'memo',
     ];
 
     public function shop()
@@ -32,13 +38,23 @@ class Booking extends Model
         return $this->belongsTo(User::class, 'booker_id');
     }
 
-    public function staff()
+    public function requestedStaff()
     {
-        return $this->belongsTo(User::class, 'staff_id');
+        return $this->belongsTo(User::class, 'requested_staff_id');
+    }
+
+    public function assignedStaff()
+    {
+        return $this->belongsTo(User::class, 'assigned_staff_id');
     }
 
     public function menu()
     {
         return $this->belongsTo(Menu::class);
+    }
+
+    public function options(): BelongsToMany
+    {
+        return $this->belongsToMany(Option::class, 'booking_option');
     }
 }

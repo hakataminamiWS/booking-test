@@ -12,8 +12,8 @@ class ShopPolicy
      */
     public function viewAny(User $user): bool
     {
-        // オーナーは自身の関連する店舗のみ閲覧可能
-        return $user->shops()->exists();
+        // どのオーナーがどの店舗を閲覧できるかはコントローラ側で絞り込むため、ここでは単純にtrueを返す
+        return true;
     }
 
     /**
@@ -21,8 +21,8 @@ class ShopPolicy
      */
     public function view(User $user, Shop $shop): bool
     {
-        // オーナーは自身の店舗のみ閲覧可能
-        return $user->isOwnerOf($shop);
+        // ユーザーがその店舗のオーナーであるか
+        return $user->id === $shop->owner_user_id;
     }
 
     /**
@@ -30,7 +30,15 @@ class ShopPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isAdmin(); // 管理者のみが作成可能
+        // ユーザーが有効な契約を持っているか
+        $contract = $user->contract;
+        if (!$contract || $contract->status !== 'active') {
+            return false;
+        }
+
+        // 店舗の作成上限に達していないか
+        $ownedShopsCount = $user->shops()->count();
+        return $ownedShopsCount < $contract->max_shops;
     }
 
     /**
@@ -38,8 +46,8 @@ class ShopPolicy
      */
     public function update(User $user, Shop $shop): bool
     {
-        // オーナーは自身の店舗のみ更新可能
-        return $user->isOwnerOf($shop);
+        // ユーザーがその店舗のオーナーであるか
+        return $user->id === $shop->owner_user_id;
     }
 
     /**
@@ -47,7 +55,7 @@ class ShopPolicy
      */
     public function delete(User $user, Shop $shop): bool
     {
-        // 管理者のみが削除可能
-        return $user->isAdmin();
+        // ユーザーがその店舗のオーナーであるか
+        return $user->id === $shop->owner_user_id;
     }
 }

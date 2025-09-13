@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -18,20 +19,19 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'public_id',
+        'is_guest',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Get the route key for the model.
      *
-     * @var list<string>
+     * @return string
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    public function getRouteKeyName()
+    {
+        return 'public_id';
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -41,39 +41,97 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'is_guest' => 'boolean',
         ];
     }
 
-    public function shops()
+    /**
+     * Get the staff schedules for the user.
+     */
+    public function staffSchedules(): HasMany
     {
-        return $this->belongsToMany(Shop::class, 'shop_user')->withPivot('role');
+        return $this->hasMany(StaffSchedule::class, 'staff_user_id');
     }
 
-    public function bookingsAsBooker()
+    /**
+     * Get the OAuth identities for the user.
+     */
+    public function oauthIdentities(): HasMany
+    {
+        return $this->hasMany(UserOAuthIdentity::class);
+    }
+
+    /**
+     * Get the shops owned by the user.
+     */
+    public function shops(): HasMany
+    {
+        return $this->hasMany(Shop::class, 'owner_user_id');
+    }
+
+    /**
+     * Get the shops where the user is a staff member.
+     */
+    public function staffShops(): BelongsToMany
+    {
+        return $this->belongsToMany(Shop::class, 'shop_staff');
+    }
+
+    /**
+     * Get the user shop profiles for the user.
+     */
+    public function userShopProfiles(): HasMany
+    {
+        return $this->hasMany(UserShopProfile::class);
+    }
+
+    /**
+     * Get the contract for the user.
+     */
+    public function contract(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Contract::class);
+    }
+
+    public function bookingsAsBooker(): HasMany
     {
         return $this->hasMany(Booking::class, 'booker_id');
     }
 
-    public function bookingsAsStaff()
+    public function bookingsAsRequestedStaff(): HasMany
     {
-        return $this->hasMany(Booking::class, 'staff_id');
+        return $this->hasMany(Booking::class, 'requested_staff_id');
+    }
+
+    public function bookingsAsAssignedStaff(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'assigned_staff_id');
     }
 
     public function isAdmin(): bool
     {
-        // For now, let's assume user with email 'admin@gemini.com' is admin
-        return $this->email === 'admin@gemini.com';
+        return $this->admin()->exists();
     }
 
     public function isOwnerOf(Shop $shop): bool
     {
-        return $this->shops()->where('shop_id', $shop->id)->wherePivot('role', 'owner')->exists();
+        return $this->id === $shop->owner_user_id;
     }
 
     public function isStaffOf(Shop $shop): bool
     {
-        return $this->shops()->where('shop_id', $shop->id)->wherePivot('role', 'staff')->exists();
+        return $this->staffShops()->where('shop_id', $shop->id)->exists();
+    }
+
+    // Adminモデルへのリレーションを追加
+    public function admin()
+    {
+        return $this->hasOne(Admin::class);
+    }
+
+    // Ownerモデルへのリレーションを追加
+    public function owner()
+    {
+        return $this->hasOne(Owner::class);
     }
 }

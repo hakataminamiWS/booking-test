@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/', function () {
+    return view('app');
+});
+
 // 1. Booker（予約者向け）
 Route::prefix('shops/{shop}/bookings')->name('booker.bookings.')->group(function () {
     Route::get('/', [App\Http\Controllers\Booker\BookingsController::class, 'index'])->name('index');
@@ -43,12 +47,32 @@ Route::prefix('owner')->name('owner.')->group(function () {
 });
 
 // 4. Admin（全体管理者向け）
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
+    Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->only(['index', 'show']);
+    Route::post('users/{user}/roles', [App\Http\Controllers\Admin\UsersController::class, 'addRole'])->name('users.roles.add');
+    Route::delete('users/{user}/roles', [App\Http\Controllers\Admin\UsersController::class, 'removeRole'])->name('users.roles.remove');
+
     Route::get('owners', [App\Http\Controllers\Admin\OwnersController::class, 'index'])->name('owners.index');
     Route::get('owners/{owner_id}', [App\Http\Controllers\Admin\OwnersController::class, 'show'])->name('owners.show');
     Route::get('contracts', [App\Http\Controllers\Admin\ContractsController::class, 'index'])->name('contracts.index');
     Route::get('contracts/{contract_id}', [App\Http\Controllers\Admin\ContractsController::class, 'show'])->name('contracts.show');
-    Route::resource('shops', App\Http\Controllers\Admin\ShopsController::class);
+
+    // 店舗管理のルート
+    Route::get('shops', function () {
+        return view('admin.shops');
+    })->name('shops.index');
+
+    Route::resource('shops', App\Http\Controllers\Admin\ShopsController::class)->except(['index', 'create', 'show', 'edit']);
+    Route::get('shops/create', function () {
+        return view('admin.shops');
+    })->name('shops.create');
+    Route::get('shops/{shop}', function () {
+        return view('admin.shops');
+    })->name('shops.show');
+    Route::get('shops/{shop}/edit', function () {
+        return view('admin.shops');
+    })->name('shops.edit');
+
     Route::delete('shops/{shop}/force-delete', [App\Http\Controllers\Admin\ShopsController::class, 'forceDelete'])->name('shops.forceDelete');
 });
 
@@ -60,3 +84,8 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/shops/{shop}/staff', [App\Http\Controllers\Api\StaffController::class, 'index'])->name('shops.staff.index');
     Route::get('/shops/{shop}/available-slots', [App\Http\Controllers\Api\AvailabilityController::class, 'index'])->name('shops.available-slots.index');
 });
+
+// Debug routes
+if (app()->environment(['local', 'staging'])) {
+    Route::get('/login-as/{user}', [\App\Http\Controllers\DebugController::class, 'loginAs'])->name('debug.login-as');
+}

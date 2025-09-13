@@ -34,7 +34,7 @@ class BookingPolicy
     /**
      * Determine whether the user can create bookings.
      */
-    public function create(User $user): bool
+    public function create(?User $user): bool
     {
         return true; // Anyone (including guests) can create bookings
     }
@@ -44,11 +44,6 @@ class BookingPolicy
      */
     public function update(User $user, Booking $booking): bool
     {
-        // User can update their own booking
-        if ($user->id === $booking->booker_id) {
-            return true;
-        }
-
         // Admins, owners, or staff of the shop can update the booking
         return $user->isAdmin() || $user->isOwnerOf($booking->shop) || $user->isStaffOf($booking->shop);
     }

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\App;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -11,11 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('menus', function (Blueprint $table) {
+        Schema::create('admins', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shop_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
             $table->string('name');
-            $table->integer('duration')->comment('所要時間（分）');
             $table->timestamps();
         });
     }
@@ -25,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('menus');
+        if (! App::environment(['dev', 'staging'])) {
+            throw new \Exception('This migration can only be rolled back in dev or staging environments.');
+        }
+
+        Schema::dropIfExists('admins');
     }
 };
