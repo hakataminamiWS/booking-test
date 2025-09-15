@@ -10,7 +10,7 @@
 
 ## 2. 店舗の休日データ
 
--   **`shop_recurring_holidays`**: 定休日データ (例: `day_of_week: 1` で月曜定休)
+-   **`shop_regular_holidays`**: 定休日データ (例: `day_of_week: 1` で月曜定休)
 -   **`shop_specific_holidays`**: 特別休業日データ (例: `date: '2025-12-31'`, `name: '年末年始休業'`) 
 
 ## 3. メニューとオプションのデータ
