@@ -89,49 +89,26 @@
 
 ### データモデル
 本仕様書で言及されるデータは、以下の主要モデルと関連する。詳細は `DATABASE_SCHEMA.md` を参照。
-- `Shop`, `Menu`, `Booking`, `User`
-- `Option`, `MenuOption`, `BookingOption`
+- `User`, `Booker`
+- `Booking`, `BookingStatus`
+- `Shop`, `Menu`, `Option`, `MenuOption`, `BookingOption`
 
 ### 予約処理
 
 - **ルート**: `POST /shops/{shop_slug}/bookings`
 - **コントローラ**: `BookingsController@store`
 - **処理内容**:
-  1. `FormRequest` によるバリデーションと認可チェック。リクエストには `option_ids` や `requested_staff_id` も含まれうる。
-  2. 二重予約チェック。
-  3. `bookings` テーブルにデータ永続化。この際、顧客が希望した担当者は `requested_staff_id` に保存する。`assigned_staff_id` は、この段階ではNULLか、指名ありの場合は同IDが保存される。
-  4. **`option_ids` が存在する場合、`booking_option` テーブルに、予約IDと各オプションIDの組み合わせを保存。**
-  5. 自動返信メール送信ジョブをキューに追加。
-  6. 完了ページへリダイレクト。
-
-### 予約可能時間枠の計算ロジック
-
-詳細は `docs/AVAILABILITY_CALCULATION_LOGIC.md` を参照。
- 「予約を確定する」 → フォームをPOST送信。
-- **データフロー**:
-  - Vue 内の全情報（`option_ids` を含む）を `<input type="hidden">` に反映。
-  - 送信後、Laravel が処理して完了ページへリダイレクト。
-
----
-
-## 4. バックエンド仕様
-
-### データモデル
-本仕様書で言及されるデータは、以下の主要モデルと関連する。詳細は `DATABASE_SCHEMA.md` を参照。
-- `Shop`, `Menu`, `Booking`, `User`
-- `Option`, `MenuOption`, `BookingOption`
-
-### 予約処理
-
-- **ルート**: `POST /shops/{shop_slug}/bookings`
-- **コントローラ**: `BookingsController@store`
-- **処理内容**:
-  1. `FormRequest` によるバリデーションと認可チェック。リクエストには `option_ids` の配列も含まれうる。
-  2. 二重予約チェック。
-  3. `bookings` テーブルにデータ永続化。
-  4. **`option_ids` が存在する場合、`booking_option` テーブルに、予約IDと各オプションIDの組み合わせを保存。**
-  5. 自動返信メール送信ジョブをキューに追加。
-  6. 完了ページへリダイレクト。
+  1. `FormRequest` によるバリデーションと認可チェック。
+  2. ログインユーザーかゲストかに応じて、`users`（マスターアカウント）レコードを検索または作成する。
+     - ゲストの場合: `is_guest=true` で仮マスターアカウントを作成。
+     - ログインユーザーの場合: 認証済みユーザー情報を利用。
+  3. `bookers`テーブルに「識別子」レコードを作成し、上記`users`レコードに紐付ける。
+  4. 二重予約チェック。
+  5. `bookings`テーブルに、`type`（'guest'/'login'）と新しい`booker_id`を含めてデータ永続化。
+  6. `booking_statuses`テーブルに、最初のステータス（例: `confirmed`）を記録する。
+  7. `option_ids` が存在する場合、`booking_option` テーブルに予約IDと各オプションIDを保存。
+  8. 自動返信メール送信ジョブをキューに追加。
+  9. 完了ページへリダイレクト。
 
 ### 予約可能時間枠の計算ロジック
 

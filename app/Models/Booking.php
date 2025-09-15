@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Booking extends Model
 {
@@ -12,6 +16,7 @@ class Booking extends Model
     protected $fillable = [
         'shop_id',
         'booker_id',
+        'type',
         'menu_id',
         'menu_name',
         'menu_price',
@@ -21,34 +26,33 @@ class Booking extends Model
         'assigned_staff_id',
         'assigned_staff_name',
         'start_at',
-        'status',
         'name',
         'email',
         'tel',
         'memo',
     ];
 
-    public function shop()
+    public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);
     }
 
-    public function booker()
+    public function booker(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'booker_id');
+        return $this->belongsTo(Booker::class, 'booker_id');
     }
 
-    public function requestedStaff()
+    public function requestedStaff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_staff_id');
     }
 
-    public function assignedStaff()
+    public function assignedStaff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_staff_id');
     }
 
-    public function menu()
+    public function menu(): BelongsTo
     {
         return $this->belongsTo(Menu::class);
     }
@@ -56,5 +60,15 @@ class Booking extends Model
     public function options(): BelongsToMany
     {
         return $this->belongsToMany(Option::class, 'booking_option');
+    }
+
+    public function statuses(): HasMany
+    {
+        return $this->hasMany(BookingStatus::class);
+    }
+
+    public function latestStatus(): HasOne
+    {
+        return $this->hasOne(BookingStatus::class)->latestOfMany();
     }
 }

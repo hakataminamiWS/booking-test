@@ -11,11 +11,18 @@ class UsersController extends Controller
 {
     // ... (existing code) ...
 
+    public function index()
+    {
+        $users = User::latest()->paginate(20);
+        return view('admin.users.index', compact('users'));
+    }
+
     public function show(User $user)
     {
         return view('admin.users.show', [
             'user' => $user,
             'is_owner' => $user->owner()->exists(),
+            'has_contract' => $user->contract()->exists(),
         ]);
     }
 
@@ -28,7 +35,7 @@ class UsersController extends Controller
 
         Owner::create([
             'user_id' => $user->id,
-            'name' => '（オーナー名未設定）', // 仮の名前
+            'name' => $user->public_id,
         ]);
 
         return redirect()->route('admin.users.show', $user)->with('success', 'ユーザーをオーナーに設定しました。');

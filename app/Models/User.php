@@ -93,9 +93,12 @@ class User extends Authenticatable
         return $this->hasOne(Contract::class);
     }
 
-    public function bookingsAsBooker(): HasMany
+    /**
+     * Get the booker identifiers for the user.
+     */
+    public function bookers(): HasMany
     {
-        return $this->hasMany(Booking::class, 'booker_id');
+        return $this->hasMany(Booker::class);
     }
 
     public function bookingsAsRequestedStaff(): HasMany

@@ -42,7 +42,8 @@
 -   **データフロー**:
     *   `GET /api/shops/{shop_slug}/bookings/{booking_id}` (Staff)
     *   `GET /api/owner/bookings/{booking_id}` (Owner)
-    *   `PUT /api/shops/{shop_slug}/bookings/{booking_id}` (ステータス変更、編集)
+    *   `POST /api/bookings/{booking_id}/statuses` (ステータス変更)
+    *   `PUT /api/shops/{shop_slug}/bookings/{booking_id}` (メモ等の編集)
     *   `DELETE /api/shops/{shop_slug}/bookings/{booking_id}` (削除)
 
 ## 5. API設計
@@ -58,10 +59,16 @@
 -   **エンドポイント**: `GET /api/shops/{shop_slug}/bookings/{booking_id}` (Staff), `GET /api/owner/bookings/{booking_id}` (Owner)
 -   **レスポンス**: 単一の予約情報 (JSON)
 
-### 5.3. 予約ステータス変更/更新
+### 5.3. 予約ステータス変更
+
+-   **エンドポイント**: `POST /api/bookings/{booking_id}/statuses`
+-   **リクエストボディ**: `{ "status": "confirmed" }` のように、新しいステータスを送信。
+-   **レスポンス**: 作成された新しいステータス情報 (JSON)
+
+### 5.4. 予約更新 (メモなど)
 
 -   **エンドポイント**: `PUT /api/shops/{shop_slug}/bookings/{booking_id}`
--   **リクエストボディ**: 変更する予約情報、またはステータス
+-   **リクエストボディ**: 変更する予約情報（メモなど）
 -   **レスポンス**: 更新された予約情報 (JSON)
 
 ### 5.4. 予約削除

@@ -4,11 +4,17 @@
 
 @section('content')
 <div class="container">
+@php
+$props = [
+    'contractId' => $contract_id,
+    'contractDetails' => $contractDetails,
+    'csrfToken' => csrf_token(),
+];
+@endphp
     <div
         id="app"
         data-page="admin-contracts-show"
-        data-contract-id="{{ $contract_id }}"
-        data-contract-details='@json($contractDetails)'
+        data-props='@json($props)'
     >
     </div>
 </div>

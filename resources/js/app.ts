@@ -6,6 +6,10 @@ import * as directives from "vuetify/directives";
 
 // Vue Components
 import AdminUserShow from "@/admin/users/Show.vue";
+import AdminContractsCreate from "@/admin/contracts/Create.vue";
+import AdminContractsShow from "@/admin/contracts/Show.vue";
+import AdminContractsEdit from "@/admin/contracts/Edit.vue";
+import AdminContractsIndex from "@/admin/contracts/Index.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
@@ -25,6 +29,22 @@ if (appElement) {
     switch (page) {
         case "admin-users-show":
             component = AdminUserShow;
+            mountProps = JSON.parse(props.props || '{}');
+            break;
+        case "admin-contracts-create":
+            component = AdminContractsCreate;
+            mountProps = JSON.parse(props.props || '{}');
+            break;
+        case "admin-contracts-show":
+            component = AdminContractsShow;
+            mountProps = JSON.parse(props.props || '{}');
+            break;
+        case "admin-contracts-edit":
+            component = AdminContractsEdit;
+            mountProps = JSON.parse(props.props || '{}');
+            break;
+        case "admin-contracts-index":
+            component = AdminContractsIndex;
             mountProps = JSON.parse(props.props || '{}');
             break;
         // case 'booker-bookings-create':

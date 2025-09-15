@@ -37,7 +37,7 @@
     *   ステータス変更ボタン (確定、キャンセルなど)
 -   **データフロー**:
     *   `GET /api/shops/{shop_slug}/staff/bookings/{booking_id}`
-    *   `PUT /api/shops/{shop_slug}/staff/bookings/{booking_id}` (ステータス変更)
+    *   `POST /api/bookings/{booking_id}/statuses` (ステータス変更)
 
 ## 5. API設計
 
@@ -52,11 +52,11 @@
 -   **エンドポイント**: `GET /api/shops/{shop_slug}/staff/bookings/{booking_id}`
 -   **レスポンス**: 単一の予約情報 (JSON)
 
-### 5.3. スタッフ予約ステータス変更/更新
+### 5.3. 予約ステータス変更
 
--   **エンドポイント**: `PUT /api/shops/{shop_slug}/staff/bookings/{booking_id}`
--   **リクエストボディ**: 変更する予約情報、またはステータス
--   **レスポンス**: 更新された予約情報 (JSON)
+-   **エンドポイント**: `POST /api/bookings/{booking_id}/statuses`
+-   **リクエストボディ**: `{ "status": "confirmed" }` のように、新しいステータスを送信。
+-   **レスポンス**: 作成された新しいステータス情報 (JSON)
 
 ## 6. 認可 (Authorization)
 

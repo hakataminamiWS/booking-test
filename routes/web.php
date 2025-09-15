@@ -48,14 +48,13 @@ Route::prefix('owner')->name('owner.')->group(function () {
 
 // 4. Admin（全体管理者向け）
 Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
-    Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->only(['index', 'show']);
+    Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->only(['show']);
     Route::post('users/{user}/roles', [App\Http\Controllers\Admin\UsersController::class, 'addRole'])->name('users.roles.add');
     Route::delete('users/{user}/roles', [App\Http\Controllers\Admin\UsersController::class, 'removeRole'])->name('users.roles.remove');
 
     Route::get('owners', [App\Http\Controllers\Admin\OwnersController::class, 'index'])->name('owners.index');
     Route::get('owners/{owner_id}', [App\Http\Controllers\Admin\OwnersController::class, 'show'])->name('owners.show');
-    Route::get('contracts', [App\Http\Controllers\Admin\ContractsController::class, 'index'])->name('contracts.index');
-    Route::get('contracts/{contract_id}', [App\Http\Controllers\Admin\ContractsController::class, 'show'])->name('contracts.show');
+    Route::resource('contracts', App\Http\Controllers\Admin\ContractsController::class)->except([]);
 
     // 店舗管理のルート
     Route::get('shops', function () {

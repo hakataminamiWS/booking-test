@@ -25,7 +25,22 @@
                     <span class="mr-2">現在の役割:</span>
                     <v-chip color="success" variant="elevated">オーナー</v-chip>
                 </div>
-                <form :action="removeActionUrl" method="POST" class="mt-4">
+
+                <div v-if="!hasContract" class="mt-4">
+                    <v-alert type="info" variant="tonal" class="mb-4">
+                        このオーナーにはまだ契約がありません。
+                    </v-alert>
+                    <v-btn :href="createContractUrl" color="primary">契約を新規作成</v-btn>
+                </div>
+                <div v-else class="mt-4">
+                     <v-alert type="success" variant="tonal">
+                        契約済みです。
+                    </v-alert>
+                </div>
+
+                <hr class="my-4">
+
+                <form :action="removeActionUrl" method="POST">
                     <input type="hidden" name="_token" :value="csrfToken">
                     <input type="hidden" name="_method" value="DELETE">
                     <v-btn type="submit" color="error">オーナーから外す</v-btn>
@@ -46,8 +61,10 @@
 defineProps({
     user: Object,
     isOwner: Boolean,
+    hasContract: Boolean,
     addActionUrl: String,
     removeActionUrl: String,
+    createContractUrl: String,
     csrfToken: String,
 });
 </script>

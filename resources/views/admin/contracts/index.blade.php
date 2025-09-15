@@ -4,10 +4,15 @@
 
 @section('content')
 <div class="container">
+@php
+$props = [
+    'contracts' => $contracts,
+];
+@endphp
     <div
         id="app"
         data-page="admin-contracts-index"
-        data-contracts='@json($contracts)'
+        data-props='@json($props)'
     >
     </div>
 </div>

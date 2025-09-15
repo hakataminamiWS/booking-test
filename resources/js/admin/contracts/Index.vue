@@ -1,91 +1,121 @@
 <template>
-  <v-container v-if="parsedContracts">
-    <v-card class="mx-auto" max-width="800">
-      <v-card-title class="text-h5 font-weight-bold">契約管理</v-card-title>
+  <v-container>
+    <v-card class="mx-auto" max-width="1200">
+      <v-card-title class="text-h5 font-weight-bold d-flex justify-space-between align-center">
+        <span>契約管理</span>
+        <v-btn color="primary" :href="createContractUrl">新規契約追加</v-btn>
+      </v-card-title>
       <v-divider></v-divider>
+
       <v-card-text>
+        <v-row>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="selectedStatus"
+              :items="statusOptions"
+              label="ステータスで絞り込み"
+              dense
+              outlined
+              hide-details
+            ></v-select>
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-select
+              v-model="endDateFilterMode"
+              :items="endDateFilterOptions"
+              label="契約終了日で絞り込み"
+              dense
+              outlined
+              hide-details
+            ></v-select>
+          </v-col>
+          <v-col v-if="endDateFilterMode === '指定日以前'" cols="12" md="4">
+            <v-text-field
+              v-model="specifiedEndDate"
+              label="終了日を指定"
+              type="date"
+              dense
+              outlined
+              hide-details
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
         <v-data-table
           :headers="headers"
-          :items="parsedContracts"
+          :items="filteredContracts"
           item-value="id"
-          class="elevation-1"
+          class="elevation-1 mt-4"
+          hover
+          @click:row="goToContract"
           no-data-text="契約情報がありません。"
         >
-          <template v-slot:item.actions="{ item }">
-            <v-btn
-              color="primary"
-              variant="text"
-              size="small"
-              :href="contractDetailUrl(item.id)"
-            >
-              詳細
-            </v-btn>
-            <v-btn
-              color="secondary"
-              variant="text"
-              size="small"
-              @click="updateContractStatus(item.id)"
-            >
-              ステータス更新
-            </v-btn>
-          </template>
         </v-data-table>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="success">新規契約追加</v-btn>
-      </v-card-actions>
     </v-card>
-  </v-container>
-  <v-container v-else>
-    <p class="text-center">契約情報が見つかりませんでした。</p>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 
 interface Contract {
   id: number;
-  owner_name: string;
-  plan: string;
+  user: { owner: { name: string } };
+  max_shops: number;
   status: string;
-  expires_at: string;
+  start_date: string;
+  end_date: string;
 }
 
 const props = defineProps<{
-  contracts: string; // JSON文字列として受け取る
+  contracts: Contract[];
 }>();
 
-const parsedContracts = ref<Contract[]>([]);
+// Filter refs
+const selectedStatus = ref('すべて');
+const statusOptions = ['すべて', 'active', 'inactive'];
+
+const endDateFilterMode = ref('すべて');
+const endDateFilterOptions = ['すべて', '契約終了済み', '指定日以前'];
+const specifiedEndDate = ref<string | null>(null);
+
+
+const filteredContracts = computed(() => {
+  let items = props.contracts;
+
+  // Status filter
+  if (selectedStatus.value !== 'すべて') {
+    items = items.filter(contract => contract.status === selectedStatus.value);
+  }
+
+  // End date filter
+  if (endDateFilterMode.value === '契約終了済み') {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    items = items.filter(contract => new Date(contract.end_date) < today);
+  } else if (endDateFilterMode.value === '指定日以前' && specifiedEndDate.value) {
+    const specifiedDate = new Date(specifiedEndDate.value);
+    specifiedDate.setHours(0, 0, 0, 0);
+    items = items.filter(contract => new Date(contract.end_date) <= specifiedDate);
+  }
+
+  return items;
+});
 
 const headers = [
-  { title: 'ID', key: 'id' },
-  { title: 'オーナー名', key: 'owner_name' },
-  { title: 'プラン', key: 'plan' },
+  { title: 'ID', key: 'id', width: '10%' },
+  { title: 'オーナー名', key: 'user.owner.name' },
+  { title: '最大店舗数', key: 'max_shops' },
   { title: 'ステータス', key: 'status' },
-  { title: '期限', key: 'expires_at' },
-  { title: '操作', key: 'actions', sortable: false },
+  { title: '契約開始日', key: 'start_date' },
+  { title: '契約終了日', key: 'end_date' },
 ];
 
-const contractDetailUrl = (contractId: number) => `/admin/contracts/${contractId}`;
+const createContractUrl = '/admin/contracts/create';
 
-const viewContract = (contractId: number) => {
-  alert(`契約ID: ${contractId} の詳細を表示します。（ダミー）`);
-  console.log(`Viewing contract ${contractId}`);
+const goToContract = (_event: any, { item }: { item: Contract }) => {
+  window.location.href = `/admin/contracts/${item.id}`;
 };
 
-const updateContractStatus = (contractId: number) => {
-  alert(`契約ID: ${contractId} のステータスを更新します。（ダミー）`);
-  console.log(`Updating status for contract ${contractId}`);
-};
-
-onMounted(() => {
-  try {
-    parsedContracts.value = JSON.parse(props.contracts);
-  } catch (e) {
-    console.error("Failed to parse contracts data:", e);
-    parsedContracts.value = [];
-  }
-});
 </script>

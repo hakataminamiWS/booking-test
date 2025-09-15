@@ -38,6 +38,17 @@
 | `updated_at`     | `timestamp`                  |                                      | 更新日時                    |
 | **ユニーク制約** | (`provider`, `provider_sub`) |                                      |                             |
 
+### `bookers`
+
+予約者としての「識別子（来店カード）」を管理します。予約は必ずこの識別子を経由してマスターアカウント(`users`)に紐付きます。
+
+| カラム名     | データ型    | 制約                                 | 説明                                    |
+| :----------- | :---------- | :----------------------------------- | :-------------------------------------- |
+| `id`         | `bigint`    | `PK`, `AI`                           | 予約者識別子 ID                         |
+| `user_id`    | `bigint`    | `FK (users.id)`, `onDelete: CASCADE` | この識別子が属するマスターアカウント ID |
+| `created_at` | `timestamp` |                                      | 作成日時                                |
+| `updated_at` | `timestamp` |                                      | 更新日時                                |
+
 ### `admins`
 
 システム管理者の情報を管理します。将来的な管理者固有設定のために分離されています。
@@ -78,19 +89,20 @@
 
 店舗の基本情報を管理します。
 
-| カラム名                        | データ型       | 制約                                 | 説明                                                                 |
-| :------------------------------ | :------------- | :----------------------------------- | :------------------------------------------------------------------- |
-| `id`                            | `bigint`       | `PK`, `AI`                           | 主キー                                                               |
-| `owner_user_id`                 | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | この店舗を所有するオーナーのユーザー ID                              |
-| `slug`                          | `varchar(255)` | `Not NULL`, `Unique`                 | URL で利用する、URL セーフな一意の識別子 (例: 'hakata-minami-store') |
-| `name`                          | `varchar(255)` | `Not NULL`                           | 店舗名                                                               |
-| `time_slot_interval`            | `integer`      | `Not NULL`, `Default: 30`            | 予約枠の表示単位（分）                                               |
-| `cancellation_deadline_minutes` | `integer`      | `Not NULL`, `Default: 1440`          | キャンセル可能な期限（分単位）                                       |
-| `booking_deadline_minutes`      | `integer`      | `Not NULL`, `Default: 0`             | 店舗の基本予約締め切り（分単位）。0 は直前まで可。                   |
-| `booking_confirmation_type`     | `varchar(255)` | `Not NULL`, `Default: 'automatic'`   | 予約承認方法 (`automatic` or `manual`)                               |
-| `status`                        | `varchar(255)` | `Not NULL`                           | 店舗ステータス (例: 'active', 'inactive', 'deleting')                |
-| `created_at`                    | `timestamp`    |                                      | 作成日時                                                             |
-| `updated_at`                    | `timestamp`    |                                      | 更新日時                                                             |
+| カラム名                        | データ型       | 制約                                 | 説明                                                                                                      |
+| :------------------------------ | :------------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------------- |
+| `id`                            | `bigint`       | `PK`, `AI`                           | 主キー                                                                                                    |
+| `owner_user_id`                 | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | この店舗を所有するオーナーのユーザー ID                                                                   |
+| `slug`                          | `varchar(255)` | `Not NULL`, `Unique`                 | URL で利用する、URL セーフな一意の識別子 (例: 'hakata-minami-store')                                      |
+| `name`                          | `varchar(255)` | `Not NULL`                           | 店舗名                                                                                                    |
+| `time_slot_interval`            | `integer`      | `Not NULL`, `Default: 30`            | 予約枠の表示単位（分）                                                                                    |
+| `cancellation_deadline_minutes` | `integer`      | `Not NULL`, `Default: 1440`          | キャンセル可能な期限（分単位）                                                                            |
+| `booking_deadline_minutes`      | `integer`      | `Not NULL`, `Default: 0`             | 店舗の基本予約締め切り（分単位）。0 は直前まで可。                                                        |
+| `booking_confirmation_type`     | `varchar(255)` | `Not NULL`, `Default: 'automatic'`   | 予約承認方法 (`automatic` or `manual`)                                                                    |
+| `status`                        | `varchar(255)` | `Not NULL`                           | 店舗ステータス (例: 'active', 'inactive', 'deleting')                                                     |
+| `timezone`                      | `varchar(255)` | `Not NULL`, `Default: 'Asia/Tokyo'`  | **[将来拡張用]** 店舗のタイムゾーン。現在はデフォルト値のまま利用し、機能開発が必要になった際に使用する。 |
+| `created_at`                    | `timestamp`    |                                      | 作成日時                                                                                                  |
+| `updated_at`                    | `timestamp`    |                                      | 更新日時                                                                                                  |
 
 ### `shop_regular_holidays`
 
@@ -173,31 +185,43 @@
 
 ### `bookings`
 
-予約情報を管理する**スナップショットテーブル**。
-予約時点のメニュー名や価格、担当者名などをすべて記録するため、関連するマスターデータ（ユーザー、メニューなど）が将来的に変更・削除されても、このテーブルの記録は影響を受けません。
-`booker_id`, `menu_id`, `staff_id`はマスターレコードへの参照を持ちますが、**参照先が削除された場合は`NULL`に更新される**ため、レコードとして問題なく保持されます。
+予約が行われた「事実」を記録する、原則として**不変のスナップショットテーブル**です。
+予約時のメニュー名や価格などをすべて記録するため、関連するマスターデータが将来的に変更・削除されても、このテーブルの記録は影響を受けません。ステータスのような可変情報は `booking_statuses` テーブルで管理します。
 
-| カラム名               | データ型       | 制約                                 | 説明                                                |
-| :--------------------- | :------------- | :----------------------------------- | :-------------------------------------------------- |
-| `id`                   | `bigint`       | `PK`, `AI`                           | 主キー                                              |
-| `shop_id`              | `bigint`       | `FK (shops.id)`, `onDelete: CASCADE` | 店舗 ID                                             |
-| `booker_id`            | `bigint`       | `Nullable`                           | 予約者ユーザーの ID（削除時に NULL 化）             |
-| `menu_id`              | `bigint`       | `Nullable`                           | メニューの ID（削除時に NULL 化）                   |
-| `menu_name`            | `varchar(255)` | `Not NULL`                           | 予約時のメニュー名（スナップショット）              |
-| `menu_price`           | `integer`      | `Not NULL`                           | 予約時のメニュー価格（スナップショット）            |
-| `menu_duration`        | `integer`      | `Not NULL`                           | 予約時のメニュー所要時間（スナップショット）        |
-| `requested_staff_id`   | `bigint`       | `Nullable`                           | 予約者が希望した担当者の ID（削除時に NULL 化）     |
-| `requested_staff_name` | `varchar(255)` | `Nullable`                           | 予約者が希望した担当者名（スナップショット）        |
-| `assigned_staff_id`    | `bigint`       | `Nullable`                           | 実際に割り当てられた担当者の ID（削除時に NULL 化） |
-| `assigned_staff_name`  | `varchar(255)` | `Nullable`                           | 実際に割り当てられた担当者名（スナップショット）    |
-| `start_at`             | `datetime`     | `Not NULL`                           | 予約開始日時                                        |
-| `status`               | `varchar(255)` | `Not NULL`                           | 予約ステータス                                      |
-| `name`                 | `varchar(255)` | `Not NULL`                           | 予約者名（スナップショット）                        |
-| `email`                | `varchar(255)` | `Not NULL`                           | 予約者メールアドレス（スナップショット）            |
-| `tel`                  | `varchar(255)` | `Not NULL`                           | 予約者電話番号（スナップショット）                  |
-| `memo`                 | `text`         | `Nullable`                           | 予約者からのメモ                                    |
-| `created_at`           | `timestamp`    |                                      | 作成日時                                            |
-| `updated_at`           | `timestamp`    |                                      | 更新日時                                            |
+| カラム名               | データ型       | 制約                                    | 説明                                                                        |
+| :--------------------- | :------------- | :-------------------------------------- | :-------------------------------------------------------------------------- |
+| `id`                   | `bigint`       | `PK`, `AI`                              | 主キー                                                                      |
+| `shop_id`              | `bigint`       | `FK (shops.id)`, `onDelete: CASCADE`    | 店舗 ID                                                                     |
+| `booker_id`            | `bigint`       | `FK (bookers.id)`, `onDelete: RESTRICT` | 予約者識別子 ID。顧客統合時もこの ID は不変。                               |
+| `type`                 | `varchar(255)` | `Not NULL`                              | 予約の出自 (`guest` or `login`)。ユーザー側の予約履歴表示の出し分けに使用。 |
+| `menu_id`              | `bigint`       | `Nullable`                              | メニューの ID（削除時に NULL 化）                                           |
+| `menu_name`            | `varchar(255)` | `Not NULL`                              | 予約時のメニュー名（スナップショット）                                      |
+| `menu_price`           | `integer`      | `Not NULL`                              | 予約時のメニュー価格（スナップショット）                                    |
+| `menu_duration`        | `integer`      | `Not NULL`                              | 予約時のメニュー所要時間（スナップショット）                                |
+| `requested_staff_id`   | `bigint`       | `Nullable`                              | 予約者が希望した担当者の ID（削除時に NULL 化）                             |
+| `requested_staff_name` | `varchar(255)` | `Nullable`                              | 予約者が希望した担当者名（スナップショット）                                |
+| `assigned_staff_id`    | `bigint`       | `Nullable`                              | 実際に割り当てられた担当者の ID（削除時に NULL 化）                         |
+| `assigned_staff_name`  | `varchar(255)` | `Nullable`                              | 実際に割り当てられた担当者名（スナップショット）                            |
+| `start_at`             | `datetime`     | `Not NULL`                              | 予約開始日時（タイムゾーンは`timezone`カラムを参照）                        |
+| `timezone`             | `varchar(255)` | `Not NULL`                              | 予約が行われた時点の店舗のタイムゾーン（例: `Asia/Tokyo`）                  |
+| `name`                 | `varchar(255)` | `Not NULL`                              | 予約者名（スナップショット）                                                |
+| `email`                | `varchar(255)` | `Not NULL`                              | 予約者メールアドレス（スナップショット）                                    |
+| `tel`                  | `varchar(255)` | `Not NULL`                              | 予約者電話番号（スナップショット）                                          |
+| `memo`                 | `text`         | `Nullable`                              | 予約者からのメモ                                                            |
+| `created_at`           | `timestamp`    |                                         | 作成日時                                                                    |
+| `updated_at`           | `timestamp`    |                                         | 更新日時                                                                    |
+
+### `booking_statuses`
+
+予約のステータスとその変更履歴を管理します。ある予約の現在のステータスは、このテーブルで対象の`booking_id`を持つ最新のレコードとなります。
+
+| カラム名     | データ型       | 制約                                    | 説明                                                    |
+| :----------- | :------------- | :-------------------------------------- | :------------------------------------------------------ |
+| `id`         | `bigint`       | `PK`, `AI`                              | 主キー                                                  |
+| `booking_id` | `bigint`       | `FK (bookings.id)`, `onDelete: CASCADE` | 予約 ID                                                 |
+| `status`     | `varchar(255)` | `Not NULL`                              | 予約ステータス (例: `pending`, `confirmed`, `canceled`) |
+| `created_at` | `timestamp`    |                                         | ステータス変更日時                                      |
+| `updated_at` | `timestamp`    |                                         | 更新日時                                                |
 
 ### `booking_option`
 
@@ -288,13 +312,13 @@
 
 店舗オーナーとシステムとの契約情報を管理します。契約は店舗ではなくオーナーに紐付きます。
 
-| カラム名     | データ型       | 制約                                 | 説明                                     |
-| :----------- | :------------- | :----------------------------------- | :--------------------------------------- |
-| `id`         | `bigint`       | `PK`, `AI`                           | 主キー                                   |
-| `user_id`    | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | オーナーのユーザー ID                    |
-| `max_shops`  | `integer`      | `Not NULL`, `Default: 1`             | 契約上、作成可能な店舗の上限数           |
-| `status`     | `varchar(255)` | `Not NULL`                           | 契約ステータス (例: 'active', 'expired') |
-| `start_date` | `date`         | `Not NULL`                           | 契約開始日                               |
-| `end_date`   | `date`         | `Not NULL`                           | 契約終了日                               |
-| `created_at` | `timestamp`    |                                      | 作成日時                                 |
-| `updated_at` | `timestamp`    |                                      | 更新日時                                 |
+| カラム名     | データ型       | 制約                                 | 説明                                                                                                                                        |
+| :----------- | :------------- | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`         | `bigint`       | `PK`, `AI`                           | 主キー                                                                                                                                      |
+| `user_id`    | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | オーナーのユーザー ID                                                                                                                       |
+| `max_shops`  | `integer`      | `Not NULL`, `Default: 1`             | 契約上、作成可能な店舗の上限数                                                                                                              |
+| `status`     | `varchar(255)` | `Not NULL`                           | 契約ステータス (例: 'active', 'expired')                                                                                                    |
+| `start_date` | `date`         | `Not NULL`                           | 契約開始日。**[注]** 現在は情報としての記録のみ。この日付に到達してもステータスは自動変更されない。                                         |
+| `end_date`   | `date`         | `Not NULL`                           | 契約終了日。**[注]** 現在は情報としての記録のみ。この日付に到達してもステータスは自動変更されない。厳密な期間管理が必要な場合は改修が必要。 |
+| `created_at` | `timestamp`    |                                      | 作成日時                                                                                                                                    |
+| `updated_at` | `timestamp`    |                                      | 更新日時                                                                                                                                    |

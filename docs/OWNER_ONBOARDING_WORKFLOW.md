@@ -6,6 +6,38 @@
 ## 1. フローの全体像
 
 契約は、オーナーが予約システム外で事業者（予約システムの運営者）と合意した後に、システムに反映させるプロセスです。
+以下の図は、その際の登場人物（オーナー、システム、管理者）間のやり取りの全体像を示しています。
+
+```mermaid
+sequenceDiagram
+    participant Owner as オーナー
+    participant System as システム
+    participant Admin as 管理者
+
+    Owner->>System: 1. Googleアカウントで初回ログイン
+    activate System
+    System-->>Owner: usersレコード作成
+    deactivate System
+
+    Owner->>Admin: 2. メール等でユーザー情報を連絡
+
+    Admin->>System: 3. 管理画面から役割(Owner)を付与
+    activate System
+    System-->>Admin: 
+    deactivate System
+    
+    Admin->>System: 4. 管理画面から契約(Contract)を作成
+    activate System
+    System-->>Admin: 登録完了
+    deactivate System
+
+    Admin->>Owner: 5. メール等で登録完了を通知
+
+    Owner->>System: 6. ログインし、店舗作成を実行
+    activate System
+    System-->>Owner: 店舗作成完了
+    deactivate System
+```
 
 ## 2. 具体的な手順
 
