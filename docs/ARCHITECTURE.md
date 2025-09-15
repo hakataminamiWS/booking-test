@@ -1,18 +1,44 @@
 # ARCHITECTURE.md
 
-## 1. 目的
+## 1. 目的と運用ルール
 
-この文書は予約サービスの **システムアーキテクチャ** を定義し、開発・運用・将来的な拡張において共通認識を持つことを目的とする。
+### 1.1. 目的
+この文書は予約サービスの **システムアーキテクチャ** の全体像と設計思想を定義し、開発・運用における共通認識を持つことを目的とします。
+
+### 1.2. 本書の役割
+本書は、システム全体のアーキテクチャの概要を示し、より詳細な仕様を記述した `docs/` 配下の他のドキュメントへの **ハブ（索引）** として機能します。アーキテクチャに関する主要な決定事項や全体像を把握したい場合は、まずこのドキュメントを参照してください。
+
+### 1.3. 運用ルール
+`docs/` 配下のドキュメントを新規作成または更新する際は、 **必ず本書との整合性を確認してください。** 具体的には、関連するセクションから適切にリンクを張る、あるいは既存のリンクが最新の状態を反映しているかを確認する作業を必須とします。
 
 ---
 
-## 2. アーキテクチャ方針
+## 2. 関連ドキュメント一覧
+
+-   **認可設計**: [AUTHORIZATION_SPEC.md](./AUTHORIZATION_SPEC.md)
+-   **データベース設計**: [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
+-   **予約フォーム仕様**: [BOOKING_FORM_SPEC.md](./BOOKING_FORM_SPEC.md)
+-   **予約管理機能**: [RESERVATION_MANAGEMENT_SPEC.md](./RESERVATION_MANAGEMENT_SPEC.md)
+-   **空き時間計算ロジック**: [AVAILABILITY_CALCULATION_LOGIC.md](./AVAILABILITY_CALCULATION_LOGIC.md)
+-   **手動予約時のバリデーション**: [MANUAL_BOOKING_VALIDATION_LOGIC.md](./MANUAL_BOOKING_VALIDATION_LOGIC.md)
+-   **オーナー向け機能**:
+    -   オンボーディングと契約: [OWNER_ONBOARDING_AND_CONTRACT_SPEC.md](./OWNER_ONBOARDING_AND_CONTRACT_SPEC.md)
+    -   ワークフロー: [OWNER_ONBOARDING_WORKFLOW.md](./OWNER_ONBOARDING_WORKFLOW.md)
+-   **店舗管理機能**: [SHOP_MANAGEMENT_SPEC.md](./SHOP_MANAGEMENT_SPEC.md)
+-   **スタッフ向け予約管理機能**: [STAFF_RESERVATION_MANAGEMENT_SPEC.md](./STAFF_RESERVATION_MANAGEMENT_SPEC.md)
+-   **管理者向け機能**: [ADMIN_FEATURES_SPEC.md](./ADMIN_FEATURES_SPEC.md)
+-   **テスト・データ**:
+    -   テストガイド: [TESTING_GUIDE.md](./TESTING_GUIDE.md)
+    -   ワークフローテスト: [WORKFLOW_TESTS.md](./WORKFLOW_TESTS.md)
+    -   データセットアップ仕様: [DATA_SETUP_SPEC.md](./DATA_SETUP_SPEC.md)
+
+---
+
+## 3. アーキテクチャ方針
 
 -   **フロントエンド**: Laravel + Blade (MPA) を基本とし、一部 Vue 3 + Vuetify + TypeScript による動的 UI
 -   **バックエンド**: Laravel (API 提供 + 認証・セッション管理)
 -   **データベース**: 単一 DB + `shop_id` スコープ管理（将来的に DB 分離型マルチテナントへ拡張可能）
--   **認可**: Laravel Gate / Policy によるロール判定
--   **契約管理**: Owner とシステム間の契約状態（有効/無効/期限切れ）を DB で管理し、Policy 判定に利用
 -   **責務分担**:
     -   Laravel + Blade: ページ遷移・認証・セッション・CSRF管理・フォーム処理
     -   Vue + Vuetify: 予約フォームUI、予約一覧 (フィルタ/ソート/ページネーション)
@@ -20,130 +46,48 @@
 
 ---
 
-## 3. 認可設計
-
-詳細なユーザーロールと責務については `AUTHORIZATION_SPEC.md` を参照。
-
--   **基本方針**:
-    -   `shop_user.role` に基づいてアクセス制御
-    -   Booker: 任意の店舗に予約可能（shop_slug 必須）
-    -   Staff: 自店舗のみ操作可能
-    -   Owner: 自店舗操作 + 契約管理可
-    -   Admin: 契約管理可
-    -   契約状態が無効 / 期限切れの場合は、店舗機能を利用不可とする
-
----
-
 ## 4. マルチテナントのデータ分離戦略
 
-本システムは、オーナーやスタッフが自身の所属する店舗の情報のみを閲覧・操作できるよう、複数の仕組みを組み合わせてデータ分離を実現する。
+オーナーやスタッフが自身の所属する店舗の情報のみを閲覧・操作できるよう、グローバルスコープとPolicyを組み合わせてデータ分離を堅牢に実現する。
 
-### 4.1. グローバルスコープによる自動的な絞り込み
-
--   **目的**: 開発者の `where('shop_id', ...)` の記述漏れによる意図しない情報漏洩を、システムレベルで防止する。
--   **仕組み**:
-    -   `Booking`, `Menu`, `Option` など、店舗に所属する主要なモデルには **グローバルスコープ** を適用する。
-    -   このスコープは、現在ログインしているユーザーがオーナーまたはスタッフの場合、自動的にそのユーザーが所属する `shop_id` でクエリを絞り込む `WHERE` 句を追加する。
-    -   これにより、例えばコントローラーで `Booking::all()` を呼び出した場合でも、実際には自店舗の予約のみが取得される。
-
-### 4.2. Policyによる個別アクセスの認可
-
--   **目的**: URLを直接操作するなどの意図的な不正アクセスを防ぎ、個別のデータに対する操作権限を厳密に検証する。
--   **仕組み**:
-    -   各モデルに対応する Policy (`BookingPolicy`, `ShopPolicy` など) を用意する。
-    -   `update` や `delete` などのメソッド内で、操作対象のデータ（例: `$booking`）の `shop_id` が、操作しようとしているユーザーの所属する `shop_id` と一致するかを検証する。
-    -   コントローラーの各メソッドの冒頭で `$this->authorize(...)` を呼び出すことで、この検証を強制する。
-
-この2つの仕組みを組み合わせることで、テナントデータの安全な分離を堅牢に実現する。
+-   **グローバルスコープ**: `shop_id` による自動的なクエリ絞り込みを行い、意図しない情報漏洩をシステムレベルで防止する。
+-   **Policyによる認可**: 個別のデータに対する操作権限を厳密に検証し、不正アクセスを防ぐ。
 
 ---
 
-## 5. データモデルとロジック
+## 5. データモデルに関する重要方針
 
-詳細なデータモデル（ER図など）は `DATABASE_SCHEMA.md` を参照。
+詳細なデータモデルは [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) を参照。
 
 ### 5.1. 顧客アカウントモデルと統合ロジック
-
-本システムでは、ゲスト予約と会員登録ユーザーを柔軟に紐付けるため、「マスターアカウントモデル」を採用する。
-
--   **モデルの役割**:
-    -   **`users` (顧客台帳)**: 顧客の本体を表すマスターテーブル。
-    -   **`bookers` (来店カード)**: 予約に紐づく識別子。`users`に多対一で紐づく。
-    -   **`bookings` (予約票)**: 予約情報。`bookers`に紐づく。
--   **アカウント作成フロー**:
-    1.  **ゲスト予約時**: `users`に`is_guest=true`の「仮マスターアカウント」を作成し、`bookers`と`bookings`を紐付ける。
-    2.  **会員登録（SNSログイン）時**: `users`に`is_guest=false`の「正規マスターアカウント」を作成する。
--   **顧客統合（名寄せ）フロー**:
-    -   店舗スタッフは、ゲスト予約の`bookers`が指す`user_id`を、正規マスターアカウントの`user_id`に更新できる。
-    -   これにより、`bookings`レコードを変更せずに予約履歴を統合する。
--   **予約履歴の表示ロジック**:
-    -   **店舗側**: `user_id`に紐づく全ての`bookers`を辿り、全予約を表示。
-    -   **ユーザー側**: `user_id`に紐づく`bookers`を辿り、`type='login'`の予約のみを表示。
+ゲスト予約と会員登録ユーザーを柔軟に紐付けるため、「マスターアカウント (`users`)」「来店カード (`bookers`)」「予約票 (`bookings`)」の3層モデルを採用する。これにより、予約情報を変更することなく顧客の名寄せ（統合）を可能にする。
 
 ### 5.2. データ削除方針
-
-本システムでは、ユーザーの退会やメニューの廃止など、マスターデータの物理削除が行われることを前提として設計する。
-
--   **参照整合性の担保**:
-    1.  **モデルイベントの利用**: Laravelの`deleting`または`deleted`イベントでマスターレコードの削除を検知する。
-    2.  **関連IDのNULL化**: 削除イベント後、`bookings`テーブルの関連ID（`menu_id`, `staff_id`など）を自動的に`NULL`に更新する。
-
-これにより、個人情報との関連を断ち切りつつ、予約記録の匿名性とスナップショットとしての独立性を担保する。
+ユーザー退会やメニュー廃止など、マスターデータは **物理削除** を前提とする。削除時はモデルイベントを利用して関連する予約情報 (`bookings`) の外部キーを `NULL` に更新し、参照整合性とデータの匿名性を担保する。
 
 ---
 
 ## 6. API 設計方針
 
-### 6.1. Booker（予約者向け）
+各ロール（Booker, Staff, Owner, Admin）に応じたエンドポイントを定義する。
 
-| 機能           | Path                                            |
-| -------------- | ----------------------------------------------- |
-| 予約一覧       | `/shops/{shop_slug}/bookings`                     |
-| 予約作成       | `/shops/{shop_slug}/bookings/new`                 |
-| 予約詳細       | `/shops/{shop_slug}/bookings/{booking_id}`        |
-| 予約変更       | `/shops/{shop_slug}/bookings/{booking_id}/edit`   |
-| 予約キャンセル | `/shops/{shop_slug}/bookings/{booking_id}/cancel` |
+### 6.1. Booker（予約者向け）
+-   `/shops/{shop_slug}/bookings` (一覧, 作成, 詳細, 変更, キャンセル)
 
 ### 6.2. Staff（店舗スタッフ向け）
-
-| 機能           | Path                                           |
-| -------------- | ---------------------------------------------- |
-| ダッシュボード | `/shops/{shop_slug}/staff/dashboard`             |
-| 予約一覧       | `/shops/{shop_slug}/staff/bookings`              |
-| 予約作成       | `/shops/{shop_slug}/staff/bookings/new`          |
-| 予約詳細       | `/shops/{shop_slug}/staff/bookings/{booking_id}` |
-| 予約可能枠管理 | `/shops/{shop_slug}/staff/schedules`             |
+-   `/shops/{shop_slug}/staff/...` (ダッシュボード, 予約管理, シフト管理)
 
 ### 6.3. Owner（店舗オーナー向け）
-
-| 機能           | Path                                           |
-| -------------- | ---------------------------------------------- |
-| ダッシュボード | `/owner/dashboard`                             |
-| 店舗一覧       | `/owner/shops`                                 |
-| 店舗詳細       | `/owner/shops/{shop_slug}`                       |
-| スタッフ管理   | `/owner/shops/{shop_slug}/staff`                 |
-| スタッフ編集   | `/owner/shops/{shop_slug}/staff/{staff_id}/edit` |
-| 契約管理       | `/owner/contracts`                             |
+-   `/owner/...` (ダッシュボード, 店舗管理, スタッフ管理, 契約管理)
 
 ### 6.4. Admin（全体管理者向け）
-
-| 機能         | Path                             |
-| ------------ | -------------------------------- |
-| オーナー管理 | `/admin/owners`                  |
-| オーナー詳細 | `/admin/owners/{owner_id}`       |
-| 契約管理     | `/admin/contracts/{contract_id}` |
+-   `/admin/...` (オーナー管理, 契約管理)
 
 ---
 
 ## 7. ディレクトリ構成
 
--   `app/Http/Controllers/Booker/`
--   `app/Http/Controllers/Staff/`
--   `app/Http/Controllers/Owner/`
--   `app/Http/Controllers/Admin/`
--   `app/Services/` ← 共通ロジック
--   `app/Policies/` ← 認可制御
--   `resources/views/booker/`
--   `resources/views/staff/`
--   `resources/views/owner/`
--   `resources/views/admin/`
+-   `app/Http/Controllers/{Role}/`
+-   `app/Services/`
+-   `app/Policies/`
+-   `resources/views/{role}/`
