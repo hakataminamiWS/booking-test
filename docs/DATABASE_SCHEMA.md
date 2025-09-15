@@ -100,7 +100,7 @@
 | `booking_deadline_minutes`      | `integer`      | `Not NULL`, `Default: 0`             | 店舗の基本予約締め切り（分単位）。0 は直前まで可。                                                        |
 | `booking_confirmation_type`     | `varchar(255)` | `Not NULL`, `Default: 'automatic'`   | 予約承認方法 (`automatic` or `manual`)                                                                    |
 | `status`                        | `varchar(255)` | `Not NULL`                           | 店舗ステータス (例: 'active', 'inactive', 'deleting')                                                     |
-| `timezone`                      | `varchar(255)` | `Not NULL`, `Default: 'Asia/Tokyo'`  | **[将来拡張用]** 店舗のタイムゾーン。現在はデフォルト値のまま利用し、機能開発が必要になった際に使用する。 |
+| `timezone`                      | `varchar(255)` | `Not NULL`, `Default: 'Asia/Tokyo'`  | 店舗のタイムゾーン。予約可能時間の計算など、店舗のローカル時間に依存する処理の基準として利用される。現在は日本の店舗を想定しているため、デフォルト値は `'Asia/Tokyo'` となっている。 |
 | `created_at`                    | `timestamp`    |                                      | 作成日時                                                                                                  |
 | `updated_at`                    | `timestamp`    |                                      | 更新日時                                                                                                  |
 
