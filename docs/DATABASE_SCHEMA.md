@@ -89,20 +89,20 @@
 
 店舗の基本情報を管理します。
 
-| カラム名                        | データ型       | 制約                                 | 説明                                                                                                      |
-| :------------------------------ | :------------- | :----------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `id`                            | `bigint`       | `PK`, `AI`                           | 主キー                                                                                                    |
-| `owner_user_id`                 | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | この店舗を所有するオーナーのユーザー ID                                                                   |
-| `slug`                          | `varchar(255)` | `Not NULL`, `Unique`                 | URL で利用する、URL セーフな一意の識別子 (例: 'hakata-minami-store')                                      |
-| `name`                          | `varchar(255)` | `Not NULL`                           | 店舗名                                                                                                    |
-| `time_slot_interval`            | `integer`      | `Not NULL`, `Default: 30`            | 予約枠の表示単位（分）                                                                                    |
-| `cancellation_deadline_minutes` | `integer`      | `Not NULL`, `Default: 1440`          | キャンセル可能な期限（分単位）                                                                            |
-| `booking_deadline_minutes`      | `integer`      | `Not NULL`, `Default: 0`             | 店舗の基本予約締め切り（分単位）。0 は直前まで可。                                                        |
-| `booking_confirmation_type`     | `varchar(255)` | `Not NULL`, `Default: 'automatic'`   | 予約承認方法 (`automatic` or `manual`)                                                                    |
-| `status`                        | `varchar(255)` | `Not NULL`                           | 店舗ステータス (例: 'active', 'inactive', 'deleting')                                                     |
+| カラム名                        | データ型       | 制約                                 | 説明                                                                                                                                                                                 |
+| :------------------------------ | :------------- | :----------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                            | `bigint`       | `PK`, `AI`                           | 主キー                                                                                                                                                                               |
+| `owner_user_id`                 | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | この店舗を所有するオーナーのユーザー ID                                                                                                                                              |
+| `slug`                          | `varchar(255)` | `Not NULL`, `Unique`                 | URL で利用する、URL セーフな一意の識別子 (例: 'hakata-minami-store')                                                                                                                 |
+| `name`                          | `varchar(255)` | `Not NULL`                           | 店舗名                                                                                                                                                                               |
+| `time_slot_interval`            | `integer`      | `Not NULL`, `Default: 30`            | 予約枠の表示単位（分）                                                                                                                                                               |
+| `cancellation_deadline_minutes` | `integer`      | `Not NULL`, `Default: 1440`          | キャンセル可能な期限（分単位）                                                                                                                                                       |
+| `booking_deadline_minutes`      | `integer`      | `Not NULL`, `Default: 0`             | 店舗の基本予約締め切り（分単位）。0 は直前まで可。                                                                                                                                   |
+| `booking_confirmation_type`     | `varchar(255)` | `Not NULL`, `Default: 'automatic'`   | 予約承認方法 (`automatic` or `manual`)                                                                                                                                               |
+| `status`                        | `varchar(255)` | `Not NULL`                           | 店舗ステータス (例: 'active', 'inactive', 'deleting')                                                                                                                                |
 | `timezone`                      | `varchar(255)` | `Not NULL`, `Default: 'Asia/Tokyo'`  | 店舗のタイムゾーン。予約可能時間の計算など、店舗のローカル時間に依存する処理の基準として利用される。現在は日本の店舗を想定しているため、デフォルト値は `'Asia/Tokyo'` となっている。 |
-| `created_at`                    | `timestamp`    |                                      | 作成日時                                                                                                  |
-| `updated_at`                    | `timestamp`    |                                      | 更新日時                                                                                                  |
+| `created_at`                    | `timestamp`    |                                      | 作成日時                                                                                                                                                                             |
+| `updated_at`                    | `timestamp`    |                                      | 更新日時                                                                                                                                                                             |
 
 ### `shop_regular_holidays`
 
@@ -316,6 +316,7 @@
 | :----------- | :------------- | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
 | `id`         | `bigint`       | `PK`, `AI`                           | 主キー                                                                                                                                      |
 | `user_id`    | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | オーナーのユーザー ID                                                                                                                       |
+| `name`       | `text`         | `Not NULL`                           | 管理者が識別するための契約名 (例: 「株式会社〇〇様 スタンダードプラン」)                                                                   |
 | `max_shops`  | `integer`      | `Not NULL`, `Default: 1`             | 契約上、作成可能な店舗の上限数                                                                                                              |
 | `status`     | `varchar(255)` | `Not NULL`                           | 契約ステータス (例: 'active', 'expired')                                                                                                    |
 | `start_date` | `date`         | `Not NULL`                           | 契約開始日。**[注]** 現在は情報としての記録のみ。この日付に到達してもステータスは自動変更されない。                                         |

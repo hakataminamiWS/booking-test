@@ -53,5 +53,9 @@ class TestUserSeeder extends Seeder
             'contact_email' => 'staff@example.com',
         ]);
         $staffUser->staffShops()->attach($testShop->id);
+
+        // --- 動作確認用のダミーユーザーを60人作成 ---
+        User::factory()->count(60)->create();
+        $this->command->info("Created 60 dummy users for testing.");
     }
 }

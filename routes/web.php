@@ -48,12 +48,8 @@ Route::prefix('owner')->name('owner.')->group(function () {
 
 // 4. Admin（全体管理者向け）
 Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
-    Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->only(['show']);
-    Route::post('users/{user}/roles', [App\Http\Controllers\Admin\UsersController::class, 'addRole'])->name('users.roles.add');
-    Route::delete('users/{user}/roles', [App\Http\Controllers\Admin\UsersController::class, 'removeRole'])->name('users.roles.remove');
+    Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->only(['index', 'show', 'edit', 'update']);
 
-    Route::get('owners', [App\Http\Controllers\Admin\OwnersController::class, 'index'])->name('owners.index');
-    Route::get('owners/{owner_id}', [App\Http\Controllers\Admin\OwnersController::class, 'show'])->name('owners.show');
     Route::resource('contracts', App\Http\Controllers\Admin\ContractsController::class)->except([]);
 
     // 店舗管理のルート
@@ -82,6 +78,7 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/shops/{shop}/menus', [App\Http\Controllers\Api\MenuController::class, 'index'])->name('shops.menus.index');
     Route::get('/shops/{shop}/staff', [App\Http\Controllers\Api\StaffController::class, 'index'])->name('shops.staff.index');
     Route::get('/shops/{shop}/available-slots', [App\Http\Controllers\Api\AvailabilityController::class, 'index'])->name('shops.available-slots.index');
+    Route::get('/admin/users', [App\Http\Controllers\Api\Admin\UserController::class, 'index'])->name('admin.users.index');
 });
 
 // Debug routes

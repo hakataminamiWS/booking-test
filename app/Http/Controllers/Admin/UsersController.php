@@ -9,47 +9,80 @@ use Illuminate\Http\Request;
 
 class UsersController extends Controller
 {
-    // ... (existing code) ...
+    private const USERS_PER_PAGE = 20;
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->paginate(20);
-        return view('admin.users.index', compact('users'));
+        $query = User::with('owner')->latest();
+
+        $publicId = $request->input('public_id');
+        if ($publicId) {
+            $query->where('public_id', 'like', "%{$publicId}%");
+        }
+
+        $paginator = $query->paginate(self::USERS_PER_PAGE)->withQueryString();
+
+        $users = $paginator->getCollection()->map(function ($user) {
+            $user->is_owner = $user->owner()->exists();
+            return $user;
+        });
+
+        $paginator->setCollection($users);
+
+        return view('admin.users.index', [
+            'users' => $paginator,
+            'public_id' => $publicId,
+        ]);
     }
 
     public function show(User $user)
     {
+        $user->load('owner.contract');
+
+        $isOwner = $user->owner()->exists();
+        $contract = $isOwner ? $user->owner->contract : null;
+        $hasContract = (bool)$contract;
+
         return view('admin.users.show', [
             'user' => $user,
+            'is_owner' => $isOwner,
+            'has_contract' => $hasContract,
+            'contract' => $contract,
+        ]);
+    }
+
+    public function edit(User $user)
+    {
+        return view('admin.users.edit', [
+            'user' => $user,
             'is_owner' => $user->owner()->exists(),
-            'has_contract' => $user->contract()->exists(),
         ]);
     }
 
-    public function addRole(Request $request, User $user)
+    public function update(Request $request, User $user)
     {
-        // すでにオーナーの場合は何もしない
-        if ($user->owner) {
-            return redirect()->route('admin.users.show', $user)->with('error', 'このユーザーは既にオーナーです。');
+        $isOwner = $request->boolean('is_owner');
+
+        if ($isOwner) {
+            // オーナーにする処理
+            if (!$user->owner()->exists()) {
+                Owner::create([
+                    'user_id' => $user->id,
+                    'name' => $user->name ?? $user->public_id, // nameがなければpublic_idを使う
+                ]);
+                return redirect()->route('admin.users.show', $user)->with('success', 'ユーザーをオーナーに設定しました。');
+            }
+        } else {
+            // オーナーから外す処理
+            if ($user->owner()->exists()) {
+                $user->owner->delete();
+                return redirect()->route('admin.users.show', $user)->with('success', 'オーナーの役割を解除しました。');
+            }
         }
 
-        Owner::create([
-            'user_id' => $user->id,
-            'name' => $user->public_id,
-        ]);
-
-        return redirect()->route('admin.users.show', $user)->with('success', 'ユーザーをオーナーに設定しました。');
+        return redirect()->route('admin.users.show', $user)->with('info', '変更はありませんでした。');
     }
 
-    public function removeRole(Request $request, User $user)
-    {
-        if ($user->owner) {
-            $user->owner->delete();
-            return redirect()->route('admin.users.show', $user)->with('success', 'オーナーの役割を解除しました。');
-        }
-
-        return redirect()->route('admin.users.show', $user)->with('error', 'このユーザーはオーナーではありません。');
-    }
 
     // ... (existing code) ...
 }

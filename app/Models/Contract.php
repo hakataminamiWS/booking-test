@@ -12,6 +12,7 @@ class Contract extends Model
 
     protected $fillable = [
         'user_id',
+        'name',
         'max_shops',
         'status',
         'start_date',

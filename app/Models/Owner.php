@@ -19,4 +19,9 @@ class Owner extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function contract(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Contract::class, 'user_id', 'user_id');
+    }
 }

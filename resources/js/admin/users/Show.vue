@@ -1,70 +1,98 @@
 <template>
-    <v-card v-if="user" class="mx-auto my-5" max-width="600">
-        <v-card-title>ユーザー詳細</v-card-title>
-        <v-list>
-            <v-list-item>
-                <v-list-item-title>ID</v-list-item-title>
-                <v-list-item-subtitle>{{ user.id }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item>
-                <v-list-item-title>公開ID</v-list-item-title>
-                <v-list-item-subtitle>{{ user.public_id }}</v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item>
-                <v-list-item-title>ゲスト</v-list-item-title>
-                <v-list-item-subtitle>{{ user.is_guest ? 'はい' : 'いいえ' }}</v-list-item-subtitle>
-            </v-list-item>
+  <v-container>
+    <a href="/admin/users" class="text-decoration-none d-block mb-4">&lt; オーナー権限設定一覧へ戻る</a>
+    <v-card>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span>オーナー権限・契約詳細</span>
+        <v-btn :href="`/admin/users/${user.public_id}/edit`" color="primary">
+          権限を編集する
+        </v-btn>
+      </v-card-title>
+      <v-card-text>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>Public ID</v-list-item-title>
+              <v-list-item-subtitle>{{ user.public_id }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>役割</v-list-item-title>
+              <v-list-item-subtitle>
+                <v-chip :color="isOwner ? 'primary' : ''" dark>
+                  {{ isOwner ? 'Owner' : 'User' }}
+                </v-chip>
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>登録日時</v-list-item-title>
+              <v-list-item-subtitle>{{ user.created_at }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
 
-        <v-divider></v-divider>
+        <v-divider class="my-4"></v-divider>
 
-        <v-card-title>役割管理</v-card-title>
-        <div class="pa-4">
-            <div v-if="isOwner">
-                <div class="d-flex align-center">
-                    <span class="mr-2">現在の役割:</span>
-                    <v-chip color="success" variant="elevated">オーナー</v-chip>
-                </div>
-
-                <div v-if="!hasContract" class="mt-4">
-                    <v-alert type="info" variant="tonal" class="mb-4">
-                        このオーナーにはまだ契約がありません。
-                    </v-alert>
-                    <v-btn :href="createContractUrl" color="primary">契約を新規作成</v-btn>
-                </div>
-                <div v-else class="mt-4">
-                     <v-alert type="success" variant="tonal">
-                        契約済みです。
-                    </v-alert>
-                </div>
-
-                <hr class="my-4">
-
-                <form :action="removeActionUrl" method="POST">
-                    <input type="hidden" name="_token" :value="csrfToken">
-                    <input type="hidden" name="_method" value="DELETE">
-                    <v-btn type="submit" color="error">オーナーから外す</v-btn>
-                </form>
-            </div>
-            <div v-else>
-                <p>現在の役割: オーナーではありません</p>
-                <form :action="addActionUrl" method="POST" class="mt-4">
-                    <input type="hidden" name="_token" :value="csrfToken">
-                    <v-btn type="submit" color="primary">オーナーに設定</v-btn>
-                </form>
-            </div>
+        <div class="d-flex justify-space-between align-center mb-2">
+          <h3 class="text-h6">契約情報</h3>
+          <v-btn v-if="isOwner && hasContract" :href="`/admin/contracts/${contract.id}/edit`">契約を編集する</v-btn>
         </div>
+        
+        <div v-if="isOwner">
+          <div v-if="hasContract">
+            <v-list dense>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>契約ステータス</v-list-item-title>
+                  <v-list-item-subtitle>{{ contract.status }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>店舗作成上限</v-list-item-title>
+                  <v-list-item-subtitle>{{ contract.max_shops }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </div>
+          <div v-else>
+            <p>このオーナーはまだ契約がありません。</p>
+            <v-btn :href="`/admin/contracts/create?user_public_id=${user.public_id}`" color="primary">契約を作成する</v-btn>
+          </div>
+        </div>
+        <div v-else>
+          <p>オーナーではないため、契約情報はありません。</p>
+        </div>
+
+      </v-card-text>
     </v-card>
+  </v-container>
 </template>
 
-<script setup lang="ts">
-defineProps({
-    user: Object,
-    isOwner: Boolean,
-    hasContract: Boolean,
-    addActionUrl: String,
-    removeActionUrl: String,
-    createContractUrl: String,
-    csrfToken: String,
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  props: {
+    user: {
+      type: Object,
+      required: true,
+    },
+    isOwner: {
+      type: Boolean,
+      required: true,
+    },
+    hasContract: {
+      type: Boolean,
+      required: true,
+    },
+    contract: {
+      type: Object,
+      default: null,
+    },
+  },
 });
 </script>

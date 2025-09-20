@@ -31,6 +31,7 @@ class WorkflowTest extends TestCase
         // --- ステップ2: 管理者による契約作成 ---
         Contract::create([
             'user_id' => $ownerCandidate->id,
+            'name' => 'Test Contract for ' . $ownerCandidate->id,
             'max_shops' => 1,
             'status' => 'active',
             'start_date' => today(),
