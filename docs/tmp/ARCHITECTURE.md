@@ -62,7 +62,7 @@
 1.  **初回アクセス時 (またはブラウザバック時)**
     -   ユーザーが `GET /admin/users?search=...` のようなURLにアクセスします。
     -   Laravelのルーターは、一覧表示用のコントローラメソッドを呼び出します。
-    -   コントローラは、URLのクエリパラメータ (`search`など) を読み取り、DBから**フィルタリング済みのデータ**を取得します。
+    -   コントローラは、URLのクエリパラメータ (`search`, `sort_by`など) を読み取り、DBから**フィルタリングおよびソート済みのデータ**を取得します。これにより、クライアントサイドで最初にAPIを呼び出した際の結果と、サーバーの初回描画とでデータの整合性が取れ、画面のちらつきを防ぎます。
     -   コントローラは、取得したデータを`props`としてBladeテンプレートに渡し、完全なHTMLをレンダリングして返します。
 
 2.  **ページ読み込み後のフィルタ操作時**
@@ -85,7 +85,7 @@
 -   **Policyによる認可**: 個別のデータに対する操作権限を厳密に検証し、不正アクセスを防ぐ。
 
 #### 関連ドキュメント
--   **認可設計**: [AUTHORIZATION_SPEC.md](./AUTHORIZATION_SPEC.md)
+-   （未確定）**認可設計**: [AUTHORIZATION_SPEC.md](./AUTHORIZATION_SPEC.md)
 
 ---
 
@@ -99,8 +99,8 @@
 
 #### 関連ドキュメント
 -   **データベース設計**: [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)
--   **空き時間計算ロジック**: [AVAILABILITY_CALCULATION_LOGIC.md](./AVAILABILITY_CALCULATION_LOGIC.md)
--   **手動予約時のバリデーション**: [MANUAL_BOOKING_VALIDATION_LOGIC.md](./MANUAL_BOOKING_VALIDATION_LOGIC.md)
+-   （未確定）**空き時間計算ロジック**: [AVAILABILITY_CALCULATION_LOGIC.md](./AVAILABILITY_CALCULATION_LOGIC.md)
+-   （未確定）**手動予約時のバリデーション**: [MANUAL_BOOKING_VALIDATION_LOGIC.md](./MANUAL_BOOKING_VALIDATION_LOGIC.md)
 
 ---
 
@@ -108,29 +108,29 @@
 
 各ロール（Booker, Staff, Owner, Admin）に応じたエンドポイントを定義する。
 
--   **Booker（予約者向け）**: `/shops/{shop_slug}/bookings` (一覧, 作成, 詳細, 変更, キャンセル)
--   **Staff（店舗スタッフ向け）**: `/shops/{shop_slug}/staff/...` (ダッシュボード, 予約管理, シフト管理)
--   **Owner（店舗オーナー向け）**: `/owner/...` (ダッシュボード, 店舗管理, スタッフ管理, 契約管理)
+-   （未確定）**Booker（予約者向け）**: `/shops/{shop_slug}/bookings` (一覧, 作成, 詳細, 変更, キャンセル)
+-   （未確定）**Staff（店舗スタッフ向け）**: `/shops/{shop_slug}/staff/...` (ダッシュボード, 予約管理, シフト管理)
+-   （未確定）**Owner（店舗オーナー向け）**: `/owner/...` (ダッシュボード, 店舗管理, スタッフ管理, 契約管理)
 -   **Admin（全体管理者向け）**: `/admin/...` (オーナー管理, 契約管理)
 
 #### 関連ドキュメント
 
 -   **全体**
-    -   予約フォーム仕様: [BOOKING_FORM_SPEC.md](./BOOKING_FORM_SPEC.md)
-    -   予約管理機能: [RESERVATION_MANAGEMENT_SPEC.md](./RESERVATION_MANAGEMENT_SPEC.md)
-    -   店舗管理機能: [SHOP_MANAGEMENT_SPEC.md](./SHOP_MANAGEMENT_SPEC.md)
+    -   （未確定）予約フォーム仕様: [BOOKING_FORM_SPEC.md](./BOOKING_FORM_SPEC.md)
+    -   （未確定）予約管理機能: [RESERVATION_MANAGEMENT_SPEC.md](./RESERVATION_MANAGEMENT_SPEC.md)
+    -   （未確定）店舗管理機能: [SHOP_MANAGEMENT_SPEC.md](./SHOP_MANAGEMENT_SPEC.md)
 -   **管理者向け (Admin)**
-    -   機能仕様: [FEATURES_ADMIN_SPEC.md](./FEATURES_ADMIN_SPEC.md)
+    -   （未確定）機能仕様: [FEATURES_ADMIN_SPEC.md](./FEATURES_ADMIN_SPEC.md)
 -   **オーナー向け (Owner)**
-    -   機能仕様: [FEATURES_OWNER_SPEC.md](./FEATURES_OWNER_SPEC.md)
-    -   オンボーディングと契約: [OWNER_ONBOARDING_AND_CONTRACT_SPEC.md](./OWNER_ONBOARDING_AND_CONTRACT_SPEC.md)
+    -   （未確定）機能仕様: [FEATURES_OWNER_SPEC.md](./FEATURES_OWNER_SPEC.md)
+    -   （未確定）オンボーディングと契約: [OWNER_ONBOARDING_AND_CONTRACT_SPEC.md](./OWNER_ONBOARDING_AND_CONTRACT_SPEC.md)
 -   **スタッフ向け (Staff)**
-    -   機能仕様: [FEATURES_STAFF_SPEC.md](./FEATURES_STAFF_SPEC.md)
-    -   予約管理機能: [STAFF_RESERVATION_MANAGEMENT_SPEC.md](./STAFF_RESERVATION_MANAGEMENT_SPEC.md)
+    -   （未確定）機能仕様: [FEATURES_STAFF_SPEC.md](./FEATURES_STAFF_SPEC.md)
+    -   （未確定）予約管理機能: [STAFF_RESERVATION_MANAGEMENT_SPEC.md](./STAFF_RESERVATION_MANAGEMENT_SPEC.md)
 -   **予約者向け (Booker)**
-    -   機能仕様: [FEATURES_BOOKER_SPEC.md](./FEATURES_BOOKER_SPEC.md)
+    -   （未確定）機能仕様: [FEATURES_BOOKER_SPEC.md](./FEATURES_BOOKER_SPEC.md)
 -   **ゲスト向け (Guest)**
-    -   機能仕様: [FEATURES_GUEST_SPEC.md](./FEATURES_GUEST_SPEC.md)
+    -   （未確定）機能仕様: [FEATURES_GUEST_SPEC.md](./FEATURES_GUEST_SPEC.md)
 
 ---
 
@@ -146,6 +146,6 @@
 ## 7. 開発・テスト関連
 
 #### 関連ドキュメント
--   **テストガイド**: [TESTING_GUIDE.md](./TESTING_GUIDE.md)
--   **ワークフローテスト**: [WORKFLOW_TESTS.md](./WORKFLOW_TESTS.md)
--   **データセットアップ仕様**: [DATA_SETUP_SPEC.md](./DATA_SETUP_SPEC.md)
+-   （未確定）**テストガイド**: [TESTING_GUIDE.md](./TESTING_GUIDE.md)
+-   （未確定）**ワークフローテスト**: [WORKFLOW_TESTS.md](./WORKFLOW_TESTS.md)
+-   （未確定）**データセットアップ仕様**: [DATA_SETUP_SPEC.md](./DATA_SETUP_SPEC.md)
