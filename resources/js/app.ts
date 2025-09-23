@@ -14,6 +14,8 @@ import AdminContractsCreate from "@/admin/contracts/Create.vue";
 import AdminContractsShow from "@/admin/contracts/Show.vue";
 import AdminContractsEdit from "@/admin/contracts/Edit.vue";
 import AdminContractsIndex from "@/admin/contracts/Index.vue";
+import OwnerContractApply from "@/owner/contract/Apply.vue";
+import AdminContractApplicationsIndex from "@/admin/contract_applications/Index.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
@@ -63,6 +65,14 @@ if (appElement) {
             break;
         case "admin-contracts-index":
             component = AdminContractsIndex;
+            mountProps = JSON.parse(props.props || '{}');
+            break;
+        case "owner-contract-apply":
+            component = OwnerContractApply;
+            mountProps = JSON.parse(props.props || '{}');
+            break;
+        case "admin-contract-applications-index":
+            component = AdminContractApplicationsIndex;
             mountProps = JSON.parse(props.props || '{}');
             break;
         // case 'booker-bookings-create':

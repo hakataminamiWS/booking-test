@@ -13,11 +13,19 @@ class UsersController extends Controller
 
     public function index(Request $request)
     {
-        $query = User::with('owner')->latest();
+        $query = User::with('owner');
 
         $publicId = $request->input('public_id');
         if ($publicId) {
             $query->where('public_id', 'like', "%{$publicId}%");
+        }
+
+        // Sorting
+        if ($request->filled('sort_by')) {
+            $order = $request->input('sort_order', 'asc');
+            $query->orderBy($request->input('sort_by'), $order);
+        } else {
+            $query->latest(); // Default sort
         }
 
         $paginator = $query->paginate(self::USERS_PER_PAGE)->withQueryString();

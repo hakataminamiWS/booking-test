@@ -1,1 +1,4 @@
 /* VuetifyのカスタムCSSがあればここに */
+.v-data-table-headers--mobile {
+    display: none;
+}

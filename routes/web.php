@@ -49,6 +49,7 @@ Route::prefix('owner')->name('owner.')->group(function () {
 // 4. Admin（全体管理者向け）
 Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->only(['index', 'show', 'edit', 'update']);
+    Route::resource('contract-applications', App\Http\Controllers\Admin\ContractApplicationController::class)->only(['index']);
 
     Route::resource('contracts', App\Http\Controllers\Admin\ContractsController::class)->except([]);
 
@@ -79,9 +80,15 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/shops/{shop}/staff', [App\Http\Controllers\Api\StaffController::class, 'index'])->name('shops.staff.index');
     Route::get('/shops/{shop}/available-slots', [App\Http\Controllers\Api\AvailabilityController::class, 'index'])->name('shops.available-slots.index');
     Route::get('/admin/users', [App\Http\Controllers\Api\Admin\UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/admin/contract-applications', [App\Http\Controllers\Api\Admin\ContractApplicationController::class, 'index'])->name('admin.contract-applications.index');
 });
 
 // Debug routes
 if (app()->environment(['local', 'staging'])) {
     Route::get('/login-as/{user}', [\App\Http\Controllers\DebugController::class, 'loginAs'])->name('debug.login-as');
 }
+
+Route::middleware('auth')->group(function () {
+    Route::get('/apply-contract', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'create'])->name('contract.application.create');
+    Route::post('/apply-contract', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'store'])->name('contract.application.store');
+});

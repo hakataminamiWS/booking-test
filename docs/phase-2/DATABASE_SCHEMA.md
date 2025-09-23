@@ -99,7 +99,7 @@
 | `cancellation_deadline_minutes` | `integer`      | `Not NULL`, `Default: 1440`          | キャンセル可能な期限（分単位）                                                                                                                                                       |
 | `booking_deadline_minutes`      | `integer`      | `Not NULL`, `Default: 0`             | 店舗の基本予約締め切り（分単位）。0 は直前まで可。                                                                                                                                   |
 | `booking_confirmation_type`     | `varchar(255)` | `Not NULL`, `Default: 'automatic'`   | 予約承認方法 (`automatic` or `manual`)                                                                                                                                               |
-| `status`                        | `varchar(255)` | `Not NULL`                           | 店舗ステータス (例: 'active', 'inactive', 'deleting')                                                                                                                                |
+| `accepts_online_bookings`       | `boolean`      | `Not NULL`, `Default: true`          | 顧客からのオンライン予約を受け付けるかどうかのフラグ。`false`の場合、顧客向けの予約フォームは無効化されるが、スタッフによる管理画面からの操作は影響を受けない。                      |
 | `timezone`                      | `varchar(255)` | `Not NULL`, `Default: 'Asia/Tokyo'`  | 店舗のタイムゾーン。予約可能時間の計算など、店舗のローカル時間に依存する処理の基準として利用される。現在は日本の店舗を想定しているため、デフォルト値は `'Asia/Tokyo'` となっている。 |
 | `created_at`                    | `timestamp`    |                                      | 作成日時                                                                                                                                                                             |
 | `updated_at`                    | `timestamp`    |                                      | 更新日時                                                                                                                                                                             |
@@ -308,18 +308,32 @@
 | `updated_at`        | `timestamp`                                               |                                      | 更新日時                             |
 | **ユニーク制約**    | (`staff_user_id`, `workable_start_at`, `workable_end_at`) |                                      | 同一スタッフ、同時間の重複登録を防止 |
 
+### `contract_applications`
+
+オーナーからの契約申し込み情報を管理します。管理者はこのテーブルのレコードを見て、契約を作成するかどうかを判断します。
+
+| カラム名        | データ型       | 制約                                 | 説明                                                   |
+| :-------------- | :------------- | :----------------------------------- | :----------------------------------------------------- |
+| `id`            | `bigint`       | `PK`, `AI`                           | 主キー                                                 |
+| `user_id`       | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | 申し込みを行ったユーザーの ID                          |
+| `customer_name` | `varchar(255)` | `Not NULL`                           | 申し込み時に入力されたお客様名称                       |
+| `status`        | `varchar(255)` | `Not NULL`, `Default: 'pending'`     | 申し込みの状態 (例: `pending`, `approved`, `rejected`) |
+| `created_at`    | `timestamp`    |                                      | 作成日時                                               |
+| `updated_at`    | `timestamp`    |                                      | 更新日時                                               |
+
 ### `contracts`
 
 店舗オーナーとシステムとの契約情報を管理します。契約は店舗ではなくオーナーに紐付きます。
 
-| カラム名     | データ型       | 制約                                 | 説明                                                                                                                                        |
-| :----------- | :------------- | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
-| `id`         | `bigint`       | `PK`, `AI`                           | 主キー                                                                                                                                      |
-| `user_id`    | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | オーナーのユーザー ID                                                                                                                       |
-| `name`       | `text`         | `Not NULL`                           | 管理者が識別するための契約名 (例: 「株式会社〇〇様 スタンダードプラン」)                                                                    |
-| `max_shops`  | `integer`      | `Not NULL`, `Default: 1`             | 契約上、作成可能な店舗の上限数                                                                                                              |
-| `status`     | `varchar(255)` | `Not NULL`                           | 契約ステータス (例: 'active', 'expired')                                                                                                    |
-| `start_date` | `date`         | `Not NULL`                           | 契約開始日。**[注]** 現在は情報としての記録のみ。この日付に到達してもステータスは自動変更されない。                                         |
-| `end_date`   | `date`         | `Not NULL`                           | 契約終了日。**[注]** 現在は情報としての記録のみ。この日付に到達してもステータスは自動変更されない。厳密な期間管理が必要な場合は改修が必要。 |
-| `created_at` | `timestamp`    |                                      | 作成日時                                                                                                                                    |
-| `updated_at` | `timestamp`    |                                      | 更新日時                                                                                                                                    |
+| カラム名         | データ型       | 制約                                 | 説明                                                                                                                                        |
+| :--------------- | :------------- | :----------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------ |
+| `id`             | `bigint`       | `PK`, `AI`                           | 主キー                                                                                                                                      |
+| `user_id`        | `bigint`       | `FK (users.id)`, `onDelete: CASCADE` | オーナーのユーザー ID                                                                                                                       |
+| `name`           | `text`         | `Not NULL`                           | 管理者が識別するための契約名 (例: 「株式会社〇〇様 スタンダードプラン」)                                                                    |
+| `application_id` | `bigint`       |                                      | 契約申し込みとの紐づけ情報（申し込みみふフォーム以外からの申し込みも考慮）                                                                  |
+| `max_shops`      | `integer`      | `Not NULL`, `Default: 1`             | 契約上、作成可能な店舗の上限数                                                                                                              |
+| `status`         | `varchar(255)` | `Not NULL`                           | 契約ステータス ('active', 'expired')                                                                                                        |
+| `start_date`     | `date`         | `Not NULL`                           | 契約開始日。**[注]** 現在は情報としての記録のみ。この日付に到達してもステータスは自動変更されない。                                         |
+| `end_date`       | `date`         | `Not NULL`                           | 契約終了日。**[注]** 現在は情報としての記録のみ。この日付に到達してもステータスは自動変更されない。厳密な期間管理が必要な場合は改修が必要。 |
+| `created_at`     | `timestamp`    |                                      | 作成日時                                                                                                                                    |
+| `updated_at`     | `timestamp`    |                                      | 更新日時                                                                                                                                    |

@@ -46,6 +46,18 @@
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
+                  <v-list-item-title>契約名</v-list-item-title>
+                  <v-list-item-subtitle>{{ contract.name }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>契約期間</v-list-item-title>
+                  <v-list-item-subtitle>{{ contract.start_date }} 〜 {{ contract.end_date }}</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
                   <v-list-item-title>契約ステータス</v-list-item-title>
                   <v-list-item-subtitle>{{ contract.status }}</v-list-item-subtitle>
                 </v-list-item-content>

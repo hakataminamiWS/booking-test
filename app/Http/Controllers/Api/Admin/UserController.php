@@ -8,19 +8,28 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    private const USERS_PER_PAGE = 20;
-
     public function index(Request $request)
     {
-        $query = User::with('owner')->latest();
+        $query = User::with('owner');
 
-        $publicId = $request->input('public_id');
-        if ($publicId) {
-            $query->where('public_id', 'like', "%{$publicId}%");
+        // Filtering
+        if ($request->filled('public_id')) {
+            $query->where('public_id', 'like', '%' . $request->input('public_id') . '%');
         }
 
-        $paginator = $query->paginate(self::USERS_PER_PAGE)->withQueryString();
+        // Sorting
+        if ($request->filled('sort_by')) {
+            $order = $request->input('sort_order', 'asc');
+            $query->orderBy($request->input('sort_by'), $order);
+        } else {
+            $query->latest(); // Default sort
+        }
 
+        // Pagination
+        $perPage = $request->input('per_page', 20);
+        $paginator = $query->paginate($perPage)->withQueryString();
+
+        // Add is_owner attribute
         $users = $paginator->getCollection()->map(function ($user) {
             $user->is_owner = $user->owner()->exists();
             return $user;
