@@ -40,10 +40,7 @@
 -   契約詳細管理画面(`/admin/contracts/{id}/edit`)
 -   オーナー一覧画面(`/admin/owners`)
 -   オーナー詳細画面(`/admin/owners/{public-id}`)
-
-### 未完了タスク（実装順）
-
-    -   オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
+-   オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
 
 ---
 

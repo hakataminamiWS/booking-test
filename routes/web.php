@@ -53,6 +53,9 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::resource('contracts', App\Http\Controllers\Admin\ContractsController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::get('owners', [App\Http\Controllers\Admin\OwnerController::class, 'index'])->name('owners.index');
     Route::get('owners/{public_id}', [App\Http\Controllers\Admin\OwnerController::class, 'show'])->name('owners.show');
+    Route::get('owners/{public_id}/edit', [App\Http\Controllers\Admin\OwnerController::class, 'edit'])->name('owners.edit');
+    Route::put('owners/{public_id}', [App\Http\Controllers\Admin\OwnerController::class, 'update'])->name('owners.update');
+    Route::delete('owners/{public_id}', [App\Http\Controllers\Admin\OwnerController::class, 'destroy'])->name('owners.destroy');
 
     // --- API Routes for Admin ---
     Route::prefix('api')->name('api.')->group(function () {

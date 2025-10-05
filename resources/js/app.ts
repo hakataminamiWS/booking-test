@@ -18,6 +18,7 @@ import OwnerContractApply from "@/owner/contract/Apply.vue";
 import AdminContractApplicationsIndex from "@/admin/contract-applications/Index.vue";
 import AdminOwnersIndex from "@/admin/owners/Index.vue";
 import AdminOwnersShow from "@/admin/owners/Show.vue";
+import AdminOwnersEdit from "@/admin/owners/Edit.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
@@ -73,6 +74,9 @@ if (appElement) {
             break;
         case "admin-owners-show":
             component = AdminOwnersShow;
+            break;
+        case "admin-owners-edit":
+            component = AdminOwnersEdit;
             break;
         // case 'booker-bookings-create':
         //     component = BookerBookingsCreate;
