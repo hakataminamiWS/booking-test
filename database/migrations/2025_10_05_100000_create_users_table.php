@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('contracts', function (Blueprint $table) {
-            $table->text('name')->after('user_id');
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('public_id', 26)->unique();
+            $table->boolean('is_guest')->default(false);
+            $table->timestamps();
         });
     }
 
@@ -21,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('contracts', function (Blueprint $table) {
-            $table->dropColumn('name');
-        });
+        Schema::dropIfExists('users');
     }
 };

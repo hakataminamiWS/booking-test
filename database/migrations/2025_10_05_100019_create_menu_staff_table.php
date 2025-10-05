@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('menu_staff', function (Blueprint $table) {
             $table->id();
-            $table->char('public_id', 26)->unique();
-            $table->boolean('is_guest')->default(false);
+            $table->foreignId('menu_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+
+            $table->unique(['menu_id', 'user_id']);
         });
     }
 
@@ -25,10 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! App::environment(['dev', 'staging'])) {
-            throw new \Exception('This migration can only be rolled back in dev or staging environments.');
-        }
-
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('menu_staff');
     }
 };

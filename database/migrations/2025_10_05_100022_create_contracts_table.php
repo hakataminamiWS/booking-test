@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\App;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -14,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('application_id')->nullable()->constrained('contract_applications')->onDelete('set null');
+            $table->string('name');
             $table->integer('max_shops')->default(1);
             $table->string('status');
             $table->date('start_date');
@@ -29,10 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! App::environment(['dev', 'staging'])) {
-            throw new \Exception('This migration can only be rolled back in dev or staging environments.');
-        }
-
         Schema::dropIfExists('contracts');
     }
 };

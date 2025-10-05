@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\App;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
@@ -12,6 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::create('cache', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->mediumText('value');
+            $table->integer('expiration');
+        });
+
+        Schema::create('cache_locks', function (Blueprint $table) {
+            $table->string('key')->primary();
+            $table->string('owner');
+            $table->integer('expiration');
+        });
+
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -27,10 +38,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! App::environment(['dev', 'staging'])) {
-            throw new \Exception('This migration can only be rolled back in dev or staging environments.');
-        }
-
+        Schema::dropIfExists('cache');
+        Schema::dropIfExists('cache_locks');
         Schema::dropIfExists('sessions');
     }
 };

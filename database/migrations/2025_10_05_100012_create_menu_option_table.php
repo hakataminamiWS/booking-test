@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('shops', function (Blueprint $table) {
-            $table->string('timezone')->default('Asia/Tokyo')->after('status');
+        Schema::create('menu_option', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('menu_id')->constrained()->onDelete('cascade');
+            $table->foreignId('option_id')->constrained()->onDelete('cascade');
         });
     }
 
@@ -21,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('shops', function (Blueprint $table) {
-            $table->dropColumn('timezone');
-        });
+        Schema::dropIfExists('menu_option');
     }
 };

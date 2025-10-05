@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('contract_applications', function (Blueprint $table) {
-            $table->string('email')->nullable()->after('customer_name');
+        Schema::create('shop_specific_holidays', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('shop_id')->constrained()->onDelete('cascade');
+            $table->date('date');
+            $table->text('name')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('contract_applications', function (Blueprint $table) {
-            $table->dropColumn('email');
-        });
+        Schema::dropIfExists('shop_specific_holidays');
     }
 };

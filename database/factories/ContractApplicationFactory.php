@@ -18,6 +18,7 @@ class ContractApplicationFactory extends Factory
     {
         return [
             'customer_name' => $this->faker->company(),
+            'email' => $this->faker->unique()->safeEmail(),
             'status' => 'pending',
         ];
     }

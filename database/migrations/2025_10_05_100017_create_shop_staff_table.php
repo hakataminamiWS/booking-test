@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\App;
 
 return new class extends Migration
 {
@@ -12,11 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('roles', function (Blueprint $table) {
+        Schema::create('shop_staff', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->text('description')->nullable();
+            $table->foreignId('shop_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+
+            $table->unique(['shop_id', 'user_id']);
         });
     }
 
@@ -25,10 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (! App::environment(['dev', 'staging'])) {
-            throw new \Exception('This migration can only be rolled back in dev or staging environments.');
-        }
-
-        Schema::dropIfExists('roles');
+        Schema::dropIfExists('shop_staff');
     }
 };
