@@ -48,30 +48,17 @@ Route::prefix('owner')->name('owner.')->group(function () {
 
 // 4. Admin（全体管理者向け）
 Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
-    Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->only(['index', 'show', 'edit', 'update']);
+    Route::resource('users', App\Http\Controllers\Admin\UsersController::class)->except(['create', 'store', 'destroy']);
     Route::resource('contract-applications', App\Http\Controllers\Admin\ContractApplicationController::class)->only(['index']);
+    Route::resource('contracts', App\Http\Controllers\Admin\ContractsController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
+    Route::get('owners', [App\Http\Controllers\Admin\OwnerController::class, 'index'])->name('owners.index');
+    Route::get('owners/{public_id}', [App\Http\Controllers\Admin\OwnerController::class, 'show'])->name('owners.show');
 
-    Route::resource('contracts', App\Http\Controllers\Admin\ContractsController::class)->except([]);
-
-    // 店舗管理のルート
-    Route::get('shops', function () {
-        return view('admin.shops');
-    })->name('shops.index');
-
-    Route::resource('shops', App\Http\Controllers\Admin\ShopsController::class)->except(['index', 'create', 'show', 'edit']);
-    Route::get('shops/create', function () {
-        return view('admin.shops');
-    })->name('shops.create');
-    Route::get('shops/{shop}', function () {
-        return view('admin.shops');
-    })->name('shops.show');
-    Route::get('shops/{shop}/edit', function () {
-        return view('admin.shops');
-    })->name('shops.edit');
-
-    Route::delete('shops/{shop}/force-delete', [App\Http\Controllers\Admin\ShopsController::class, 'forceDelete'])->name('shops.forceDelete');
+    // --- API Routes for Admin ---
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::resource('users', App\Http\Controllers\Api\Admin\UsersController::class)->only(['index']);
+    });
 });
-
 
 // API Routes
 Route::prefix('api')->name('api.')->group(function () {
@@ -81,6 +68,8 @@ Route::prefix('api')->name('api.')->group(function () {
     Route::get('/shops/{shop}/available-slots', [App\Http\Controllers\Api\AvailabilityController::class, 'index'])->name('shops.available-slots.index');
     Route::get('/admin/users', [App\Http\Controllers\Api\Admin\UserController::class, 'index'])->name('admin.users.index');
     Route::get('/admin/contract-applications', [App\Http\Controllers\Api\Admin\ContractApplicationController::class, 'index'])->name('admin.contract-applications.index');
+    Route::get('/admin/contracts', [App\Http\Controllers\Api\Admin\ContractController::class, 'index'])->name('admin.contracts.index');
+    Route::get('/admin/owners', [App\Http\Controllers\Api\Admin\OwnerController::class, 'index'])->name('admin.owners.index');
 });
 
 // Debug routes
@@ -89,6 +78,6 @@ if (app()->environment(['local', 'staging'])) {
 }
 
 Route::middleware('auth')->group(function () {
-    Route::get('/apply-contract', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'create'])->name('contract.application.create');
-    Route::post('/apply-contract', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'store'])->name('contract.application.store');
+    Route::get('/contract-applications/create', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'create'])->name('contract.application.create');
+    Route::post('/contract-applications', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'store'])->name('contract.application.store');
 });

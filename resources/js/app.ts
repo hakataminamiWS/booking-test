@@ -15,14 +15,17 @@ import AdminContractsShow from "@/admin/contracts/Show.vue";
 import AdminContractsEdit from "@/admin/contracts/Edit.vue";
 import AdminContractsIndex from "@/admin/contracts/Index.vue";
 import OwnerContractApply from "@/owner/contract/Apply.vue";
-import AdminContractApplicationsIndex from "@/admin/contract_applications/Index.vue";
+import AdminContractApplicationsIndex from "@/admin/contract-applications/Index.vue";
+import AdminOwnersIndex from "@/admin/owners/Index.vue";
+import AdminOwnersShow from "@/admin/owners/Show.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
     components,
     directives,
-    icons: { // Add icons configuration
-        defaultSet: 'mdi',
+    icons: {
+        // Add icons configuration
+        defaultSet: "mdi",
         sets: {
             mdi,
         },
@@ -33,57 +36,50 @@ const appElement = document.getElementById("app");
 
 if (appElement) {
     const page = appElement.dataset.page;
-    const props = { ...appElement.dataset };
+    const propsData = appElement.dataset.props ? JSON.parse(appElement.dataset.props) : {};
 
     let component;
-    let mountProps = {};
 
     switch (page) {
         case "admin-users-show":
             component = AdminUserShow;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "admin-users-index":
             component = AdminUsersIndex;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "admin-users-edit":
             component = AdminUsersEdit;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "admin-contracts-create":
             component = AdminContractsCreate;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "admin-contracts-show":
             component = AdminContractsShow;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "admin-contracts-edit":
             component = AdminContractsEdit;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "admin-contracts-index":
             component = AdminContractsIndex;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "owner-contract-apply":
             component = OwnerContractApply;
-            mountProps = JSON.parse(props.props || '{}');
             break;
         case "admin-contract-applications-index":
             component = AdminContractApplicationsIndex;
-            mountProps = JSON.parse(props.props || '{}');
+            break;
+        case "admin-owners-index":
+            component = AdminOwnersIndex;
+            break;
+        case "admin-owners-show":
+            component = AdminOwnersShow;
             break;
         // case 'booker-bookings-create':
         //     component = BookerBookingsCreate;
-        //     mountProps = {
-        //         // props for booking create
-        //     };
         //     break;
     }
 
     if (component) {
-        createApp(component, mountProps).use(vuetify).mount(appElement);
+        createApp(component, propsData).use(vuetify).mount(appElement);
     }
 }

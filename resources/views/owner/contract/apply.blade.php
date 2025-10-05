@@ -1,5 +1,9 @@
 @extends('app')
 
+@php
+$props['errors'] = $errors->all();
+@endphp
+
 @section('content')
     <div
       id="app"

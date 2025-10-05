@@ -2,7 +2,7 @@
     <v-container>
         <v-card>
             <v-card-title class="d-flex justify-space-between align-center">
-                <span>オーナー権限一覧</span>
+                <span>オーナー一覧</span>
             </v-card-title>
             <v-card-text>
                 <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
@@ -32,7 +32,7 @@
                     <v-spacer></v-spacer>
 
                     <!-- Total Items Count -->
-                    <v-col cols="auto">
+                    <v-col cols="auto" v-if="!smAndDown">
                         <span class="text-body-2"
                             >全 {{ totalItems }} 件中 {{ from }} -
                             {{ to }} 件表示</span
@@ -51,7 +51,7 @@
                 </v-row>
 
                 <!-- Applied Filters & Sort Chips -->
-                <v-row dense>
+                <v-row dense v-if="activeFilters.length > 0 || (activeSort.column && activeSort.column !== 'created_at')">
                     <v-col cols="12">
                         <v-chip
                             v-for="filter in activeFiltersText"
@@ -60,8 +60,7 @@
                             closable
                             @click:close="removeFilter(filter.id)"
                         >
-                            {{ filter.text }}:
-                            {{ filter.valueText || filter.value }}
+                            {{ filter.text }}: {{ filter.value }}
                         </v-chip>
                         <v-chip
                             v-if="sortChipText"
@@ -82,31 +81,20 @@
                     :items="serverItems"
                     :items-length="totalItems"
                     :loading="loading"
-                    :mobile="smAndDown"
                     @update:options="loadItems"
                     hide-default-footer
                     class="elevation-1 mt-4"
                 >
-                    <template v-slot:item.public_id="{ item }">
-                        <a :href="`/admin/users/${item.public_id}`">{{
-                            item.public_id
-                        }}</a>
-                    </template>
-                    <template v-slot:item.role="{ item }">
-                        <v-chip :color="item.owner_count > 0 ? 'primary' : ''">
-                            {{ item.owner_count > 0 ? "登録" : "未登録" }}
-                        </v-chip>
-                    </template>
                     <template v-slot:item.created_at="{ item }">
-                        {{ new Date(item.created_at).toLocaleString() }}
+                        {{ new Date(item.created_at).toLocaleDateString() }}
                     </template>
                     <template v-slot:item.actions="{ item }">
                         <v-btn
                             color="primary"
                             size="small"
-                            :href="`/admin/users/${item.public_id}`"
+                            :href="`/admin/owners/${item.user.public_id}`"
                         >
-                            オーナー権限編集
+                            詳細
                         </v-btn>
                     </template>
                 </v-data-table-server>
@@ -125,64 +113,32 @@
                     >
                         <v-col cols="4">
                             <v-select
-                                :model-value="filter.column"
+                                v-model="filter.column"
                                 :items="filterableColumns"
                                 item-title="text"
                                 item-value="value"
                                 label="対象列"
                                 dense
                                 hide-details
-                                @update:modelValue="
-                                    (newColumn) =>
-                                        onFilterColumnChange(filter, newColumn)
-                                "
                             ></v-select>
                         </v-col>
                         <v-col cols="7">
                             <v-text-field
-                                v-if="getColumnType(filter.column) === 'text'"
+                                v-if="getColumnType(filter.column) === 'text' || getColumnType(filter.column) === 'number'"
                                 v-model="filter.value"
+                                :type="getColumnType(filter.column)"
                                 label="値"
                                 dense
                                 hide-details
                             ></v-text-field>
-                            <v-select
-                                v-if="getColumnType(filter.column) === 'select'"
+                             <v-text-field
+                                v-if="getColumnType(filter.column) === 'date'"
                                 v-model="filter.value"
-                                :items="getColumnItems(filter.column)"
-                                item-title="text"
-                                item-value="value"
-                                label="値"
+                                type="date"
+                                label="日付"
                                 dense
                                 hide-details
-                            ></v-select>
-                            <div
-                                v-if="
-                                    getColumnType(filter.column) ===
-                                    'date-range'
-                                "
-                            >
-                                <v-row dense>
-                                    <v-col cols="6">
-                                        <v-text-field
-                                            v-model="filter.value.start"
-                                            label="開始日"
-                                            type="date"
-                                            dense
-                                            hide-details
-                                        ></v-text-field>
-                                    </v-col>
-                                    <v-col cols="6">
-                                        <v-text-field
-                                            v-model="filter.value.end"
-                                            label="終了日"
-                                            type="date"
-                                            dense
-                                            hide-details
-                                        ></v-text-field>
-                                    </v-col>
-                                </v-row>
-                            </div>
+                            ></v-text-field>
                         </v-col>
                         <v-col cols="1">
                             <v-btn
@@ -224,12 +180,9 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="6">
-                            <v-select
+                             <v-select
                                 v-model="sortBy.order"
-                                :items="[
-                                    { text: '昇順', value: 'asc' },
-                                    { text: '降順', value: 'desc' },
-                                ]"
+                                :items="[{text: '昇順', value: 'asc'}, {text: '降順', value: 'desc'}]"
                                 item-title="text"
                                 item-value="value"
                                 label="順序"
@@ -255,10 +208,6 @@ import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
 
-onMounted(() => {
-    document.title = "オーナー権限設定";
-});
-
 const { smAndDown } = useDisplay();
 
 type Options = InstanceType<typeof VDataTableServer>["$props"]["options"];
@@ -273,33 +222,24 @@ const totalItems = ref(0);
 const page = ref(1);
 const itemsPerPage = ref(20);
 const from = computed(() => (page.value - 1) * itemsPerPage.value + 1);
-const to = computed(() =>
-    Math.min(page.value * itemsPerPage.value, totalItems.value)
-);
-const totalPages = computed(() =>
-    Math.ceil(totalItems.value / itemsPerPage.value)
-);
+const to = computed(() => Math.min(page.value * itemsPerPage.value, totalItems.value));
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
 let isInitialLoad = true;
 
 // --- Filtering ---
 interface Filter {
     id: number;
     column: string | null;
-    value: any;
+    value: string | null;
 }
 
 const filterableColumns = ref([
-    { text: "Public ID", value: "public_id", type: "text" },
-    {
-        text: "Owner",
-        value: "role",
-        type: "select",
-        items: [
-            { text: "登録", value: "owner" },
-            { text: "未登録", value: "user" },
-        ],
-    },
-    { text: "登録日時", value: "created_at", type: "date-range" },
+    { text: "PublicID", value: "public_id", type: "text" },
+    { text: "オーナー名", value: "name", type: "text" },
+    { text: "登録日（以降）", value: "created_at_after", type: "date" },
+    { text: "登録日（以前）", value: "created_at_before", type: "date" },
+    { text: "契約数（以上）", value: "contracts_count_min", type: "number" },
+    { text: "契約数（以下）", value: "contracts_count_max", type: "number" },
 ]);
 
 const filters = ref<Filter[]>([]);
@@ -307,27 +247,7 @@ const activeFilters = ref<Filter[]>([]);
 
 const getColumnType = (columnValue: string | null) => {
     if (!columnValue) return "text";
-    return (
-        filterableColumns.value.find((c) => c.value === columnValue)?.type ||
-        "text"
-    );
-};
-const getColumnItems = (columnValue: string | null) => {
-    if (!columnValue) return [];
-    return (
-        filterableColumns.value.find((c) => c.value === columnValue)?.items ||
-        []
-    );
-};
-
-const onFilterColumnChange = (filter: Filter, newColumn: string | null) => {
-    filter.column = newColumn;
-    const columnType = getColumnType(newColumn);
-    if (columnType === "date-range") {
-        filter.value = { start: null, end: null };
-    } else {
-        filter.value = null;
-    }
+    return filterableColumns.value.find((c) => c.value === columnValue)?.type || "text";
 };
 
 const addFilter = () => {
@@ -339,71 +259,29 @@ const removeFilter = (id: number) => {
     if (index > -1) {
         filters.value.splice(index, 1);
     }
-    const activeIndex = activeFilters.value.findIndex((f) => f.id === id);
-    if (activeIndex > -1) {
-        activeFilters.value.splice(activeIndex, 1);
-    }
-    applyFilters(false);
+    applyFilters(false); // Re-apply filters without closing the dialog
 };
 
 const activeFiltersText = computed(() => {
-    return activeFilters.value.flatMap((f) => {
-        const column = filterableColumns.value.find(
-            (c) => c.value === f.column
-        );
-        if (!column) return [];
-
-        if (column.type === "date-range") {
-            const result = [];
-            if (f.value.start)
-                result.push({
-                    id: f.id + "_start",
-                    text: `${column.text} (開始)`,
-                    value: f.value.start,
-                });
-            if (f.value.end)
-                result.push({
-                    id: f.id + "_end",
-                    text: `${column.text} (終了)`,
-                    value: f.value.end,
-                });
-            return result;
-        } else if (column.type === "select") {
-            const selectedItem = (column.items as any[]).find(
-                (item) => item.value === f.value
-            );
-            return [
-                {
-                    id: f.id,
-                    text: column.text,
-                    value: f.value,
-                    valueText: selectedItem ? selectedItem.text : f.value,
-                },
-            ];
-        } else {
-            return [{ id: f.id, text: column.text, value: f.value }];
-        }
+    return activeFilters.value.map(f => {
+        const column = filterableColumns.value.find(c => c.value === f.column);
+        return {
+            id: f.id,
+            text: column ? column.text : '',
+            value: f.value
+        };
     });
 });
 
 const applyFilters = (shouldCloseDialog = true) => {
     activeFilters.value = JSON.parse(
-        JSON.stringify(
-            filters.value.filter((f) => {
-                if (!f.column) return false;
-                if (getColumnType(f.column) === "date-range")
-                    return f.value.start || f.value.end;
-                return f.value;
-            })
-        )
+        JSON.stringify(filters.value.filter((f) => f.column && f.value))
     );
-    if (shouldCloseDialog) filterDialog.value = false;
+    if (shouldCloseDialog) {
+        filterDialog.value = false;
+    }
     page.value = 1;
-    loadItems({
-        page: page.value,
-        itemsPerPage: itemsPerPage.value,
-        sortBy: [],
-    });
+    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
 };
 
 // --- Sorting ---
@@ -413,8 +291,10 @@ interface Sort {
 }
 
 const sortableColumns = ref([
-    { text: "Public ID", value: "public_id" },
+    { text: "PublicID", value: "public_id" },
+    { text: "オーナー名", value: "name" },
     { text: "登録日時", value: "created_at" },
+    { text: "契約数", value: "contracts_count" },
 ]);
 
 const sortBy = ref<Sort>({ column: null, order: null });
@@ -424,31 +304,21 @@ const applySort = () => {
     activeSort.value = JSON.parse(JSON.stringify(sortBy.value));
     sortDialog.value = false;
     page.value = 1;
-    loadItems({
-        page: page.value,
-        itemsPerPage: itemsPerPage.value,
-        sortBy: [],
-    });
+    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
 };
 
 const removeSort = () => {
-    sortBy.value = { column: null, order: null };
-    activeSort.value = { column: null, order: null };
+    sortBy.value = { column: 'created_at', order: 'desc' };
+    activeSort.value = { column: 'created_at', order: 'desc' };
     page.value = 1;
-    loadItems({
-        page: page.value,
-        itemsPerPage: itemsPerPage.value,
-        sortBy: [],
-    });
+    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
 };
 
 const sortChipText = computed(() => {
-    if (!activeSort.value.column || !activeSort.value.order) return null;
-    const column = sortableColumns.value.find(
-        (c) => c.value === activeSort.value.column
-    );
+    if (!activeSort.value.column || !activeSort.value.order || activeSort.value.column === 'created_at') return null;
+    const column = sortableColumns.value.find(c => c.value === activeSort.value.column);
     if (!column) return null;
-    const orderText = activeSort.value.order === "asc" ? "昇順" : "降順";
+    const orderText = activeSort.value.order === 'asc' ? '昇順' : '降順';
     return `並び替え: ${column.text} (${orderText})`;
 });
 
@@ -458,14 +328,11 @@ const loadItems = async (options: Options) => {
 
     if (isInitialLoad) {
         const urlParams = new URLSearchParams(window.location.search);
-        const urlPage = urlParams.get("page");
+        const urlPage = urlParams.get('page');
         if (urlPage) page.value = parseInt(urlPage, 10);
 
-        const urlSortBy = urlParams.get("sort_by");
-        const urlSortOrder = urlParams.get("sort_order") as
-            | "asc"
-            | "desc"
-            | null;
+        const urlSortBy = urlParams.get('sort_by');
+        const urlSortOrder = urlParams.get('sort_order') as 'asc' | 'desc' | null;
         if (urlSortBy && urlSortOrder) {
             sortBy.value = { column: urlSortBy, order: urlSortOrder };
             activeSort.value = { column: urlSortBy, order: urlSortOrder };
@@ -473,38 +340,11 @@ const loadItems = async (options: Options) => {
 
         const tempFilters: Filter[] = [];
         urlParams.forEach((value, key) => {
-            const colName = key.replace(/_after$|_before$/g, "");
-            const columnDef = filterableColumns.value.find(
-                (c) => c.value === colName
-            );
+            const columnDef = filterableColumns.value.find(c => c.value === key);
             if (columnDef) {
-                let existingFilter = tempFilters.find(
-                    (f) => f.column === colName
-                );
-                if (columnDef.type === "date-range") {
-                    if (!existingFilter) {
-                        existingFilter = {
-                            id: Date.now() + Math.random(),
-                            column: colName,
-                            value: { start: null, end: null },
-                        };
-                        tempFilters.push(existingFilter);
-                    }
-                    if (key.endsWith("_after"))
-                        existingFilter.value.start = value;
-                    else if (key.endsWith("_before"))
-                        existingFilter.value.end = value;
-                } else {
-                    if (!existingFilter)
-                        tempFilters.push({
-                            id: Date.now() + Math.random(),
-                            column: colName,
-                            value,
-                        });
-                }
+                tempFilters.push({ id: Date.now() + Math.random(), column: key, value });
             }
         });
-
         if (tempFilters.length > 0) {
             filters.value = JSON.parse(JSON.stringify(tempFilters));
             activeFilters.value = JSON.parse(JSON.stringify(tempFilters));
@@ -525,25 +365,19 @@ const loadItems = async (options: Options) => {
 
     activeFilters.value.forEach((filter) => {
         if (filter.column && filter.value) {
-            const columnDef = filterableColumns.value.find(
-                (c) => c.value === filter.column
-            );
-            if (columnDef?.type === "date-range") {
-                if (filter.value.start)
-                    params.append(`${filter.column}_after`, filter.value.start);
-                if (filter.value.end)
-                    params.append(`${filter.column}_before`, filter.value.end);
-            } else {
-                params.append(filter.column, filter.value);
-            }
+            params.append(filter.column, filter.value);
         }
     });
 
-    const apiUrl = `/api/admin/users?${params.toString()}`;
-    history.pushState(null, "", `/admin/users?${params.toString()}`);
+    const newSearch = `?${params.toString()}`;
+    const currentSearch = window.location.search;
+
+    if (newSearch !== currentSearch) {
+        history.pushState(null, '', `/admin/owners${newSearch}`);
+    }
 
     try {
-        const response = await axios.get(apiUrl);
+        const response = await axios.get(`/api/admin/owners${newSearch}`);
         serverItems.value = response.data.data;
         totalItems.value = response.data.total;
     } catch (error) {
@@ -554,9 +388,10 @@ const loadItems = async (options: Options) => {
 };
 
 const headers: Headers = [
-    { title: "Public ID", key: "public_id", sortable: false },
-    { title: "Owner", key: "role", sortable: false },
-    { title: "登録日時", key: "created_at", sortable: false },
-    { title: "操作", key: "actions", sortable: false },
+    { title: 'Public ID', key: 'user.public_id', sortable: false },
+    { title: 'オーナー名', key: 'name', sortable: false },
+    { title: '登録日時', key: 'created_at', sortable: false },
+    { title: '契約数', key: 'contracts_count', sortable: false },
+    { title: '操作', key: 'actions', sortable: false, align: 'end' },
 ];
 </script>

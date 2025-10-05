@@ -3,126 +3,100 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreContractRequest;
+use App\Http\Requests\Admin\UpdateContractRequest;
+use App\Http\Requests\Admin\DeleteContractRequest;
 use App\Models\Contract;
+use App\Models\ContractApplication;
 use App\Models\Owner;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ContractsController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $contracts = Contract::with('user.owner')->get();
-        return view('admin.contracts.index', compact('contracts'));
-    }
-
-    public function show(Contract $contract)
-    {
-        $contract->load('user.owner');
-        return view('admin.contracts.show', [
-            'contract_id' => $contract->id,
-            'contractDetails' => $contract
-        ]);
+        return view('admin.contracts.index');
     }
 
     public function create(Request $request)
     {
-        $owners = Owner::whereDoesntHave('user.contract')->with('user')->get();
-        $selectedUserId = null;
-
-        if ($request->has('user_public_id')) {
-            $selectedUserId = $request->user_public_id;
+        $applicationId = $request->query('application_id');
+        if (! $applicationId) {
+            abort(400, 'Application ID is required.');
         }
 
-        return view('admin.contracts.create', compact('owners', 'selectedUserId'));
+        $application = ContractApplication::with('user')->findOrFail($applicationId);
+
+        return view('admin.contracts.create', compact('application'));
     }
 
-    public function store(Request $request)
+    public function store(StoreContractRequest $request)
     {
-        // --- ユーザーID(public_id)の事前検証 ---
-        $request->validate(
-            ['user_id' => 'required|string|exists:users,public_id'],
-            [
-                'user_id.required' => 'オーナーを選択してください。',
-                'user_id.exists' => '指定されたオーナーが見つかりません。',
-            ]
-        );
+        $validated = $request->validated();
 
-        $user = User::where('public_id', $request->input('user_id'))->firstOrFail();
+        try {
+            DB::transaction(function () use ($validated) {
+                // 1. Create Contract
+                $contract = Contract::create([
+                    'user_id' => $validated['user_id'],
+                    'application_id' => $validated['application_id'],
+                    'name' => $validated['name'],
+                    'max_shops' => $validated['max_shops'],
+                    'status' => $validated['status'],
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                ]);
 
-        // --- 契約の一意性検証 ---
-        if (Contract::where('user_id', $user->id)->exists()) {
-            return back()->withInput()->withErrors(['user_id' => 'このオーナーには既に契約が存在します。']);
+                // 2. Create or Update Owner
+                $owner = Owner::updateOrCreate(
+                    ['user_id' => $validated['user_id']],
+                    ['name' => $contract->application->customer_name] // Use customer_name from application
+                );
+
+                // 3. Update Application Status
+                $application = ContractApplication::find($validated['application_id']);
+                $application->status = 'approved';
+                $application->save();
+            });
+        } catch (\Exception $e) {
+            Log::error('Contract creation: Transaction failed.', ['error' => $e->getMessage()]);
+            return redirect()->back()->withInput()->with('error', '契約の作成に失敗しました。'.$e->getMessage());
         }
 
-        // --- 残りのフィールドのバリデーション ---
-        // クライアントサイドのバリデーションとは別に、サーバーサイドで最終的なデータ整合性を保証するバリデーション。
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'max_shops' => 'required|integer|min:1',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'status' => 'required|in:active,inactive',
-        ], [
-            'name.required' => '契約名は必ず入力してください。',
-            'name.string' => '契約名は文字列で入力してください。',
-            'max_shops.required' => '最大店舗数は必須です。',
-            'max_shops.integer' => '最大店舗数は整数で入力してください。',
-            'start_date.required' => '契約開始日は必須です。',
-            'start_date.date' => '契約開始日は有効な日付ではありません。',
-            'end_date.required' => '契約終了日は必須です。',
-            'end_date.date' => '契約終了日は有効な日付ではありません。',
-            'end_date.after_or_equal' => '契約終了日は開始日以降の日付にしてください。',
-            'status.required' => 'ステータスは必須です。',
-        ]);
+        return redirect()->route('admin.contracts.index')->with('success', '契約を正常に作成しました。');
+    }
 
-        // --- 契約作成 ---
-        $contractData = array_merge($validated, ['user_id' => $user->id]);
-        $contract = Contract::create($contractData);
+    public function show(Contract $contract)
+    {
+        $contract->load(['user', 'application']);
 
-        return redirect()->route('admin.contracts.show', $contract->id)
-            ->with('success', '契約が正常に作成されました。');
+        return view('admin.contracts.show', compact('contract'));
     }
 
     public function edit(Contract $contract)
     {
-        $contract->load('user.owner');
+        $contract->load(['user', 'application']);
+
         return view('admin.contracts.edit', compact('contract'));
     }
 
-    public function update(Request $request, Contract $contract)
+    public function update(UpdateContractRequest $request, Contract $contract)
     {
-        // クライアントサイドのバリデーションとは別に、サーバーサイドで最終的なデータ整合性を保証するバリデーション。
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'max_shops' => 'required|integer|min:1',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'status' => 'required|in:active,inactive',
-        ], [
-            'name.required' => '契約名は必ず入力してください。',
-            'name.string' => '契約名は文字列で入力してください。',
-            'max_shops.required' => '最大店舗数は必須です。',
-            'max_shops.integer' => '最大店舗数は整数で入力してください。',
-            'start_date.required' => '契約開始日は必須です。',
-            'start_date.date' => '契約開始日は有効な日付ではありません。',
-            'end_date.required' => '契約終了日は必須です。',
-            'end_date.date' => '契約終了日は有効な日付ではありません。',
-            'end_date.after_or_equal' => '契約終了日は開始日以降の日付にしてください。',
-            'status.required' => 'ステータスは必須です。',
-        ]);
-
+        $validated = $request->validated();
         $contract->update($validated);
 
-        return redirect()->route('admin.contracts.show', $contract->id)
-            ->with('success', '契約情報が更新されました。');
+        return redirect()->route('admin.contracts.show', $contract)->with('success', '契約情報を更新しました。');
     }
 
-    public function destroy(Contract $contract)
+    public function destroy(DeleteContractRequest $request, Contract $contract)
     {
         $contract->delete();
 
-        return redirect()->route('admin.contracts.index')
-            ->with('success', '契約が削除されました。');
+        return redirect()->route('admin.contracts.index')->with('success', '契約を削除しました。');
     }
 }

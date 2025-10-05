@@ -12,6 +12,7 @@ class Contract extends Model
 
     protected $fillable = [
         'user_id',
+        'application_id',
         'name',
         'max_shops',
         'status',
@@ -23,6 +24,14 @@ class Contract extends Model
         'start_date' => 'date:Y-m-d',
         'end_date' => 'date:Y-m-d',
     ];
+
+    /**
+     * Get the application associated with the contract.
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(ContractApplication::class, 'application_id');
+    }
 
     /**
      * Get the user that owns the contract.

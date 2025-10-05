@@ -90,11 +90,15 @@
                         {{ new Date(item.created_at).toLocaleString() }}
                     </template>
 
+                    <template v-slot:item.contract_status="{ item }">
+                        {{ item.contract ? item.contract.status : 'なし' }}
+                    </template>
+
                     <template v-slot:item.actions="{ item }">
                         <v-btn
                             color="primary"
                             size="small"
-                            :href="`/admin/users/${item.user.public_id}`"
+                            :href="`/admin/contracts/create?application_id=${item.id}`"
                         >
                             契約を作成
                         </v-btn>
@@ -369,8 +373,6 @@ const sortableColumns = ref([
     { text: "Public ID", value: "public_id" },
     { text: "お客様名称", value: "customer_name" },
     { text: "申込日時", value: "created_at" },
-    { text: "ステータス", value: "status" },
-    { text: "契約状況", value: "contract_status" },
 ]);
 
 const sortBy = ref<Sort>({ column: null, order: null });

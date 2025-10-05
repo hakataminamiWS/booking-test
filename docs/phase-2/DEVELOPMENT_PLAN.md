@@ -16,22 +16,34 @@
 ## Phase-2: 予約システム管理者機能・画面の実装
 
 予約システムの契約情報を管理するための、管理者向け機能・画面群を実装します。
+また、そのひとつ前のステップである、オーナー予定者からの契約申し込み画面の機能も実装します。
 
--   **主な機能**:
-    -   契約申し込み一覧画面
-    -   オーナー情報・契約管理画面
-    -   オーナー権限一覧画面
+-   主な機能（オーナー予定者）:
+    -   契約申し込み画面(`/contract-applications/create`)
+-   主な機能（予約システム管理者）:
+    -   契約申し込み一覧画面(`/admin/contract-applications`)
+    -   契約新規作成画面(`/admin/contracts/create`)
+    -   契約一覧画面(`/admin/contracts`)
+    -   契約詳細画面(`/admin/contracts/{id}`)
+    -   契約詳細管理画面(`/admin/contracts/{id}/edit`)
+    -   オーナー一覧画面(`/admin/owners`)
+    -   オーナー詳細画面(`/admin/owners/{public-id}`)
+    -   オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
 
 ### 完了タスク
 
--   [x] オーナー契約申し込み画面の実装 (`/apply-contract`)
--   [x] 管理者向け契約申し込み一覧画面の実装 (`/admin/contract-applications`)
+-   オーナー契約申し込み画面(`/contract-applications/create`)
+-   契約申し込み一覧画面(`/admin/contract-applications`)
+-   契約新規作成画面(`/admin/contracts/create`)
+-   契約一覧画面(`/admin/contracts`)
+-   契約詳細画面(`/admin/contracts/{id}`)
+-   契約詳細管理画面(`/admin/contracts/{id}/edit`)
+-   オーナー一覧画面(`/admin/owners`)
+-   オーナー詳細画面(`/admin/owners/{public-id}`)
 
 ### 未完了タスク（実装順）
 
--   **オーナー情報・契約管理画面 (`/admin/users/{user}`) の実装**: ユーザーの詳細情報を確認し、オーナー権限の付与や契約の管理を行う画面。
--   **オーナー権限一覧画面 (`/admin/users`) の実装**: システムに登録されている全ユーザーの権限状態を一覧で確認する画面。
--   **契約一覧画面 (`/admin/contracts`) の実装**: システムに登録されている全契約内容を一覧で確認する画面。
+    -   オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
 
 ---
 
@@ -59,19 +71,19 @@
 
 ---
 
-## Phase-6: 通知機能と認証強化
-
-予約体験を補強する通知機能と、便利なログイン方法を提供します。
-
--   **主な機能**: 予約関連の自動返信メール送信、SNS（Google/LINE）ログイン
-
----
-
-## Phase-7: ゲストによる基本予約フローの実装
+## Phase-6: ゲストによる基本予約フローの実装
 
 ゲストユーザーが予約を完了できる、最も基本的な予約フローを実装します。
 
 -   **主な機能**: ゲスト予約、予約フォーム、空き時間選択、メニュー選択、確認ページ
+
+---
+
+## Phase-7: 通知機能と認証強化
+
+予約体験を補強する通知機能と、便利なログイン方法を提供します。
+
+-   **主な機能**: 予約関連の自動返信メール送信、SNS（Google/LINE）ログイン
 
 ---
 

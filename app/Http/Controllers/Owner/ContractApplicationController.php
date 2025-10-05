@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Owner\StoreContractApplicationRequest;
 use App\Models\ContractApplication;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ContractApplicationController extends Controller
 {
@@ -29,16 +30,28 @@ class ContractApplicationController extends Controller
      */
     public function store(StoreContractApplicationRequest $request)
     {
-        // バリデーション済みのデータを取得
-        $validated = $request->validated();
+        DB::beginTransaction();
 
-        // 取得したデータをDBに保存する
-        ContractApplication::create([
-            'user_id' => Auth::id(),
-            'customer_name' => $validated['customer_name'],
-        ]);
+        try {
+            // バリデーション済みのデータを取得
+            $validated = $request->validated();
 
-        // 完了メッセージと共にダッシュボードなどへリダイレクト
-        return redirect()->route('owner.dashboard')->with('status', '契約の申し込みが完了しました。管理者からの連絡をお待ちください。');
+            // 取得したデータをDBに保存する
+            $application = ContractApplication::create([
+                'user_id' => Auth::id(),
+                'customer_name' => $validated['customer_name'],
+                'email' => $validated['email'],
+            ]);
+
+            DB::commit();
+
+            // 完了メッセージと共にダッシュボードなどへリダイレクト
+            return redirect()->route('owner.dashboard')->with('status', '契約の申し込みが完了しました。管理者からの連絡をお待ちください。');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // エラーログの出力や、適切なエラーレスポンスを返す
+            \Illuminate\Support\Facades\Log::error('Contract application store failed: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to create application'], 500);
+        }
     }
 }

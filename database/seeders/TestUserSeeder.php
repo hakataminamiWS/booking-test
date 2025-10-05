@@ -55,7 +55,10 @@ class TestUserSeeder extends Seeder
         $staffUser->staffShops()->attach($testShop->id);
 
         // --- 動作確認用のダミーユーザーを60人作成 ---
-        User::factory()->count(60)->create();
-        $this->command->info("Created 60 dummy users for testing.");
+        User::factory()
+            ->count(60)
+            ->sequence(fn ($sequence) => ['public_id' => 'dummy-' . ($sequence->index + 1)])
+            ->create();
+        $this->command->info("Created 60 dummy users with sequential public_id (dummy-1 to dummy-60) for testing.");
     }
 }

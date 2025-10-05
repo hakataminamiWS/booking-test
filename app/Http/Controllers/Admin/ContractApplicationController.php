@@ -12,6 +12,6 @@ class ContractApplicationController extends Controller
      */
     public function index()
     {
-        return view('admin.contract_applications.index');
+        return view('admin.contract-applications.index');
     }
 }

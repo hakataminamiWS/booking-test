@@ -1,134 +1,420 @@
 <template>
     <v-container>
-        <v-card class="mx-auto" max-width="1200">
-            <v-card-title
-                class="text-h5 font-weight-bold d-flex justify-space-between align-center"
-            >
-                <span>契約管理</span>
-                <v-btn color="primary" :href="createContractUrl"
-                    >新規契約追加</v-btn
-                >
+        <v-card>
+            <v-card-title class="d-flex justify-space-between align-center">
+                <span>契約一覧</span>
             </v-card-title>
-            <v-divider></v-divider>
-
             <v-card-text>
-                <v-row>
-                    <v-col cols="12" md="4">
-                        <v-select
-                            v-model="selectedStatus"
-                            :items="statusOptions"
-                            label="ステータスで絞り込み"
-                            dense
-                            outlined
-                            hide-details
-                        ></v-select>
+                <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
+                <v-row class="align-center mb-2" dense>
+                    <!-- Filter Button -->
+                    <v-col cols="auto">
+                        <v-btn
+                            variant="tonal"
+                            @click="filterDialog = true"
+                            append-icon="mdi-filter-variant"
+                        >
+                            絞り込み
+                        </v-btn>
                     </v-col>
-                    <v-col cols="12" md="4">
-                        <v-select
-                            v-model="endDateFilterMode"
-                            :items="endDateFilterOptions"
-                            label="契約終了日で絞り込み"
-                            dense
-                            outlined
-                            hide-details
-                        ></v-select>
+
+                    <!-- Sort Button -->
+                    <v-col cols="auto">
+                        <v-btn
+                            variant="tonal"
+                            @click="sortDialog = true"
+                            prepend-icon="mdi-sort"
+                        >
+                            並び替え
+                        </v-btn>
                     </v-col>
-                    <v-col
-                        v-if="endDateFilterMode === '指定日以前'"
-                        cols="12"
-                        md="4"
-                    >
-                        <v-text-field
-                            v-model="specifiedEndDate"
-                            label="終了日を指定"
-                            type="date"
-                            dense
-                            outlined
-                            hide-details
-                        ></v-text-field>
+
+                    <v-spacer></v-spacer>
+
+                    <!-- Total Items Count -->
+                    <v-col cols="auto">
+                        <span class="text-body-2"
+                            >全 {{ totalItems }} 件中 {{ from }} -
+                            {{ to }} 件表示</span
+                        >
+                    </v-col>
+
+                    <!-- Pagination -->
+                    <v-col cols="auto">
+                        <v-pagination
+                            v-model="page"
+                            :length="totalPages"
+                            :total-visible="5"
+                            density="compact"
+                        ></v-pagination>
                     </v-col>
                 </v-row>
 
-                <v-data-table
+                <!-- Applied Filters & Sort Chips -->
+                <v-row dense>
+                    <v-col cols="12">
+                        <v-chip
+                            v-for="filter in activeFiltersText"
+                            :key="filter.id"
+                            class="mr-2 mb-2"
+                            closable
+                            @click:close="removeFilter(filter.id)"
+                        >
+                            {{ filter.text }}: {{ filter.value }}
+                        </v-chip>
+                        <v-chip
+                            v-if="sortChipText"
+                            class="mr-2 mb-2"
+                            closable
+                            @click:close="removeSort"
+                        >
+                            {{ sortChipText }}
+                        </v-chip>
+                    </v-col>
+                </v-row>
+
+                <!-- Data Table -->
+                <v-data-table-server
+                    v-model:page="page"
+                    v-model:items-per-page="itemsPerPage"
                     :headers="headers"
-                    :items="filteredContracts"
-                    item-value="id"
+                    :items="serverItems"
+                    :items-length="totalItems"
+                    :loading="loading"
+                    @update:options="loadItems"
+                    hide-default-footer
                     class="elevation-1 mt-4"
-                    hover
-                    @click:row="goToContract"
-                    no-data-text="契約情報がありません。"
                 >
-                </v-data-table>
+                    <template v-slot:item.start_date="{ item }">
+                        {{ new Date(item.start_date).toLocaleDateString() }}
+                    </template>
+                    <template v-slot:item.end_date="{ item }">
+                        {{ new Date(item.end_date).toLocaleDateString() }}
+                    </template>
+                    <template v-slot:item.actions="{ item }">
+                        <v-btn
+                            color="primary"
+                            size="small"
+                            :href="`/admin/contracts/${item.id}`"
+                        >
+                            契約の詳細
+                        </v-btn>
+                    </template>
+                </v-data-table-server>
             </v-card-text>
         </v-card>
+
+        <!-- Filter Dialog -->
+        <v-dialog v-model="filterDialog" max-width="800px">
+            <v-card>
+                <v-card-title>絞り込み</v-card-title>
+                <v-card-text>
+                    <v-row
+                        v-for="filter in filters"
+                        :key="filter.id"
+                        align="center"
+                    >
+                        <v-col cols="4">
+                            <v-select
+                                v-model="filter.column"
+                                :items="filterableColumns"
+                                item-title="text"
+                                item-value="value"
+                                label="対象列"
+                                dense
+                                hide-details
+                            ></v-select>
+                        </v-col>
+                        <v-col cols="7">
+                            <v-text-field
+                                v-if="getColumnType(filter.column) === 'text'"
+                                v-model="filter.value"
+                                label="値"
+                                dense
+                                hide-details
+                            ></v-text-field>
+                            <v-select
+                                v-if="getColumnType(filter.column) === 'select'"
+                                v-model="filter.value"
+                                :items="getColumnItems(filter.column)"
+                                label="値"
+                                dense
+                                hide-details
+                            ></v-select>
+                             <v-text-field
+                                v-if="getColumnType(filter.column) === 'date'"
+                                v-model="filter.value"
+                                label="値"
+                                type="date"
+                                dense
+                                hide-details
+                            ></v-text-field>
+                        </v-col>
+                        <v-col cols="1">
+                            <v-btn
+                                icon
+                                size="small"
+                                @click="removeFilter(filter.id)"
+                            >
+                                <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+                    <v-btn text @click="addFilter" class="mt-4"
+                        >+ フィルタを追加</v-btn
+                    >
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text @click="filterDialog = false">キャンセル</v-btn>
+                    <v-btn color="primary" @click="applyFilters">適用</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- Sort Dialog -->
+        <v-dialog v-model="sortDialog" max-width="500px">
+            <v-card>
+                <v-card-title>並び替え</v-card-title>
+                <v-card-text>
+                    <v-row align="center">
+                        <v-col cols="6">
+                            <v-select
+                                v-model="sortBy.column"
+                                :items="sortableColumns"
+                                item-title="text"
+                                item-value="value"
+                                label="対象列"
+                                dense
+                                hide-details
+                            ></v-select>
+                        </v-col>
+                        <v-col cols="6">
+                             <v-select
+                                v-model="sortBy.order"
+                                :items="[{text: '昇順', value: 'asc'}, {text: '降順', value: 'desc'}]"
+                                item-title="text"
+                                item-value="value"
+                                label="順序"
+                                dense
+                                hide-details
+                            ></v-select>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn text @click="sortDialog = false">キャンセル</v-btn>
+                    <v-btn color="primary" @click="applySort">適用</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-container>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import type { VDataTableServer } from "vuetify/components";
+import axios from "axios";
 
-interface Contract {
+type Options = InstanceType<typeof VDataTableServer>["$props"]["options"];
+type Headers = InstanceType<typeof VDataTableServer>["$props"]["headers"];
+
+// --- Component State ---
+const filterDialog = ref(false);
+const sortDialog = ref(false);
+const serverItems = ref<any[]>([]);
+const loading = ref(false);
+const totalItems = ref(0);
+const page = ref(1);
+const itemsPerPage = ref(20);
+const from = computed(() => (page.value - 1) * itemsPerPage.value + 1);
+const to = computed(() => Math.min(page.value * itemsPerPage.value, totalItems.value));
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
+let isInitialLoad = true;
+
+
+// --- Filtering ---
+interface Filter {
     id: number;
-    user: { owner: { name: string } };
-    max_shops: number;
-    status: string;
-    start_date: string;
-    end_date: string;
+    column: string | null;
+    value: string | null;
 }
 
-const props = defineProps<{
-    contracts: Contract[];
-}>();
+const filterableColumns = ref([
+    { text: "契約名", value: "name", type: "text" },
+    { text: "Public ID", value: "public_id", type: "text" },
+    {
+        text: "ステータス",
+        value: "status",
+        type: "select",
+        items: ["active", "expired"],
+    },
+    { text: "契約開始日 (以降)", value: "start_date_after", type: "date" },
+    { text: "契約開始日 (以前)", value: "start_date_before", type: "date" },
+    { text: "契約終了日 (以降)", value: "end_date_after", type: "date" },
+    { text: "契約終了日 (以前)", value: "end_date_before", type: "date" },
+]);
 
-// Filter refs
-const selectedStatus = ref("すべて");
-const statusOptions = ["すべて", "active", "inactive"];
+const filters = ref<Filter[]>([]);
+const activeFilters = ref<Filter[]>([]);
 
-const endDateFilterMode = ref("すべて");
-const endDateFilterOptions = ["すべて", "契約終了済み", "指定日以前"];
-const specifiedEndDate = ref<string | null>(null);
+const getColumnType = (columnValue: string | null) => {
+    if (!columnValue) return "text";
+    return filterableColumns.value.find((c) => c.value === columnValue)?.type || "text";
+};
+const getColumnItems = (columnValue: string | null) => {
+    if (!columnValue) return [];
+    return filterableColumns.value.find((c) => c.value === columnValue)?.items || [];
+};
 
-const filteredContracts = computed(() => {
-    let items = props.contracts;
+const addFilter = () => {
+    filters.value.push({ id: Date.now(), column: null, value: null });
+};
 
-    // Status filter
-    if (selectedStatus.value !== "すべて") {
-        items = items.filter(
-            (contract) => contract.status === selectedStatus.value
-        );
+const removeFilter = (id: number) => {
+    const index = filters.value.findIndex((f) => f.id === id);
+    if (index > -1) {
+        filters.value.splice(index, 1);
     }
+    applyFilters(false);
+};
 
-    // End date filter
-    if (endDateFilterMode.value === "契約終了済み") {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        items = items.filter((contract) => new Date(contract.end_date) < today);
-    } else if (
-        endDateFilterMode.value === "指定日以前" &&
-        specifiedEndDate.value
-    ) {
-        const specifiedDate = new Date(specifiedEndDate.value);
-        specifiedDate.setHours(0, 0, 0, 0);
-        items = items.filter(
-            (contract) => new Date(contract.end_date) <= specifiedDate
-        );
-    }
-
-    return items;
+const activeFiltersText = computed(() => {
+    return activeFilters.value.map(f => {
+        const column = filterableColumns.value.find(c => c.value === f.column);
+        return {
+            id: f.id,
+            text: column ? column.text : '',
+            value: f.value
+        };
+    });
 });
 
-const headers = [
-    { title: "ID", key: "id", width: "10%" },
-    { title: "オーナー名", key: "user.owner.name" },
-    { title: "最大店舗数", key: "max_shops" },
-    { title: "ステータス", key: "status" },
-    { title: "契約開始日", key: "start_date" },
-    { title: "契約終了日", key: "end_date" },
-];
-
-const createContractUrl = "/admin/contracts/create";
-
-const goToContract = (_event: any, { item }: { item: Contract }) => {
-    window.location.href = `/admin/contracts/${item.id}`;
+const applyFilters = (shouldCloseDialog = true) => {
+    activeFilters.value = JSON.parse(
+        JSON.stringify(filters.value.filter((f) => f.column && f.value))
+    );
+    if (shouldCloseDialog) {
+        filterDialog.value = false;
+    }
+    page.value = 1;
+    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
 };
+
+// --- Sorting ---
+interface Sort {
+    column: string | null;
+    order: "asc" | "desc" | null;
+}
+
+const sortableColumns = ref([
+    { text: "契約名", value: "name" },
+    { text: "Public ID", value: "public_id" },
+    { text: "契約開始日", value: "start_date" },
+    { text: "契約終了日", value: "end_date" },
+]);
+
+const sortBy = ref<Sort>({ column: null, order: null });
+const activeSort = ref<Sort>({ column: null, order: null });
+
+const applySort = () => {
+    activeSort.value = JSON.parse(JSON.stringify(sortBy.value));
+    sortDialog.value = false;
+    page.value = 1;
+    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+};
+
+const removeSort = () => {
+    sortBy.value = { column: null, order: null };
+    activeSort.value = { column: null, order: null };
+    page.value = 1;
+    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+};
+
+const sortChipText = computed(() => {
+    if (!activeSort.value.column || !activeSort.value.order) return null;
+    const column = sortableColumns.value.find(c => c.value === activeSort.value.column);
+    if (!column) return null;
+    const orderText = activeSort.value.order === 'asc' ? '昇順' : '降順';
+    return `並び替え: ${column.text} (${orderText})`;
+});
+
+
+// --- Data Loading ---
+const loadItems = async (options: Options) => {
+    loading.value = true;
+
+    if (isInitialLoad) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPage = urlParams.get('page');
+        if (urlPage) page.value = parseInt(urlPage, 10);
+
+        const urlSortBy = urlParams.get('sort_by');
+        const urlSortOrder = urlParams.get('sort_order') as 'asc' | 'desc' | null;
+        if (urlSortBy && urlSortOrder) {
+            sortBy.value = { column: urlSortBy, order: urlSortOrder };
+            activeSort.value = { column: urlSortBy, order: urlSortOrder };
+        }
+
+        const tempFilters: Filter[] = [];
+        urlParams.forEach((value, key) => {
+            const columnDef = filterableColumns.value.find(c => c.value === key || `statuses[]` === key);
+            if (columnDef) {
+                const colVal = key.endsWith('[]') ? key.slice(0, -2) : key;
+                tempFilters.push({ id: Date.now() + Math.random(), column: colVal, value });
+            }
+        });
+        if (tempFilters.length > 0) {
+            filters.value = tempFilters;
+            activeFilters.value = JSON.parse(JSON.stringify(tempFilters));
+        }
+
+        isInitialLoad = false;
+    } else {
+        page.value = options.page;
+    }
+
+    const params = new URLSearchParams();
+    params.append("page", page.value.toString());
+    params.append("per_page", itemsPerPage.value.toString());
+
+    if (activeSort.value.column && activeSort.value.order) {
+        params.append("sort_by", activeSort.value.column);
+        params.append("sort_order", activeSort.value.order);
+    }
+
+    activeFilters.value.forEach((filter) => {
+        if (filter.column && filter.value) {
+            if (filter.column === "status") {
+                params.append("statuses[]", filter.value);
+            } else {
+                params.append(filter.column, filter.value);
+            }
+        }
+    });
+
+    const apiUrl = `/api/admin/contracts?${params.toString()}`;
+    history.pushState(null, '', `/admin/contracts?${params.toString()}`);
+
+    try {
+        const response = await axios.get(apiUrl);
+        serverItems.value = response.data.data;
+        totalItems.value = response.data.total;
+    } catch (error) {
+        console.error("Failed to load items:", error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+const headers: Headers = [
+    { title: '契約 ID', key: 'id', sortable: false },
+    { title: '契約名', key: 'name', sortable: false },
+    { title: 'Public ID', key: 'user.public_id', sortable: false },
+    { title: '契約開始日', key: 'start_date', sortable: false },
+    { title: '契約終了日', key: 'end_date', sortable: false },
+    { title: 'ステータス', key: 'status', sortable: false },
+    { title: '操作', key: 'actions', sortable: false },
+];
 </script>

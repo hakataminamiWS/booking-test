@@ -1,19 +1,10 @@
 @extends('app')
 
-@section('title', '契約管理')
+@section('title', '契約一覧')
 
 @section('content')
-<div class="container">
-@php
-$props = [
-    'contracts' => $contracts,
-];
-@endphp
-    <div
-        id="app"
-        data-page="admin-contracts-index"
-        data-props='@json($props)'
-    >
-    </div>
-</div>
+    @php
+        $props = [];
+    @endphp
+    <div id="app" data-page="admin-contracts-index" data-props="{{ json_encode($props) }}"></div>
 @endsection

@@ -19,6 +19,7 @@ class ContractApplication extends Model
     protected $fillable = [
         'user_id',
         'customer_name',
+        'email',
         'status',
     ];
 
