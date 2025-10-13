@@ -48,6 +48,7 @@
                             :items="owner.contracts"
                             v-if="owner.contracts.length > 0"
                             density="compact"
+                            hide-default-footer
                         >
                             <template v-slot:item.status="{ item }">
                                 <v-chip :color="item.status === 'active' ? 'green' : 'grey'" size="small">
@@ -79,6 +80,7 @@
                             :items="owner.shops"
                             v-if="owner.shops.length > 0"
                             density="compact"
+                            hide-default-footer
                         >
                         </v-data-table>
                         <p v-else>このオーナーには店舗がありません。</p>
@@ -129,17 +131,17 @@ const props = defineProps<{
 const editUrl = computed(() => `/admin/owners/${props.owner.user.public_id}/edit`);
 
 const contractHeaders = [
-    { title: '契約ID', key: 'id' },
-    { title: '契約名', key: 'name' },
-    { title: 'ステータス', key: 'status' },
+    { title: '契約ID', key: 'id', sortable: false },
+    { title: '契約名', key: 'name', sortable: false },
+    { title: 'ステータス', key: 'status', sortable: false },
     { title: '契約期間', key: 'period', sortable: false },
     { title: '操作', key: 'actions', align: 'end', sortable: false },
 ];
 
 const shopHeaders = [
-    { title: '店舗ID', key: 'id' },
-    { title: '店舗Slug', key: 'slug' },
-    { title: '店舗名', key: 'name' },
+    { title: '店舗ID', key: 'id', sortable: false },
+    { title: '店舗Slug', key: 'slug', sortable: false },
+    { title: '店舗名', key: 'name', sortable: false },
 ];
 
 </script>

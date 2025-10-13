@@ -1,5 +1,20 @@
-@extends('layouts.app')
+@extends('app')
+
+@section('title', '店舗情報編集: ' . $shop->name)
 
 @section('content')
-<div id="owner-shops-edit" data-shop="{{ $shop->toJson() }}"></div>
+    @php
+        $props = [
+            'shop' => $shop,
+            'errors' => $errors->all(),
+            'oldInput' => session()->getOldInput(),
+            'csrfToken' => csrf_token(),
+        ];
+    @endphp
+    <div
+        id="app"
+        data-page="owner-shops-edit"
+        data-props="{{ json_encode($props) }}"
+    >
+    </div>
 @endsection

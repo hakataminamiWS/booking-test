@@ -394,7 +394,7 @@ const loadItems = async (options: Options) => {
         }
     });
 
-    const apiUrl = `/api/admin/contracts?${params.toString()}`;
+    const apiUrl = `/admin/api/contracts?${params.toString()}`;
     history.pushState(null, '', `/admin/contracts?${params.toString()}`);
 
     try {

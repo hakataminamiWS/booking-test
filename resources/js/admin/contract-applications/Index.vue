@@ -96,6 +96,14 @@
 
                     <template v-slot:item.actions="{ item }">
                         <v-btn
+                            color="secondary"
+                            size="small"
+                            :href="`/admin/contract-applications/${item.id}`"
+                            class="mr-2"
+                        >
+                            申し込み詳細
+                        </v-btn>
+                        <v-btn
                             color="primary"
                             size="small"
                             :href="`/admin/contracts/create?application_id=${item.id}`"
@@ -478,7 +486,7 @@ const loadItems = async (options: Options) => {
         }
     });
 
-    const apiUrl = `/api/admin/contract-applications?${params.toString()}`;
+    const apiUrl = `/admin/api/contract-applications?${params.toString()}`;
     history.pushState(null, '', `/admin/contract-applications?${params.toString()}`);
 
     try {

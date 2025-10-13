@@ -12,8 +12,8 @@ class ShopPolicy
      */
     public function viewAny(User $user): bool
     {
-        // どのオーナーがどの店舗を閲覧できるかはコントローラ側で絞り込むため、ここでは単純にtrueを返す
-        return true;
+        // ユーザーがオーナーであるか
+        return $user->owner()->exists();
     }
 
     /**

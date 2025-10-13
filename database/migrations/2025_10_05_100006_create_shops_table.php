@@ -20,7 +20,6 @@ return new class extends Migration
             $table->integer('cancellation_deadline_minutes')->default(1440);
             $table->integer('booking_deadline_minutes')->default(0);
             $table->string('booking_confirmation_type')->default('automatic');
-            $table->string('status'); // Added based on seeder requirement
             $table->boolean('accepts_online_bookings')->default(true);
             $table->string('timezone')->default('Asia/Tokyo');
             $table->timestamps();

@@ -11,9 +11,23 @@
         <v-row>
             <v-col cols="12">
                 <v-card>
-                    <v-card-title class="d-flex justify-space-between align-center">
+                    <v-card-title
+                        :class="{
+                            'd-flex': true,
+                            'flex-column': smAndDown,
+                            'align-start': smAndDown,
+                            'justify-space-between': !smAndDown,
+                            'align-center': !smAndDown,
+                        }"
+                    >
                         <span>契約詳細</span>
-                        <v-btn :href="editUrl" color="primary">契約を編集する</v-btn>
+                        <v-btn
+                            :href="editUrl"
+                            color="primary"
+                            :class="{ 'mt-2': smAndDown }"
+                        >
+                            契約を編集する
+                        </v-btn>
                     </v-card-title>
                     <v-divider></v-divider>
 
@@ -82,6 +96,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useDisplay } from 'vuetify';
 
 interface User {
     id: number;
@@ -109,6 +124,8 @@ interface Contract {
 const props = defineProps<{
     contract: Contract;
 }>();
+
+const { smAndDown } = useDisplay();
 
 const editUrl = computed(() => `/admin/contracts/${props.contract.id}/edit`);
 

@@ -7,18 +7,24 @@ import * as directives from "vuetify/directives";
 import { mdi } from "vuetify/iconsets/mdi"; // Import MDI iconset
 
 // Vue Components
-import AdminUserShow from "@/admin/users/Show.vue";
-import AdminUsersIndex from "@/admin/users/Index.vue";
-import AdminUsersEdit from "@/admin/users/Edit.vue";
+// admin
 import AdminContractsCreate from "@/admin/contracts/Create.vue";
 import AdminContractsShow from "@/admin/contracts/Show.vue";
 import AdminContractsEdit from "@/admin/contracts/Edit.vue";
 import AdminContractsIndex from "@/admin/contracts/Index.vue";
 import OwnerContractApply from "@/owner/contract/Apply.vue";
 import AdminContractApplicationsIndex from "@/admin/contract-applications/Index.vue";
+import AdminContractApplicationsShow from "@/admin/contract-applications/Show.vue";
+import AdminContractApplicationsEdit from "@/admin/contract-applications/Edit.vue";
 import AdminOwnersIndex from "@/admin/owners/Index.vue";
 import AdminOwnersShow from "@/admin/owners/Show.vue";
 import AdminOwnersEdit from "@/admin/owners/Edit.vue";
+// owner
+import OwnerShopsIndex from "@/owner/shops/Index.vue";
+import OwnerShopsCreate from "@/owner/shops/Create.vue";
+import OwnerShopsShow from "@/owner/shops/Show.vue";
+import OwnerShopsEdit from "@/owner/shops/Edit.vue";
+import BusinessHoursRegularEdit from "@/owner/shops/business-hours/regular/Edit.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
@@ -37,20 +43,13 @@ const appElement = document.getElementById("app");
 
 if (appElement) {
     const page = appElement.dataset.page;
-    const propsData = appElement.dataset.props ? JSON.parse(appElement.dataset.props) : {};
+    const propsData = appElement.dataset.props
+        ? JSON.parse(appElement.dataset.props)
+        : {};
 
     let component;
 
     switch (page) {
-        case "admin-users-show":
-            component = AdminUserShow;
-            break;
-        case "admin-users-index":
-            component = AdminUsersIndex;
-            break;
-        case "admin-users-edit":
-            component = AdminUsersEdit;
-            break;
         case "admin-contracts-create":
             component = AdminContractsCreate;
             break;
@@ -69,6 +68,12 @@ if (appElement) {
         case "admin-contract-applications-index":
             component = AdminContractApplicationsIndex;
             break;
+        case "admin-contract-applications-show":
+            component = AdminContractApplicationsShow;
+            break;
+        case "admin-contract-applications-edit":
+            component = AdminContractApplicationsEdit;
+            break;
         case "admin-owners-index":
             component = AdminOwnersIndex;
             break;
@@ -77,6 +82,21 @@ if (appElement) {
             break;
         case "admin-owners-edit":
             component = AdminOwnersEdit;
+            break;
+        case "owner-shops-index":
+            component = OwnerShopsIndex;
+            break;
+        case "owner-shops-create":
+            component = OwnerShopsCreate;
+            break;
+        case "owner-shops-show":
+            component = OwnerShopsShow;
+            break;
+        case "owner-shops-edit":
+            component = OwnerShopsEdit;
+            break;
+        case "owner-shops-business-hours-regular-edit":
+            component = BusinessHoursRegularEdit;
             break;
         // case 'booker-bookings-create':
         //     component = BookerBookingsCreate;

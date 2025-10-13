@@ -1,74 +1,85 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12">
-        <h1 class="text-h4">店舗詳細</h1>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col cols="12">
-        <v-card v-if="shop">
-          <v-card-title>{{ shop.name }}</v-card-title>
-          <v-card-text>
-            <p><strong>ID:</strong> {{ shop.id }}</p>
-            <p><strong>住所:</strong> {{ shop.address }}</p>
-            <p><strong>電話番号:</strong> {{ shop.phone_number }}</p>
-            <p><strong>営業時間:</strong> {{ shop.opening_time }} - {{ shop.closing_time }}</p>
-            <p><strong>定休日:</strong> {{ shop.regular_holidays ? shop.regular_holidays.join(', ') : 'なし' }}</p>
-            <p><strong>予約受付設定:</strong> {{ shop.reservation_acceptance_settings ? JSON.stringify(shop.reservation_acceptance_settings) : 'なし' }}</p>
-            <p><strong>作成日時:</strong> {{ shop.created_at }}</p>
-            <p><strong>更新日時:</strong> {{ shop.updated_at }}</p>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" :to="{ name: 'owner.shops.edit', params: { shop: shop.id } }">編集</v-btn>
-            <v-btn :to="{ name: 'owner.shops.index' }" class="ml-2">一覧に戻る</v-btn>
-          </v-card-actions>
-        </v-card>
-        <v-alert v-else type="info">店舗情報が見つかりません。</v-alert>
-      </v-col>
-    </v-row>
-  </v-container>
+    <v-container>
+        <v-row>
+            <v-col cols="12">
+                <v-btn href="/owner/shops" prepend-icon="mdi-arrow-left">
+                    店舗一覧に戻る
+                </v-btn>
+            </v-col>
+        </v-row>
+
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="props.shop" />
+
+                <v-card>
+                    <v-card-title
+                        :class="{
+                            'd-flex': true,
+                            'flex-column': smAndDown,
+                            'align-start': smAndDown,
+                            'justify-space-between': !smAndDown,
+                            'align-center': !smAndDown,
+                        }"
+                    >
+                        <span>店舗詳細</span>
+                        <v-btn
+                            color="primary"
+                            :href="`/owner/shops/${props.shop.slug}/edit`"
+                            :class="{ 'mt-2': smAndDown }"
+                        >
+                            店舗詳細を編集する
+                        </v-btn>
+                    </v-card-title>
+                    <v-divider></v-divider>
+                    <v-card-text>
+                        <v-table density="compact">
+                            <tbody>
+                                <tr><td>店舗名</td><td>{{ props.shop.name }}</td></tr>
+                                <tr><td>店舗ID</td><td>{{ props.shop.slug }}</td></tr>
+                                <tr><td>予約枠の間隔</td><td>{{ props.shop.time_slot_interval }} 分</td></tr>
+                                <tr><td>予約承認方法</td><td>{{ props.shop.booking_confirmation_type === 'automatic' ? '自動承認' : '手動承認' }}</td></tr>
+                                <tr><td>オンライン予約受付</td><td>
+                                    <v-chip :color="props.shop.accepts_online_bookings ? 'green' : 'red'" size="small">
+                                        {{ props.shop.accepts_online_bookings ? '受付中' : '停止中' }}
+                                    </v-chip>
+                                </td></tr>
+                                <tr><td>タイムゾーン</td><td>{{ props.shop.timezone }}</td></tr>
+                                <tr><td>キャンセル期限</td><td>{{ props.shop.cancellation_deadline_minutes }} 分前</td></tr>
+                                <tr><td>予約締切</td><td>{{ props.shop.booking_deadline_minutes }} 分前</td></tr>
+                                <tr><td>登録日時</td><td>{{ new Date(props.shop.created_at).toLocaleString() }}</td></tr>
+                                <tr><td>更新日時</td><td>{{ new Date(props.shop.updated_at).toLocaleString() }}</td></tr>
+                            </tbody>
+                        </v-table>
+                    </v-card-text>
+                </v-card>
+
+            </v-col>
+        </v-row>
+    </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useRoute, useRouter } from 'vue-router';
-
-const route = useRoute();
-const router = useRouter();
+import { useDisplay } from 'vuetify';
+import ShopHeader from './components/ShopHeader.vue';
 
 interface Shop {
-  id: number;
-  name: string;
-  address: string;
-  phone_number: string;
-  opening_time: string;
-  closing_time: string;
-  regular_holidays: string[];
-  reservation_acceptance_settings: any;
-  created_at: string;
-  updated_at: string;
+    id: number;
+    name: string;
+    slug: string;
+    time_slot_interval: number;
+    booking_confirmation_type: string;
+    accepts_online_bookings: boolean;
+    timezone: string;
+    cancellation_deadline_minutes: number;
+    booking_deadline_minutes: number;
+    created_at: string;
+    updated_at: string;
 }
 
-const shop = ref<Shop | null>(null);
+const props = defineProps<{
+    shop: Shop;
+}>();
 
-onMounted(() => {
-  // Bladeから渡されたデータを取得
-  const shopDataElement = document.getElementById('owner-shops-show');
-  if (shopDataElement && shopDataElement.dataset.shop) {
-    shop.value = JSON.parse(shopDataElement.dataset.shop);
-  } else {
-    // データが渡されなかった場合、APIを叩く（本来は不要だが念のため）
-    const shopId = route.params.shop as string;
-    if (shopId) {
-      axios.get(`/owner/shops/${shopId}`).then(response => {
-        shop.value = response.data;
-      }).catch(error => {
-        console.error('店舗詳細の取得に失敗しました:', error);
-        shop.value = null;
-      });
-    }
-  }
-});
+const { smAndDown } = useDisplay();
 </script>

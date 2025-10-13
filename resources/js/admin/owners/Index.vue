@@ -377,7 +377,7 @@ const loadItems = async (options: Options) => {
     }
 
     try {
-        const response = await axios.get(`/api/admin/owners${newSearch}`);
+        const response = await axios.get(`/admin/api/owners${newSearch}`);
         serverItems.value = response.data.data;
         totalItems.value = response.data.total;
     } catch (error) {

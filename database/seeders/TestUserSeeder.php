@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Admin;
+use App\Models\Owner;
 use App\Models\Shop;
 use App\Models\User;
 use App\Models\UserShopProfile;
@@ -21,6 +22,7 @@ class TestUserSeeder extends Seeder
         $this->command->info("Admin User Created: ID={$adminUser->id}, PublicID={$adminUser->public_id}");
 
         $ownerUser = User::factory()->create(['public_id' => 'public-id-owner']);
+        Owner::create(['user_id' => $ownerUser->id, 'name' => 'テストオーナー']);
         $this->command->info("Owner User Created: ID={$ownerUser->id}, PublicID={$ownerUser->public_id}");
 
         $staffUser = User::factory()->create(['public_id' => 'public-id-staff']);
@@ -34,6 +36,7 @@ class TestUserSeeder extends Seeder
         $testShop = Shop::factory()->create([
             'owner_user_id' => $ownerUser->id, // 作成したオーナーを店舗に紐付け
             'name' => 'テスト店舗',
+            'slug' => 'test-shop',
         ]);
         $this->command->info("Test Shop Created: ID={$testShop->id}, Name={$testShop->name}, OwnerID={$ownerUser->id}");
 

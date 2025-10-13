@@ -19,7 +19,9 @@ class Shop extends Model
         'cancellation_deadline_minutes',
         'booking_deadline_minutes',
         'booking_confirmation_type',
+        'accepts_online_bookings',
         'status',
+        'timezone',
     ];
 
     protected $casts = [

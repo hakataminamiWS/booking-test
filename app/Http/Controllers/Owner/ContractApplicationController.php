@@ -45,8 +45,8 @@ class ContractApplicationController extends Controller
 
             DB::commit();
 
-            // 完了メッセージと共にダッシュボードなどへリダイレクト
-            return redirect()->route('owner.dashboard')->with('status', '契約の申し込みが完了しました。管理者からの連絡をお待ちください。');
+            // 完了メッセージと共にトップページなどへリダイレクト
+            return redirect('/')->with('status', '契約の申し込みが完了しました。管理者からの連絡をお待ちください。');
         } catch (\Exception $e) {
             DB::rollBack();
             // エラーログの出力や、適切なエラーレスポンスを返す

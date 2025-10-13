@@ -3,18 +3,54 @@
 namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Owner\StoreShopRequest;
+use App\Http\Requests\Owner\UpdateShopRequest;
 use App\Models\Shop;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ShopsController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $shops = auth()->user()->shops; // 認証されたオーナーに関連付けられた店舗のみを取得
-        return view('owner.shops.index', compact('shops'));
+        $owner = auth()->user()->owner;
+        $contract = $owner->contract;
+
+        $maxShops = $contract ? $contract->max_shops : 0;
+        $currentShopsCount = $owner->shops()->count();
+
+        return view('owner.shops.index', compact('maxShops', 'currentShopsCount'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $this->authorize('create', Shop::class);
+
+        return view('owner.shops.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreShopRequest $request)
+    {
+        $this->authorize('create', Shop::class);
+
+        $validated = $request->validated();
+        $validated['owner_user_id'] = auth()->id();
+
+        Shop::create($validated);
+
+        return redirect()->route('owner.shops.index')
+                         ->with('success', '店舗を登録しました');
     }
 
     /**
@@ -22,37 +58,29 @@ class ShopsController extends Controller
      */
     public function show(Shop $shop) // ルートモデルバインディング
     {
+        $this->authorize('view', $shop);
+
         return view('owner.shops.show', compact('shop'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Shop $shop) // ルートモデルバインディング
+    public function edit(Shop $shop)
     {
+        $this->authorize('update', $shop);
+
         return view('owner.shops.edit', compact('shop'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Shop $shop) // ルートモデルバインディング
+    public function update(UpdateShopRequest $request, Shop $shop)
     {
-        // バリデーション
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'nullable|string|max:255',
-            'phone_number' => 'nullable|string|max:20',
-            'opening_time' => 'nullable|date_format:H:i',
-            'closing_time' => 'nullable|date_format:H:i|after:opening_time',
-            'regular_holidays' => 'nullable|array',
-            'regular_holidays.*' => 'in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-            'reservation_acceptance_settings' => 'nullable|array',
-        ]);
+        $shop->update($request->validated());
 
-        $shop->update($validatedData); // 店舗を更新
-
-        return redirect()->route('owner.shops.show', $shop->id)
-                         ->with('success', '店舗情報が正常に更新されました。');
+        return redirect()->route('owner.shops.show', $shop)
+                         ->with('success', '店舗情報を更新しました。');
     }
 }

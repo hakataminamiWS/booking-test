@@ -20,7 +20,6 @@ class ShopSeeder extends Seeder
             'owner_user_id' => $owner->id,
             'name' => 'Gemini Hair Salon',
             'slug' => 'gemini-hair-salon',
-            'status' => 'active',
         ]);
     }
 }
