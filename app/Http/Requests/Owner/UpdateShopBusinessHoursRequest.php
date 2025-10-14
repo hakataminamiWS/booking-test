@@ -31,4 +31,18 @@ class UpdateShopBusinessHoursRequest extends FormRequest
             'business_hours.*.end_time' => ['required_if:business_hours.*.is_open,true', 'nullable', 'date_format:H:i', 'after:business_hours.*.start_time'],
         ];
     }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'business_hours.*.is_open' => '営業日',
+            'business_hours.*.start_time' => '開始時刻',
+            'business_hours.*.end_time' => '終了時刻',
+        ];
+    }
 }

@@ -368,7 +368,89 @@
 
 ### 営業時間一覧画面
 
-（仕様未作成）
+#### 機能概要
+
+オーナーが店舗の営業スケジュール全体を俯瞰し、各種設定画面へ遷移するためのハブとなる画面です。通常営業時間、特別営業日、特別休業日の 3 つの情報をまとめて表示します。
+
+#### 画面仕様詳細 (`/owner/shops/{shop}/business-hours`)
+
+-   **ウィンドウタイトル**: `営業時間一覧`
+
+##### 表示項目一覧
+
+    リンクセクション：
+
+    -   営業時間一覧画面へのリンクをページ上部に表示（これは、自分自身へのリンク。将来的に変更予定。枠だけ確保）
+
+    店舗ヘッダー：
+    -   店舗：{店舗名} (店舗 ID: {店舗ID})
+    これは、店舗に紐づく画面（店舗詳細、営業日、特別休業日、スタッフ管理、メニュー管理など）の共通ヘッダーとして表示します。
+
+
+    通常営業時間・定休日セクション
+
+    -   **セクションタイトル**: `通常営業時間・定休日`
+    -   **ボタン**:
+        -   セクションタイトルの右側に「編集する」ボタンを配置します。
+        -   クリックすると営業時間・定休日編集画面 (`/owner/shops/{shop:slug}/business-hours/regular/edit`) へ遷移します。
+    -   **表示内容**:
+        -   曜日（日曜〜土曜）ごとに、設定された「ステータス（営業日/定休日）」と「営業時間（例: 09:00 - 18:00）」をテーブル形式で表示します。
+
+| 曜日 | ステータス | 営業時間      |
+| :--- | :--------- | :------------ |
+| 日曜 | 定休日     | -             |
+| 月曜 | 営業日     | 09:00 - 18:00 |
+| ...  | ...        | ...           |
+
+    特別営業日セクション
+
+    -   **セクションタイトル**: `特別営業日`
+    -   **ボタン**:
+        -   セクションタイトルの右側に「新規登録」ボタンを配置します。
+        -   クリックすると特別営業日登録画面 (`/owner/shops/{shop:slug}/business-hours/special-open-days/create`) へ遷移します。
+    -   **表示内容**:
+        -   登録済みの特別営業日をテーブル形式で一覧表示します。
+        -   テーブル形式では、ソートやフィルタの機能は提供しません。
+        -   表示するデータは、日付が表示現在の日付か未来の日付のみ表示します。過去のデータは表示しません。
+        -   **表示項目**: 日付, 営業時間（例: 09:00 - 18:00）, 営業日名, 操作
+        -   **操作**: 各行に「編集」ボタンを配置します。
+            -   編集ボタンの遷移先: `/owner/shops/{shop:slug}/business-hours/special-open-days/{id}/edit`
+
+    特別休業日セクション
+
+    -   **セクションタイトル**: `特別休業日`
+    -   **ボタン**:
+        -   セクションタイトルの右側に「新規登録」ボタンを配置します。
+        -   クリックすると特別休業日登録画面 (`/owner/shops/{shop:slug}/business-hours/special-closed-days/create`) へ遷移します。
+    -   **表示内容**:
+        -   登録済みの特別休業日をテーブル形式で一覧表示します。
+        -   テーブル形式では、ソートやフィルタの機能は提供しません。
+        -   表示するデータは、日付が表示現在の日付か未来の日付のみ表示します。過去のデータは表示しません。
+        -   **表示項目**: 期間 (開始日〜終了日), 休業日名, 操作
+        -   **操作**: 各行に「編集」ボタンを配置します。
+            -   編集ボタンの遷移先: `/owner/shops/{shop:slug}/business-hours/special-closed-days/{id}/edit`
+
+#### バックエンド仕様
+
+##### データ受け渡し (ページ表示)
+
+-   **ルート**: `GET /owner/shops/{shop:slug}/business-hours`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopBusinessHoursController@index`
+-   **処理内容**:
+    1.  `ShopPolicy@view` を使用し、オーナーが自身の店舗情報のみを閲覧できるか認可チェックを行います。
+    2.  ルートモデルバインディングで `Shop` オブジェクトを取得します。
+    3.  対象店舗に紐づく以下の情報を取得します。
+        -   `shop_business_hours_regular` (全 7 曜日分)
+        -   `shop_special_open_days` (日付の昇順でソートされた、現在日付を含む以降の全件)
+        -   `shop_special_closed_days` (開始日の昇順でソートされた、現在日付を含む以降の全件)
+    4.  取得したすべてのデータを `owner.shops.business-hours.index` ビューに渡します。
+    5.  ビューは、受け取ったデータを `props` として Vue コンポーネントに渡してマウントします。
+
+##### API エンドポイント
+
+-   この画面の初期表示はサーバーサイドで完結するため、データ取得用の API エンドポイントは不要です。
+
+---
 
 ### 営業時間・定休日編集画面
 
@@ -381,7 +463,7 @@
 
     -   **ウィンドウタイトル**: `営業時間・定休日設定`
 
-#### 表示項目一覧
+##### 表示項目一覧
 
     リンクセクション：
 
@@ -456,27 +538,224 @@
 
 ### 特別営業日登録画面
 
-（仕様未作成）
+#### 機能概要
+
+オーナーが、定休日とは別に、特別に営業する日とその時間帯を登録するための画面です。
+
+#### 画面仕様詳細 (`/owner/shops/{shop}/business-hours/special-open-days/create`)
+
+    -   **ウィンドウタイトル**: `特別営業日登録`
+
+##### 表示項目一覧
+
+    リンクセクション：
+
+    -   営業時間一覧画面へのリンクをページ上部に表示
+
+    店舗ヘッダー：
+    -   店舗：{店舗名} (店舗 ID: {店舗ID})
+    これは、店舗に紐づく画面（店舗詳細、営業日、特別休業日、スタッフ管理、メニュー管理など）の共通ヘッダーとして表示します。
+
+    店舗詳細セクション：
+
+    -   **セクションタイトル**: `特別営業日登録`
+
+    -   フォーム全体は `v-card` で囲みます。
+    -   カードの最下部に「登録する」ボタンを配置します。
+
+##### フォーム項目一覧
+
+| ラベル       | UI           | `name`属性   | 備考                               |
+| :----------- | :----------- | :----------- | :--------------------------------- |
+| **日付**     | 日付入力     | `date`       | 必須。                             |
+| **開始時刻** | 時刻入力     | `start_time` | 必須。タイムピッカーを利用。       |
+| **終了時刻** | 時刻入力     | `end_time`   | 必須。タイムピッカーを利用。       |
+| **営業日名** | テキスト入力 | `name`       | 任意入力。（例：「祝日特別営業」） |
+
+---
+
+#### バックエンド仕様
+
+##### データ受け渡し (ページ表示)
+
+-   **ルート**: `GET /owner/shops/{shop:slug}/business-hours/special-open-days/create`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialOpenDaysController@create`
+-   **処理内容**:
+    -   `ShopPolicy@update` を使用し、オーナーが自身の店舗情報を編集できるか認可チェックを行います。
+    -   成功した場合は、`owner.shops.business-hours.special-open-days.create` ビューを返します。
+
+##### フォーム送信 (登録処理)
+
+-   **ルート**: `POST /owner/shops/{shop:slug}/business-hours/special-open-days`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialOpenDaysController@store`
+-   **リクエストクラス**: `App\Http\Requests\Owner\StoreShopSpecialOpenDayRequest`
+
+##### バリデーション (`StoreShopSpecialOpenDayRequest`)
+
+-   **認可**: `authorize`メソッド内で`ShopPolicy@update`を呼び出します。
+-   **ルール**:
+    -   `name`: `nullable`, `string`, `max:255`
+    -   `date`: `required`, `date`
+    -   `start_time`: `required`, `date_format:H:i`
+    -   `end_time`: `required`, `date_format:H:i`, `after:start_time`
+
+##### 処理内容
+
+1.  `StoreShopSpecialOpenDayRequest` で認可とバリデーションを実行します。
+2.  バリデーションが成功した場合、`shop_special_open_days` テーブルに新しいレコードを作成します。
+3.  登録後、営業時間一覧画面 (`/owner/shops/{shop:slug}/business-hours`) にリダイレクトし、「特別営業日を登録しました」という成功メッセージを表示します。
 
 ---
 
 ### 特別営業日編集画面
 
-（仕様未作成）
+#### 機能概要
+
+オーナーが、登録済みの特別営業日の内容（日付、時間、名称）を修正するための画面です。
+
+#### 画面仕様詳細 (`/owner/shops/{shop}/business-hours/special-open-days/{id}/edit`)
+
+-   **ウィンドウタイトル**: `特別営業日編集`
+
+##### 表示項目一覧
+
+    リンクセクション：
+
+    -   営業時間一覧画面へのリンクをページ上部に表示
+
+    店舗ヘッダー：
+    -   店舗：{店舗名} (店舗 ID: {店舗ID})
+    これは、店舗に紐づく画面（店舗詳細、営業日、特別休業日、スタッフ管理、メニュー管理など）の共通ヘッダーとして表示します。
+
+    フォームセクション：
+
+    -   **セクションタイトル**: `特別営業日編集`
+    -   フォーム全体は `<v-card>` で囲みます。
+    -   フォーム項目は、登録済みのデータが初期表示されます。
+    -   カードの最下部に「更新する」ボタンを配置します。
+
+##### フォーム項目一覧
+
+| ラベル       | UI           | `name`属性   | 備考                               |
+| :----------- | :----------- | :----------- | :--------------------------------- |
+| **日付**     | 日付入力     | `date`       | 必須。                             |
+| **開始時刻** | 時刻入力     | `start_time` | 必須。タイムピッカーを利用。       |
+| **終了時刻** | 時刻入力     | `end_time`   | 必須。タイムピッカーを利用。       |
+| **営業日名** | テキスト入力 | `name`       | 任意入力。（例：「祝日特別営業」） |
+
+---
+
+#### バックエンド仕様
+
+##### データ受け渡し (ページ表示)
+
+-   **ルート**: `GET /owner/shops/{shop:slug}/business-hours/special-open-days/{special_open_day}/edit`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialOpenDaysController@edit`
+-   **処理内容**:
+    -   `ShopPolicy@update` を使用し、オーナーが自身の店舗情報を編集できるか認可チェックを行います。
+    -   ルートモデルバインディングで取得した `Shop` と `ShopSpecialOpenDay` のオブジェクトを `owner.shops.business-hours.special-open-days.edit` ビューに渡します。
+    -   CSRF トークン等を Blade から Vue へ渡します。
+
+##### フォーム送信 (更新処理)
+
+-   **ルート**: `PUT /owner/shops/{shop:slug}/business-hours/special-open-days/{special_open_day}`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialOpenDaysController@update`
+-   **リクエストクラス**: `App\Http\Requests\Owner\UpdateShopSpecialOpenDayRequest` （新規作成）
+
+##### バリデーション
+
+-   **フロントエンド**:
+    -   フォーム送信前に、必須項目が入力されているか、終了時刻が開始時刻より後になっているか等の基本的なチェックを実行します。
+-   **バックエンド (`UpdateShopSpecialOpenDayRequest`)**:
+    -   **認可**: `authorize`メソッド内で`ShopPolicy@update`を呼び出します。
+    -   **ルール**:
+        -   `name`: `nullable`, `string`, `max:255`
+        -   `date`: `required`, `date`
+        -   `start_time`: `required`, `date_format:H:i`
+        -   `end_time`: `required`, `date_format:H:i`, `after:start_time`
+
+##### 処理内容
+
+1.  `UpdateShopSpecialOpenDayRequest` で認可とバリデーションを実行します。
+2.  バリデーションが成功した場合、対象の `ShopSpecialOpenDay` モデルの情報を更新します。
+3.  更新後、営業時間一覧画面 (`/owner/shops/{shop:slug}/business-hours`) にリダイレクトし、「特別営業日を更新しました」という成功メッセージを表示します。
+
+##### API エンドポイント
+
+-   この画面はサーバーサイドで完結するため、データ取得や更新のための API エンドポイントは提供しません。
 
 ---
 
 ### 特別休業日登録画面
 
-（仕様未作成）
+#### 機能概要
+
+オーナーが、店舗を特別に休業する期間（夏季休業など）を登録するための画面です。
+
+#### 画面仕様詳細 (`/owner/shops/{shop}/business-hours/special-closed-days/create`)
+
+-   **ウィンドウタイトル**: `特別休業日登録`
+
+##### 表示項目一覧
+
+    リンクセクション：
+
+    -   営業時間一覧画面へのリンクをページ上部に表示
+
+    店舗ヘッダー：
+
+    -   店舗：{店舗名} (店舗 ID: {店舗 ID})
+        これは、店舗に紐づく画面（店舗詳細、営業日、特別休業日、スタッフ管理、メニュー管理など）の共通ヘッダーとして表示します。
+
+    店舗詳細セクション：
+
+    -   **セクションタイトル**: `特別休業日登録`
+    -   フォーム全体は `<v-card>` で囲みます。
+    -   カードの最下部に「登録する」ボタンを配置します。
+
+##### フォーム項目一覧
+
+| ラベル       | UI           | `name`属性 | 備考                           |
+| :----------- | :----------- | :--------- | :----------------------------- |
+| **開始日**   | 日付入力     | `start_at` | 必須。                         |
+| **終了日**   | 日付入力     | `end_at`   | 必須。                         |
+| **休業日名** | テキスト入力 | `name`     | 任意入力。（例：「夏季休業」） |
 
 ---
 
-### 特別休業日編集画面
+#### バックエンド仕様
 
-（仕様未作成）
+##### データ受け渡し (ページ表示)
+
+-   **ルート**: `GET /owner/shops/{shop:slug}/business-hours/special-closed-days/create`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialClosedDaysController@create`
+-   **処理内容**:
+    -   `ShopPolicy@update` を使用し、オーナーが自身の店舗情報を編集できるか認可チェックを行います。
+    -   成功した場合は、`owner.shops.business-hours.special-closed-days.create` ビューを返します。
+
+##### フォーム送信 (登録処理)
+
+-   **ルート**: `POST /owner/shops/{shop:slug}/business-hours/special-closed-days`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialClosedDaysController@store`
+-   **リクエストクラス**: `App\Http\Requests\Owner\StoreShopSpecialClosedDayRequest`
+
+##### バリデーション (`StoreShopSpecialClosedDayRequest`)
+
+-   **認可**: `authorize`メソッド内で`ShopPolicy@update`を呼び出します。
+-   **ルール**:
+    -   `name`: `nullable`, `string`, `max:255`
+    -   `start_at`: `required`, `date`
+    -   `end_at`: `required`, `date`, `after_or_equal:start_at`
+
+##### 処理内容
+
+1.  `StoreShopSpecialClosedDayRequest` で認可とバリデーションを実行します。
+2.  バリデーションが成功した場合、`shop_special_closed_days` テーブルに新しいレコードを作成します。
+3.  登録後、営業時間一覧画面 (`/owner/shops/{shop:slug}/business-hours`) にリダイレクトし、「特別休業日を登録しました」という成功メッセージを表示します。
 
 ---
+
+### 4.2. スタッフ管理
 
 ### 4.2. スタッフ管理
 

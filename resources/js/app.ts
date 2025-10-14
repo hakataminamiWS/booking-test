@@ -5,6 +5,7 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mdi } from "vuetify/iconsets/mdi"; // Import MDI iconset
+import { ja } from "vuetify/locale";
 
 // Vue Components
 // admin
@@ -25,6 +26,9 @@ import OwnerShopsCreate from "@/owner/shops/Create.vue";
 import OwnerShopsShow from "@/owner/shops/Show.vue";
 import OwnerShopsEdit from "@/owner/shops/Edit.vue";
 import BusinessHoursRegularEdit from "@/owner/shops/business-hours/regular/Edit.vue";
+import SpecialOpenDaysCreate from "@/owner/shops/business-hours/special-open-days/Create.vue";
+import SpecialClosedDaysCreate from "@/owner/shops/business-hours/special-closed-days/Create.vue";
+import OwnerBusinessHoursIndex from "@/owner/shops/business-hours/Index.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
@@ -36,6 +40,10 @@ const vuetify = createVuetify({
         sets: {
             mdi,
         },
+    },
+    locale: {
+        locale: "ja",
+        messages: { ja },
     },
 });
 
@@ -97,6 +105,15 @@ if (appElement) {
             break;
         case "owner-shops-business-hours-regular-edit":
             component = BusinessHoursRegularEdit;
+            break;
+        case "owner-shops-business-hours-special-open-days-create":
+            component = SpecialOpenDaysCreate;
+            break;
+        case "owner-shops-business-hours-special-closed-days-create":
+            component = SpecialClosedDaysCreate;
+            break;
+        case "owner/shops/business-hours/index":
+            component = OwnerBusinessHoursIndex;
             break;
         // case 'booker-bookings-create':
         //     component = BookerBookingsCreate;

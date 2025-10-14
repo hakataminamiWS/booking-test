@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shop extends Model
 {
@@ -58,14 +58,14 @@ class Shop extends Model
         return $this->hasMany(Option::class);
     }
 
-    public function shopRecurringHolidays(): HasMany
+    public function shopSpecialOpenDays(): HasMany
     {
-        return $this->hasMany(ShopRecurringHoliday::class);
+        return $this->hasMany(ShopSpecialOpenDay::class);
     }
 
-    public function shopSpecificHolidays(): HasMany
+    public function shopSpecialClosedDays(): HasMany
     {
-        return $this->hasMany(ShopSpecificHoliday::class);
+        return $this->hasMany(ShopSpecialClosedDay::class);
     }
 
     public function staffSchedules(): HasMany
