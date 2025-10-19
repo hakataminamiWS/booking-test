@@ -12,7 +12,9 @@
                     <v-card-title>営業時間一覧</v-card-title>
                     <v-card-text>
                         <!-- Section 1: Regular Business Hours -->
-                        <div class="d-flex justify-space-between align-center mt-4">
+                        <div
+                            class="d-flex justify-space-between align-center mt-4"
+                        >
                             <h6 class="text-h6">通常営業時間・定休日</h6>
                             <v-btn :href="regularHoursEditUrl">編集する</v-btn>
                         </div>
@@ -25,22 +27,45 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="hour in props.businessHours" :key="hour.day_of_week">
+                                <tr
+                                    v-for="hour in props.businessHours"
+                                    :key="hour.day_of_week"
+                                >
                                     <td>{{ dayOfWeek[hour.day_of_week] }}</td>
                                     <td>
-                                        <v-chip :color="hour.is_open ? 'blue' : 'grey'" dark small>
-                                            {{ hour.is_open ? '営業日' : '定休日' }}
+                                        <v-chip
+                                            :color="
+                                                hour.is_open ? 'blue' : 'grey'
+                                            "
+                                            dark
+                                            small
+                                        >
+                                            {{
+                                                hour.is_open
+                                                    ? "営業日"
+                                                    : "定休日"
+                                            }}
                                         </v-chip>
                                     </td>
-                                    <td>{{ hour.is_open ? `${hour.start_time} - ${hour.end_time}` : '-' }}</td>
+                                    <td>
+                                        {{
+                                            hour.is_open
+                                                ? `${hour.start_time} - ${hour.end_time}`
+                                                : "-"
+                                        }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </v-table>
 
                         <!-- Section 2: Special Open Days -->
-                        <div class="d-flex justify-space-between align-center mt-8">
+                        <div
+                            class="d-flex justify-space-between align-center mt-8"
+                        >
                             <h6 class="text-h6">特別営業日</h6>
-                            <v-btn :href="specialOpenDaysCreateUrl">新規登録</v-btn>
+                            <v-btn :href="specialOpenDaysCreateUrl"
+                                >新規登録</v-btn
+                            >
                         </div>
                         <v-table class="mt-2">
                             <thead>
@@ -53,23 +78,41 @@
                             </thead>
                             <tbody>
                                 <tr v-if="props.specialOpenDays.length === 0">
-                                    <td colspan="4" class="text-center">登録されている特別営業日はありません。</td>
+                                    <td colspan="4" class="text-center">
+                                        登録されている特別営業日はありません。
+                                    </td>
                                 </tr>
-                                <tr v-for="day in props.specialOpenDays" :key="day.id">
+                                <tr
+                                    v-for="day in props.specialOpenDays"
+                                    :key="day.id"
+                                >
                                     <td>{{ day.date }}</td>
-                                    <td>{{ day.start_time }} - {{ day.end_time }}</td>
+                                    <td>
+                                        {{ day.start_time }} -
+                                        {{ day.end_time }}
+                                    </td>
                                     <td>{{ day.name }}</td>
                                     <td>
-                                        <v-btn small :href="specialOpenDayEditUrl(day.id)">編集</v-btn>
+                                        <v-btn
+                                            small
+                                            :href="
+                                                specialOpenDayEditUrl(day.id)
+                                            "
+                                            >編集する</v-btn
+                                        >
                                     </td>
                                 </tr>
                             </tbody>
                         </v-table>
 
                         <!-- Section 3: Special Closed Days -->
-                        <div class="d-flex justify-space-between align-center mt-8">
+                        <div
+                            class="d-flex justify-space-between align-center mt-8"
+                        >
                             <h6 class="text-h6">特別休業日</h6>
-                            <v-btn :href="specialClosedDaysCreateUrl">新規登録</v-btn>
+                            <v-btn :href="specialClosedDaysCreateUrl"
+                                >新規登録</v-btn
+                            >
                         </div>
                         <v-table class="mt-2">
                             <thead>
@@ -81,18 +124,30 @@
                             </thead>
                             <tbody>
                                 <tr v-if="props.specialClosedDays.length === 0">
-                                    <td colspan="3" class="text-center">登録されている特別休業日はありません。</td>
+                                    <td colspan="3" class="text-center">
+                                        登録されている特別休業日はありません。
+                                    </td>
                                 </tr>
-                                <tr v-for="day in props.specialClosedDays" :key="day.id">
-                                    <td>{{ day.start_at }} - {{ day.end_at }}</td>
+                                <tr
+                                    v-for="day in props.specialClosedDays"
+                                    :key="day.id"
+                                >
+                                    <td>
+                                        {{ day.start_at }} - {{ day.end_at }}
+                                    </td>
                                     <td>{{ day.name }}</td>
                                     <td>
-                                        <v-btn small :href="specialClosedDayEditUrl(day.id)">編集</v-btn>
+                                        <v-btn
+                                            small
+                                            :href="
+                                                specialClosedDayEditUrl(day.id)
+                                            "
+                                            >編集する</v-btn
+                                        >
                                     </td>
                                 </tr>
                             </tbody>
                         </v-table>
-
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -101,8 +156,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import ShopHeader from '@/owner/shops/components/ShopHeader.vue';
+import { computed } from "vue";
+import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
 
 const props = defineProps({
     shop: Object,
@@ -113,26 +168,35 @@ const props = defineProps({
 
 const shopShowUrl = computed(() => `/owner/shops/${props.shop.slug}`);
 
-const regularHoursEditUrl = computed(() => `/owner/shops/${props.shop.slug}/business-hours/regular/edit`);
+const regularHoursEditUrl = computed(
+    () => `/owner/shops/${props.shop.slug}/business-hours/regular/edit`
+);
 
-const specialOpenDaysCreateUrl = computed(() => `/owner/shops/${props.shop.slug}/business-hours/special-open-days/create`);
+const specialOpenDaysCreateUrl = computed(
+    () =>
+        `/owner/shops/${props.shop.slug}/business-hours/special-open-days/create`
+);
 
-const specialOpenDayEditUrl = (id) => `/owner/shops/${props.shop.slug}/business-hours/special-open-days/${id}/edit`;
+const specialOpenDayEditUrl = (id) =>
+    `/owner/shops/${props.shop.slug}/business-hours/special-open-days/${id}/edit`;
 
-const specialClosedDaysCreateUrl = computed(() => `/owner/shops/${props.shop.slug}/business-hours/special-closed-days/create`);
+const specialClosedDaysCreateUrl = computed(
+    () =>
+        `/owner/shops/${props.shop.slug}/business-hours/special-closed-days/create`
+);
 
-const specialClosedDayEditUrl = (id) => `/owner/shops/${props.shop.slug}/business-hours/special-closed-days/${id}/edit`;
+const specialClosedDayEditUrl = (id) =>
+    `/owner/shops/${props.shop.slug}/business-hours/special-closed-days/${id}/edit`;
 
 const dayOfWeek = computed(() => {
     return {
-        0: '日曜',
-        1: '月曜',
-        2: '火曜',
-        3: '水曜',
-        4: '木曜',
-        5: '金曜',
-        6: '土曜',
+        0: "日曜",
+        1: "月曜",
+        2: "火曜",
+        3: "水曜",
+        4: "木曜",
+        5: "金曜",
+        6: "土曜",
     };
 });
-
 </script>

@@ -660,7 +660,7 @@
 
 -   **ルート**: `PUT /owner/shops/{shop:slug}/business-hours/special-open-days/{special_open_day}`
 -   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialOpenDaysController@update`
--   **リクエストクラス**: `App\Http\Requests\Owner\UpdateShopSpecialOpenDayRequest` （新規作成）
+-   **リクエストクラス**: `App\Http\Requests\Owner\UpdateShopSpecialOpenDayRequest`
 
 ##### バリデーション
 
@@ -669,10 +669,10 @@
 -   **バックエンド (`UpdateShopSpecialOpenDayRequest`)**:
     -   **認可**: `authorize`メソッド内で`ShopPolicy@update`を呼び出します。
     -   **ルール**:
-        -   `name`: `nullable`, `string`, `max:255`
         -   `date`: `required`, `date`
         -   `start_time`: `required`, `date_format:H:i`
         -   `end_time`: `required`, `date_format:H:i`, `after:start_time`
+        -   `name`: `nullable`, `string`, `max:255`
 
 ##### 処理内容
 
@@ -752,6 +752,81 @@
 1.  `StoreShopSpecialClosedDayRequest` で認可とバリデーションを実行します。
 2.  バリデーションが成功した場合、`shop_special_closed_days` テーブルに新しいレコードを作成します。
 3.  登録後、営業時間一覧画面 (`/owner/shops/{shop:slug}/business-hours`) にリダイレクトし、「特別休業日を登録しました」という成功メッセージを表示します。
+
+### 特別休業日編集画面
+
+#### 機能概要
+
+オーナーが、登録済みの特別休業日の内容（期間、名称）を修正するための画面です。
+
+#### 画面仕様詳細 (`/owner/shops/{shop}/business-hours/special-closed-days/{id}/edit`)
+
+-   **ウィンドウタイトル**: `特別休業日編集`
+
+##### 表示項目一覧
+
+    リンクセクション：
+
+    -   営業時間一覧画面へのリンクをページ上部に表示
+
+    店舗ヘッダー：
+    -   店舗：{店舗名} (店舗 ID: {店舗ID})
+    これは、店舗に紐づく画面（店舗詳細、営業日、特別休業日、スタッフ管理、メニュー管理など）の共通ヘッダーとして表示します。
+
+    フォームセクション：
+
+    -   **セクションタイトル**: `特別休業日編集`
+    -   フォーム全体は `<v-card>` で囲みます。
+    -   フォーム項目は、登録済みのデータが初期表示されます。
+    -   カードの最下部に「更新する」ボタンを配置します。
+
+##### フォーム項目一覧
+
+| ラベル       | UI           | `name`属性 | 備考                           |
+| :----------- | :----------- | :--------- | :----------------------------- |
+| **開始日**   | 日付入力     | `start_at` | 必須。                         |
+| **終了日**   | 日付入力     | `end_at`   | 必須。                         |
+| **休業日名** | テキスト入力 | `name`     | 任意入力。（例：「夏季休業」） |
+
+---
+
+#### バックエンド仕様
+
+##### データ受け渡し (ページ表示)
+
+-   **ルート**: `GET /owner/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}/edit`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialClosedDaysController@edit`
+-   **処理内容**:
+    -   `ShopPolicy@update` を使用し、オーナーが自身の店舗情報を編集できるか認可チェックを行います。
+    -   ルートモデルバインディングで取得した `Shop` と `ShopSpecialClosedDay` のオブジェクトを `owner.shops.business-hours.special-closed-days.edit` ビューに渡します。
+    -   CSRF トークン等を Blade から Vue へ渡します。
+
+##### フォーム送信 (更新処理)
+
+-   **ルート**: `PUT /owner/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}`
+-   **コントローラ**: `App\Http\Controllers\Owner\ShopSpecialClosedDaysController@update`
+-   **リクエストクラス**: `App\Http\Requests\Owner\UpdateShopSpecialClosedDayRequest`
+
+##### バリデーション
+
+-   **フロントエンド**:
+    -   フォーム送信前に、必須項目が入力されているか、終了日が開始日以降になっているか等の基本的なチェックを実行します。
+-   **バックエンド (`UpdateShopSpecialClosedDayRequest`)**:
+    -   **認可**: `authorize`メソッド内で`ShopPolicy@update`を呼び出します。
+    -   **ルール**:
+        -   `name`: `nullable`, `string`, `max:255`
+        -   `start_at`: `required`, `date`
+        -   `end_at`: `required`, `date`, `after_or_equal:start_at`
+
+##### 処理内容
+
+1.  `UpdateShopSpecialClosedDayRequest` で認可とバリデーションを実行します。
+2.  バリデーションが成功した場合、対象の `ShopSpecialClosedDay` モデルの情報を更新します。
+3.  更新後、営業時間一覧画面 (`/owner/shops/{shop:slug}/business-hours`) にリダイレクトし、「特別休業日を更新しました」という成功メッセージを表示します。
+
+##### API エンドポイント
+
+-   この画面はサーバーサイドで完結するため、データ取得や更新のための API エンドポイントは提供しません。
 
 ---
 

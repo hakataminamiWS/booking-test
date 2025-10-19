@@ -29,6 +29,8 @@ import BusinessHoursRegularEdit from "@/owner/shops/business-hours/regular/Edit.
 import SpecialOpenDaysCreate from "@/owner/shops/business-hours/special-open-days/Create.vue";
 import SpecialClosedDaysCreate from "@/owner/shops/business-hours/special-closed-days/Create.vue";
 import OwnerBusinessHoursIndex from "@/owner/shops/business-hours/Index.vue";
+import SpecialOpenDaysEdit from "@/owner/shops/business-hours/special-open-days/Edit.vue";
+import SpecialClosedDaysEdit from "@/owner/shops/business-hours/special-closed-days/Edit.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
@@ -114,6 +116,12 @@ if (appElement) {
             break;
         case "owner/shops/business-hours/index":
             component = OwnerBusinessHoursIndex;
+            break;
+        case "owner-shops-business-hours-special-open-days-edit":
+            component = SpecialOpenDaysEdit;
+            break;
+        case "owner-shops-business-hours-special-closed-days-edit":
+            component = SpecialClosedDaysEdit;
             break;
         // case 'booker-bookings-create':
         //     component = BookerBookingsCreate;

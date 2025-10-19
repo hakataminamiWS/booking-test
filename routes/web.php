@@ -64,8 +64,12 @@ Route::middleware('auth')->group(function () {
         Route::put('/shops/{shop:slug}/business-hours/regular', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'update'])->name('shops.business-hours.regular.update');
         Route::get('/shops/{shop:slug}/business-hours/special-open-days/create', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'create'])->name('shops.business-hours.special-open-days.create');
         Route::post('/shops/{shop:slug}/business-hours/special-open-days', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'store'])->name('shops.business-hours.special-open-days.store');
+        Route::get('/shops/{shop:slug}/business-hours/special-open-days/{special_open_day}/edit', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'edit'])->name('shops.business-hours.special-open-days.edit');
+        Route::put('/shops/{shop:slug}/business-hours/special-open-days/{special_open_day}', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'update'])->name('shops.business-hours.special-open-days.update');
         Route::get('/shops/{shop:slug}/business-hours/special-closed-days/create', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'create'])->name('shops.business-hours.special-closed-days.create');
         Route::post('/shops/{shop:slug}/business-hours/special-closed-days', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'store'])->name('shops.business-hours.special-closed-days.store');
+        Route::get('/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}/edit', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'edit'])->name('shops.business-hours.special-closed-days.edit');
+        Route::put('/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'update'])->name('shops.business-hours.special-closed-days.update');
 
         // API
         Route::prefix('api')->name('api.')->group(function () {
