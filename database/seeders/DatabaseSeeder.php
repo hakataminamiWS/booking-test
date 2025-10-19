@@ -13,14 +13,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            ShopSeeder::class,
-            MenuSeeder::class,
         ]);
 
         if (app()->environment() !== 'production') {
             $this->call([
                 TestUserSeeder::class,
-                ContractApplicationSeeder::class,
             ]);
         }
     }

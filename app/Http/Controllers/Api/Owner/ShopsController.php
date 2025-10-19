@@ -14,14 +14,14 @@ class ShopsController extends Controller
 {
     public function index(IndexShopsRequest $request): JsonResponse
     {
-        $query = Auth::user()->owner->shops();
+        $query = Auth::user()->shops();
 
         // Filtering
         if ($request->filled('slug')) {
-            $query->where('slug', 'like', '%' . $request->slug . '%');
+            $query->where('slug', 'like', '%'.$request->slug.'%');
         }
         if ($request->filled('name')) {
-            $query->where('name', 'like', '%' . $request->name . '%');
+            $query->where('name', 'like', '%'.$request->name.'%');
         }
 
         // Sorting
@@ -50,7 +50,7 @@ class ShopsController extends Controller
         if ($exists) {
             return response()->json([
                 'is_valid' => false,
-                'message' => 'このIDは既に使用されています。'
+                'message' => 'このIDは既に使用されています。',
             ]);
         }
 

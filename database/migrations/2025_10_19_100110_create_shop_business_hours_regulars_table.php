@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_shop_profiles', function (Blueprint $table) {
+        Schema::create('shop_business_hours_regulars', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('shop_id')->constrained()->onDelete('cascade');
-            $table->string('nickname');
-            $table->string('contact_email')->nullable();
-            $table->string('contact_phone');
-            $table->timestamps();
+            $table->integer('day_of_week');
+            $table->time('start_time')->nullable();
+            $table->time('end_time')->nullable();
+            $table->boolean('is_open')->default(true);
 
-            $table->unique(['user_id', 'shop_id']);
+            $table->unique(['shop_id', 'day_of_week']);
+            $table->timestamps();
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_shop_profiles');
+        Schema::dropIfExists('shop_business_hours_regulars');
     }
 };

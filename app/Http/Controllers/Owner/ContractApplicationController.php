@@ -19,7 +19,8 @@ class ContractApplicationController extends Controller
 
         // TODO: SNSログイン機能の実装時に、emailも渡すように修正する
         $props = [
-            'publicId' => $user->public_id,
+            'userId' => $user->id,
+            'email' => 'test-user-' . $user->id . '@example.com',
         ];
 
         return view('owner.contract.apply', compact('props'));
@@ -50,7 +51,8 @@ class ContractApplicationController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             // エラーログの出力や、適切なエラーレスポンスを返す
-            \Illuminate\Support\Facades\Log::error('Contract application store failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Contract application store failed: '.$e->getMessage());
+
             return response()->json(['message' => 'Failed to create application'], 500);
         }
     }

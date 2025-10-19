@@ -271,7 +271,6 @@ interface Filter {
 
 const filterableColumns = ref([
     { text: "申込 ID", value: "id", type: "text" },
-    { text: "Public ID", value: "public_id", type: "text" },
     { text: "お客様名称", value: "customer_name", type: "text" },
     { text: "申込日時", value: "created_at", type: "date-range" },
     {
@@ -378,7 +377,6 @@ interface Sort {
 
 const sortableColumns = ref([
     { text: "申込 ID", value: "id" },
-    { text: "Public ID", value: "public_id" },
     { text: "お客様名称", value: "customer_name" },
     { text: "申込日時", value: "created_at" },
 ]);
@@ -502,7 +500,6 @@ const loadItems = async (options: Options) => {
 
 const headers: Headers = [
     { title: "申込ID", key: "id", sortable: false },
-    { title: "Public ID", key: "user.public_id", sortable: false },
     { title: "お客様名称", key: "customer_name", sortable: false },
     { title: "申込日時", key: "created_at", sortable: false },
     { title: "ステータス", key: "status", sortable: false },

@@ -23,11 +23,10 @@ class IndexContractsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sort_by' => ['nullable', 'string', Rule::in(['name', 'public_id', 'start_date', 'end_date'])],
+            'sort_by' => ['nullable', 'string', Rule::in(['name', 'start_date', 'end_date'])],
             'sort_order' => ['nullable', 'string', Rule::in(['asc', 'desc'])],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'name' => ['nullable', 'string'],
-            'public_id' => ['nullable', 'string'],
             'statuses' => ['nullable', 'array'],
             'statuses.*' => ['string', Rule::in(['active', 'expired'])],
             'start_date_after' => ['nullable', 'date'],

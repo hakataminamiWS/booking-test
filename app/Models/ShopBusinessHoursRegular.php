@@ -19,7 +19,7 @@ class ShopBusinessHoursRegular extends Model
     ];
 
     protected $casts = [
-        'is_closed' => 'boolean',
+        'is_open' => 'boolean',
     ];
 
     public function shop(): BelongsTo

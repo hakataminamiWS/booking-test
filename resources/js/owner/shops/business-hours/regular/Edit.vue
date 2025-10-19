@@ -60,12 +60,12 @@
                                         ) in form.business_hours"
                                         :key="item.day_of_week"
                                     >
-                                        <input
-                                            type="hidden"
-                                            :name="`business_hours[${index}][day_of_week]`"
-                                            :value="item.day_of_week"
-                                        />
                                         <td>
+                                            <input
+                                                type="hidden"
+                                                :name="`business_hours[${index}][day_of_week]`"
+                                                :value="item.day_of_week"
+                                            />
                                             {{ dayOfWeek[item.day_of_week] }}
                                         </td>
                                         <td>

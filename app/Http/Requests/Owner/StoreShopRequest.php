@@ -24,6 +24,7 @@ class StoreShopRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:shops,slug', 'regex:/^[a-z0-9-]+$/', 'not_in:create,edit'],
+            'email' => ['required', 'string', 'email', 'max:255'],
             'time_slot_interval' => ['required', 'integer'],
             'booking_confirmation_type' => ['required', 'string'],
             'accepts_online_bookings' => ['required', 'boolean'],

@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Admin;
-use App\Models\Owner;
+use App\Models\Contract; // Contract モデルを追加
+use App\Models\ContractApplication;
 use App\Models\Shop;
 use App\Models\User;
-use App\Models\UserShopProfile;
 use Illuminate\Database\Seeder;
 
 class TestUserSeeder extends Seeder
@@ -16,52 +16,66 @@ class TestUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // --- ユーザーの作成 ---
-        $adminUser = User::factory()->create(['public_id' => 'public-id-admin']);
+        // 予約システム管理者ユーザーの作成
+        // id: 1
+        $adminUser = User::factory()->create(['id' => 1]);
         Admin::create(['user_id' => $adminUser->id, 'name' => '管理者']);
-        $this->command->info("Admin User Created: ID={$adminUser->id}, PublicID={$adminUser->public_id}");
+        $this->command->info("Admin User Created: ID={$adminUser->id}");
 
-        $ownerUser = User::factory()->create(['public_id' => 'public-id-owner']);
-        Owner::create(['user_id' => $ownerUser->id, 'name' => 'テストオーナー']);
-        $this->command->info("Owner User Created: ID={$ownerUser->id}, PublicID={$ownerUser->public_id}");
-
-        $staffUser = User::factory()->create(['public_id' => 'public-id-staff']);
-        $this->command->info("Staff User Created: ID={$staffUser->id}, PublicID={$staffUser->public_id}");
-
-        $bookerUser = User::factory()->create(['public_id' => 'public-id-booker']);
-        $this->command->info("Booker User Created: ID={$bookerUser->id}, PublicID={$bookerUser->public_id}");
-
-
-        // --- 店舗とプロファイルの作成 ---
-        $testShop = Shop::factory()->create([
-            'owner_user_id' => $ownerUser->id, // 作成したオーナーを店舗に紐付け
-            'name' => 'テスト店舗',
-            'slug' => 'test-shop',
-        ]);
-        $this->command->info("Test Shop Created: ID={$testShop->id}, Name={$testShop->name}, OwnerID={$ownerUser->id}");
-
-        // オーナーのプロフィールを作成
-        UserShopProfile::factory()->create([
+        // オーナーの作成
+        // id: 2
+        $ownerUser = User::factory()->create(['id' => 2]);
+        // 申し込み情報の作成
+        $contractApplication = ContractApplication::create([
+            'id' => 1,
             'user_id' => $ownerUser->id,
-            'shop_id' => $testShop->id,
-            'nickname' => 'オーナー',
-            'contact_email' => 'owner@example.com',
+            'customer_name' => 'テストオーナー(id=2)',
+            'email' => 'test-2@example.com',
+            'status' => 'approved',
         ]);
-
-        // スタッフのプロフィールを作成し、店舗にスタッフとして紐付け
-        UserShopProfile::factory()->create([
-            'user_id' => $staffUser->id,
-            'shop_id' => $testShop->id,
-            'nickname' => 'スタッフ',
-            'contact_email' => 'staff@example.com',
+        // 契約の作成
+        Contract::create([
+            'id' => 1,
+            'user_id' => $ownerUser->id,
+            'name' => 'テストオーナー(id=2)契約',
+            'application_id' => $contractApplication->id,
+            'max_shops' => 1,
+            'status' => 'active',
+            'start_date' => now()->subYear(),
+            'end_date' => now()->addYear(),
         ]);
-        $staffUser->staffShops()->attach($testShop->id);
+        // 店舗の作成
+        Shop::create([
+            'id' => 1,
+            'owner_user_id' => $ownerUser->id,
+            'slug' => 'test-shop',
+            'name' => 'テストショップ',
+            'email' => 'test-shop@example.com',
+        ]);
+        // 営業時間の作成
+        // メニューの作成
+        // オプションの作成
+        $this->command->info("Owner User Created: ID={$ownerUser->id}");
 
-        // --- 動作確認用のダミーユーザーを60人作成 ---
-        User::factory()
-            ->count(60)
-            ->sequence(fn ($sequence) => ['public_id' => 'dummy-' . ($sequence->index + 1)])
-            ->create();
-        $this->command->info("Created 60 dummy users with sequential public_id (dummy-1 to dummy-60) for testing.");
+        // 店舗スタッフの作成
+        // id: 3
+        $staffUser = User::factory()->create(['id' => 3]);
+        // 店舗スタッフ申し込み情報の作成
+        // 店舗スタッフとして登録
+        // 店舗スタッフプロファイルの作成
+        // 店舗スタッフのシフト作成
+        $this->command->info("Staff User Created: ID={$staffUser->id}");
+
+        // 予約者ユーザーの作成
+        // id: 4
+        $bookerUser = User::factory()->create(['id' => 4]);
+        // 予約者プロファイルの作成
+        // 予約者の予約履歴の作成
+        $this->command->info("Booker User Created: ID={$bookerUser->id}");
+
+        // --- 動作確認用のダミーユーザーを5人作成 ---
+        // id: 5 から 9 まで
+        User::factory()->count(5)->create();
+        $this->command->info('Created 5 dummy users for testing.');
     }
 }

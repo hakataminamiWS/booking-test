@@ -2,7 +2,10 @@
     <v-container>
         <v-row>
             <v-col cols="12">
-                <v-btn :href="'/admin/contract-applications'" prepend-icon="mdi-arrow-left">
+                <v-btn
+                    :href="'/admin/contract-applications'"
+                    prepend-icon="mdi-arrow-left"
+                >
                     契約申し込み一覧へ戻る
                 </v-btn>
             </v-col>
@@ -34,27 +37,39 @@
                     <v-card-text>
                         <v-list-item>
                             <v-list-item-title>申込ID</v-list-item-title>
-                            <v-list-item-subtitle>{{ contractApplication.id }}</v-list-item-subtitle>
-                        </v-list-item>
-                        <v-list-item v-if="contractApplication.user">
-                            <v-list-item-title>PublicID</v-list-item-title>
-                            <v-list-item-subtitle>{{ contractApplication.user.public_id }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                contractApplication.id
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>お客様名称</v-list-item-title>
-                            <v-list-item-subtitle>{{ contractApplication.customer_name }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                contractApplication.customer_name
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
-                            <v-list-item-title>メールアドレス</v-list-item-title>
-                            <v-list-item-subtitle>{{ contractApplication.email }}</v-list-item-subtitle>
+                            <v-list-item-title
+                                >メールアドレス</v-list-item-title
+                            >
+                            <v-list-item-subtitle>{{
+                                contractApplication.email
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
-                            <v-list-item-title>申し込みステータス</v-list-item-title>
-                            <v-list-item-subtitle>{{ contractApplication.status }}</v-list-item-subtitle>
+                            <v-list-item-title
+                                >申し込みステータス</v-list-item-title
+                            >
+                            <v-list-item-subtitle>{{
+                                contractApplication.status
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>申込日時</v-list-item-title>
-                            <v-list-item-subtitle>{{ new Date(contractApplication.created_at).toLocaleString() }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                new Date(
+                                    contractApplication.created_at
+                                ).toLocaleString()
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                     </v-card-text>
                 </v-card>
@@ -64,8 +79,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useDisplay } from 'vuetify';
+import { computed } from "vue";
+import { useDisplay } from "vuetify";
 
 interface User {
     id: number;
@@ -87,6 +102,7 @@ const props = defineProps<{
 
 const { smAndDown } = useDisplay();
 
-const editUrl = computed(() => `/admin/contract-applications/${props.contractApplication.id}/edit`);
-
+const editUrl = computed(
+    () => `/admin/contract-applications/${props.contractApplication.id}/edit`
+);
 </script>

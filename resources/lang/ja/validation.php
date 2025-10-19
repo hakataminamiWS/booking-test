@@ -4,4 +4,5 @@ return [
     'required' => ':attribute は必須です。',
     'required_if' => ':otherが:valueの場合、:attributeは必須項目です。',
     'after' => ':attributeには、:dateより後の時間を指定してください。',
+    'after_or_equal' => ':attributeには、:date以降の日付を指定してください。',
 ];

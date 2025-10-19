@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('application_id')->nullable()->constrained('contract_applications')->onDelete('set null');
+            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
             $table->string('name');
+            $table->foreignId('application_id')->nullable()->constrained('contract_applications')->onDelete('set null');
             $table->integer('max_shops')->default(1);
-            $table->string('status');
+            $table->string('status')->default('active');
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

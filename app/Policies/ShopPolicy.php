@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Shop;
+use App\Models\User;
 
 class ShopPolicy
 {
@@ -13,7 +13,8 @@ class ShopPolicy
     public function viewAny(User $user): bool
     {
         // ユーザーがオーナーであるか
-        return $user->owner()->exists();
+        // つまり、有効な契約を持っているか
+        return $user->contract()->where('status', 'active')->exists();
     }
 
     /**
@@ -32,12 +33,13 @@ class ShopPolicy
     {
         // ユーザーが有効な契約を持っているか
         $contract = $user->contract;
-        if (!$contract || $contract->status !== 'active') {
+        if (! $contract || $contract->status !== 'active') {
             return false;
         }
 
         // 店舗の作成上限に達していないか
         $ownedShopsCount = $user->shops()->count();
+
         return $ownedShopsCount < $contract->max_shops;
     }
 

@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bookers', function (Blueprint $table) {
+        Schema::create('shop_options', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('shop_id')->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->integer('price')->default(0);
+            $table->integer('additional_duration')->default(0);
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
@@ -23,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bookers');
+        Schema::dropIfExists('shop_options');
     }
 };

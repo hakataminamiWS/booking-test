@@ -17,9 +17,6 @@ import OwnerContractApply from "@/owner/contract/Apply.vue";
 import AdminContractApplicationsIndex from "@/admin/contract-applications/Index.vue";
 import AdminContractApplicationsShow from "@/admin/contract-applications/Show.vue";
 import AdminContractApplicationsEdit from "@/admin/contract-applications/Edit.vue";
-import AdminOwnersIndex from "@/admin/owners/Index.vue";
-import AdminOwnersShow from "@/admin/owners/Show.vue";
-import AdminOwnersEdit from "@/admin/owners/Edit.vue";
 // owner
 import OwnerShopsIndex from "@/owner/shops/Index.vue";
 import OwnerShopsCreate from "@/owner/shops/Create.vue";

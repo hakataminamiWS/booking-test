@@ -18,8 +18,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'public_id' => Str::ulid(),
-            'is_guest' => false,
+            //
         ];
     }
 }

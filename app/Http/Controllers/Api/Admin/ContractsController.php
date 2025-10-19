@@ -18,13 +18,7 @@ class ContractsController extends Controller
 
         // Filtering
         if (isset($validated['name'])) {
-            $query->where('name', 'like', '%' . $validated['name'] . '%');
-        }
-
-        if (isset($validated['public_id'])) {
-            $query->whereHas('user', function ($q) use ($validated) {
-                $q->where('public_id', $validated['public_id']);
-            });
+            $query->where('name', 'like', '%'.$validated['name'].'%');
         }
 
         if (isset($validated['statuses'])) {

@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\DeleteContractRequest;
 use App\Http\Requests\Admin\StoreContractRequest;
 use App\Http\Requests\Admin\UpdateContractRequest;
-use App\Http\Requests\Admin\DeleteContractRequest;
 use App\Models\Contract;
 use App\Models\ContractApplication;
-use App\Models\Owner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -52,19 +51,14 @@ class ContractsController extends Controller
                     'end_date' => $validated['end_date'],
                 ]);
 
-                // 2. Create or Update Owner
-                $owner = Owner::updateOrCreate(
-                    ['user_id' => $validated['user_id']],
-                    ['name' => $contract->application->customer_name] // Use customer_name from application
-                );
-
-                // 3. Update Application Status
+                // 2. Update Application Status
                 $application = ContractApplication::find($validated['application_id']);
                 $application->status = 'approved';
                 $application->save();
             });
         } catch (\Exception $e) {
             Log::error('Contract creation: Transaction failed.', ['error' => $e->getMessage()]);
+
             return redirect()->back()->withInput()->with('error', '契約の作成に失敗しました。'.$e->getMessage());
         }
 

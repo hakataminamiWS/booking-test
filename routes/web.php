@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 // --- Public Web Pages ---
 Route::get('/', function () {
-    return view('app');
+    return view('welcome');
 });
 
 // ==============================================================================
@@ -33,17 +33,11 @@ Route::middleware('auth')->group(function () {
         // Web
         Route::resource('contract-applications', App\Http\Controllers\Admin\ContractApplicationsController::class)->only(['index', 'show', 'edit', 'update']);
         Route::resource('contracts', App\Http\Controllers\Admin\ContractsController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-        Route::get('owners', [App\Http\Controllers\Admin\OwnersController::class, 'index'])->name('owners.index');
-        Route::get('owners/{public_id}', [App\Http\Controllers\Admin\OwnersController::class, 'show'])->name('owners.show');
-        Route::get('owners/{public_id}/edit', [App\Http\Controllers\Admin\OwnersController::class, 'edit'])->name('owners.edit');
-        Route::put('owners/{public_id}', [App\Http\Controllers\Admin\OwnersController::class, 'update'])->name('owners.update');
-        Route::delete('owners/{public_id}', [App\Http\Controllers\Admin\OwnersController::class, 'destroy'])->name('owners.destroy');
 
         // API
         Route::prefix('api')->name('api.')->group(function () {
             Route::get('/contract-applications', [App\Http\Controllers\Api\Admin\ContractApplicationsController::class, 'index'])->name('contract-applications.index');
             Route::get('/contracts', [App\Http\Controllers\Api\Admin\ContractsController::class, 'index'])->name('contracts.index');
-            Route::get('/owners', [App\Http\Controllers\Api\Admin\OwnersController::class, 'index'])->name('owners.index');
         });
     });
 
@@ -59,6 +53,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'show'])->name('shops.show');
         Route::get('/shops/{shop:slug}/edit', [App\Http\Controllers\Owner\ShopsController::class, 'edit'])->name('shops.edit');
         Route::put('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'update'])->name('shops.update');
+        Route::delete('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'destroy'])->name('shops.destroy');
         Route::get('/shops/{shop:slug}/business-hours', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'index'])->name('shops.business-hours.index');
         Route::get('/shops/{shop:slug}/business-hours/regular/edit', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'edit'])->name('shops.business-hours.regular.edit');
         Route::put('/shops/{shop:slug}/business-hours/regular', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'update'])->name('shops.business-hours.regular.update');

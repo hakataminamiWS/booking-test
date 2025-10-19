@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Owner\StoreShopRequest;
 use App\Http\Requests\Owner\UpdateShopRequest;
 use App\Models\Shop;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ShopsController extends Controller
@@ -18,11 +17,11 @@ class ShopsController extends Controller
      */
     public function index()
     {
-        $owner = auth()->user()->owner;
-        $contract = $owner->contract;
+        $user = auth()->user();
+        $contract = $user->contract;
 
         $maxShops = $contract ? $contract->max_shops : 0;
-        $currentShopsCount = $owner->shops()->count();
+        $currentShopsCount = $user->shops()->count();
 
         return view('owner.shops.index', compact('maxShops', 'currentShopsCount'));
     }
@@ -50,7 +49,7 @@ class ShopsController extends Controller
         Shop::create($validated);
 
         return redirect()->route('owner.shops.index')
-                         ->with('success', '店舗を登録しました');
+            ->with('success', '店舗を登録しました');
     }
 
     /**
@@ -76,11 +75,24 @@ class ShopsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateShopRequest $request, Shop $shop)
-    {
-        $shop->update($request->validated());
-
-        return redirect()->route('owner.shops.show', $shop)
-                         ->with('success', '店舗情報を更新しました。');
+        public function update(UpdateShopRequest $request, Shop $shop)
+        {
+            $shop->update($request->validated());
+    
+            return redirect()->route('owner.shops.show', $shop)
+                             ->with('success', '店舗情報を更新しました。');
+        }
+    
+        /**
+         * Remove the specified resource from storage.
+         */
+        public function destroy(Shop $shop)
+        {
+            $this->authorize('delete', $shop);
+    
+            $shop->delete();
+    
+            return redirect()->route('owner.shops.index')
+                             ->with('success', '店舗を削除しました。');
+        }
     }
-}

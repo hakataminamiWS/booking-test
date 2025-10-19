@@ -30,9 +30,9 @@
     -   契約一覧画面(`/admin/contracts`)
     -   契約詳細画面(`/admin/contracts/{id}`)
     -   契約詳細管理画面(`/admin/contracts/{id}/edit`)
-    -   オーナー一覧画面(`/admin/owners`)
-    -   オーナー詳細画面(`/admin/owners/{public-id}`)
-    -   オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
+    -   （削除予定）オーナー一覧画面(`/admin/owners`)
+    -   （削除予定）オーナー詳細画面(`/admin/owners/{public-id}`)
+    -   （削除予定）オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
 
 ### 完了タスク
 
@@ -44,9 +44,9 @@
 -   契約一覧画面(`/admin/contracts`)
 -   契約詳細画面(`/admin/contracts/{id}`)
 -   契約詳細管理画面(`/admin/contracts/{id}/edit`)
--   オーナー一覧画面(`/admin/owners`)
--   オーナー詳細画面(`/admin/owners/{public-id}`)
--   オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
+-   （削除予定）オーナー一覧画面(`/admin/owners`)
+-   （削除予定）オーナー詳細画面(`/admin/owners/{public-id}`)
+-   （削除予定）オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
 
 ---
 

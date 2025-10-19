@@ -16,7 +16,7 @@ class ContractApplicationsController extends Controller
         $query->with(['user', 'contract']);
 
         // --- Determine necessary joins based on sort and filter ---
-        $needsUserJoin = $request->input('sort_by') === 'public_id' || $request->filled('public_id');
+        $needsUserJoin = false;
         $needsContractJoin = $request->filled('contract_statuses');
 
         if ($needsUserJoin) {
@@ -29,12 +29,10 @@ class ContractApplicationsController extends Controller
         // Select the columns from the main table to avoid conflicts
         $query->select('contract_applications.*');
 
-
         // --- Dynamic Filtering ---
         $filterable = [
             // key => [column, operator]
             'id' => ['contract_applications.id', '='],
-            'public_id' => ['users.public_id', '='],
             'customer_name' => ['contract_applications.customer_name', 'like'],
             'statuses' => ['contract_applications.status', 'in'],
         ];
@@ -45,7 +43,7 @@ class ContractApplicationsController extends Controller
                 $value = $request->input($key);
 
                 if ($operator === 'like') {
-                    $query->where($column, 'like', '%' . $value . '%');
+                    $query->where($column, 'like', '%'.$value.'%');
                 } elseif ($operator === 'in') {
                     $query->whereIn($column, (array) $value);
                 } else {
@@ -62,7 +60,7 @@ class ContractApplicationsController extends Controller
                     $q->orWhereNull('contracts.id');
                 }
                 $other_statuses = array_filter($statuses, fn ($s) => $s !== 'none');
-                if (!empty($other_statuses)) {
+                if (! empty($other_statuses)) {
                     $q->orWhereIn('contracts.status', $other_statuses);
                 }
             });
@@ -86,7 +84,6 @@ class ContractApplicationsController extends Controller
                 'id' => 'contract_applications.id',
                 'customer_name' => 'contract_applications.customer_name',
                 'created_at' => 'contract_applications.created_at',
-                'public_id' => 'users.public_id',
             ];
 
             if (array_key_exists($sortBy, $sortableColumns)) {

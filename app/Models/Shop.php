@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Shop extends Model
@@ -15,6 +14,7 @@ class Shop extends Model
         'owner_user_id',
         'name',
         'slug',
+        'email',
         'time_slot_interval',
         'cancellation_deadline_minutes',
         'booking_deadline_minutes',
@@ -33,31 +33,6 @@ class Shop extends Model
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
-    public function menus(): HasMany
-    {
-        return $this->hasMany(Menu::class);
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
-    }
-
-    public function staff(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'shop_staff');
-    }
-
-    public function userShopProfiles(): HasMany
-    {
-        return $this->hasMany(UserShopProfile::class);
-    }
-
-    public function options(): HasMany
-    {
-        return $this->hasMany(Option::class);
-    }
-
     public function shopSpecialOpenDays(): HasMany
     {
         return $this->hasMany(ShopSpecialOpenDay::class);
@@ -66,10 +41,5 @@ class Shop extends Model
     public function shopSpecialClosedDays(): HasMany
     {
         return $this->hasMany(ShopSpecialClosedDay::class);
-    }
-
-    public function staffSchedules(): HasMany
-    {
-        return $this->hasMany(StaffSchedule::class);
     }
 }

@@ -16,7 +16,7 @@ class OwnerMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || !Auth::user()->owner()->exists()) {
+        if (! Auth::check() || ! Auth::user()->contract()->where('status', 'active')->exists()) {
             abort(403, 'Unauthorized action.');
         }
 
