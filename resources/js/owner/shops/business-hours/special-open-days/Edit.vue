@@ -8,10 +8,14 @@
                 >
                     営業時間一覧へ戻る
                 </v-btn>
+            </v-col>
+        </v-row>
 
-                <ShopHeader :shop="props.shop" class="mt-4" />
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="props.shop" />
 
-                <v-card class="mt-4">
+                <v-card>
                     <v-card-title>特別営業日編集</v-card-title>
                     <v-card-text>
                         <form :action="formAction" method="POST">
@@ -20,7 +24,7 @@
                                 name="_token"
                                 :value="props.csrfToken"
                             />
-                            <input type="hidden" name="_method" value="PUT">
+                            <input type="hidden" name="_method" value="PUT" />
 
                             <v-alert
                                 v-if="props.errors.length > 0"
@@ -99,34 +103,34 @@
                         </form>
                     </v-card-text>
                 </v-card>
+
+                <v-dialog v-model="dialog" width="auto">
+                    <v-card>
+                        <v-time-picker
+                            v-model="currentTime"
+                            format="24hr"
+                        ></v-time-picker>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                color="blue-darken-1"
+                                variant="text"
+                                @click="closeDialog"
+                            >
+                                キャンセル
+                            </v-btn>
+                            <v-btn
+                                color="blue-darken-1"
+                                variant="text"
+                                @click="saveTime"
+                            >
+                                OK
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
             </v-col>
         </v-row>
-
-        <v-dialog v-model="dialog" width="auto">
-            <v-card>
-                <v-time-picker
-                    v-model="currentTime"
-                    format="24hr"
-                ></v-time-picker>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        color="blue-darken-1"
-                        variant="text"
-                        @click="closeDialog"
-                    >
-                        キャンセル
-                    </v-btn>
-                    <v-btn
-                        color="blue-darken-1"
-                        variant="text"
-                        @click="saveTime"
-                    >
-                        OK
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
     </v-container>
 </template>
 
@@ -165,7 +169,8 @@ onMounted(() => {
 });
 
 const formAction = computed(
-    () => `/owner/shops/${props.shop.slug}/business-hours/special-open-days/${props.specialOpenDay.id}`
+    () =>
+        `/owner/shops/${props.shop.slug}/business-hours/special-open-days/${props.specialOpenDay.id}`
 );
 
 const businessHoursIndexUrl = computed(

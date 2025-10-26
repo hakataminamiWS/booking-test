@@ -5,10 +5,14 @@
                 <v-btn :href="shopShowUrl" prepend-icon="mdi-arrow-left">
                     店舗詳細へ戻る
                 </v-btn>
+            </v-col>
+        </v-row>
 
-                <ShopHeader :shop="props.shop" class="mt-4" />
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="props.shop" />
 
-                <v-card class="mt-4">
+                <v-card>
                     <v-card-title>営業時間一覧</v-card-title>
                     <v-card-text>
                         <!-- Section 1: Regular Business Hours -->
@@ -16,7 +20,12 @@
                             class="d-flex justify-space-between align-center mt-4"
                         >
                             <h6 class="text-h6">通常営業時間・定休日</h6>
-                            <v-btn :href="regularHoursEditUrl">編集する</v-btn>
+                            <v-btn
+                                color="primary"
+                                :class="{ 'mt-2': smAndDown }"
+                                :href="regularHoursEditUrl"
+                                >編集する</v-btn
+                            >
                         </div>
                         <v-table class="mt-2">
                             <thead>
@@ -63,7 +72,10 @@
                             class="d-flex justify-space-between align-center mt-8"
                         >
                             <h6 class="text-h6">特別営業日</h6>
-                            <v-btn :href="specialOpenDaysCreateUrl"
+                            <v-btn
+                                :class="{ 'mt-2': smAndDown }"
+                                prepend-icon="mdi-plus"
+                                :href="specialOpenDaysCreateUrl"
                                 >新規登録</v-btn
                             >
                         </div>
@@ -94,7 +106,7 @@
                                     <td>{{ day.name }}</td>
                                     <td>
                                         <v-btn
-                                            small
+                                            color="primary"
                                             :href="
                                                 specialOpenDayEditUrl(day.id)
                                             "
@@ -110,7 +122,10 @@
                             class="d-flex justify-space-between align-center mt-8"
                         >
                             <h6 class="text-h6">特別休業日</h6>
-                            <v-btn :href="specialClosedDaysCreateUrl"
+                            <v-btn
+                                :class="{ 'mt-2': smAndDown }"
+                                prepend-icon="mdi-plus"
+                                :href="specialClosedDaysCreateUrl"
                                 >新規登録</v-btn
                             >
                         </div>
@@ -138,7 +153,7 @@
                                     <td>{{ day.name }}</td>
                                     <td>
                                         <v-btn
-                                            small
+                                            color="primary"
                                             :href="
                                                 specialClosedDayEditUrl(day.id)
                                             "
@@ -157,6 +172,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
+import { useDisplay } from "vuetify";
 import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
 
 const props = defineProps({
@@ -165,7 +181,7 @@ const props = defineProps({
     specialOpenDays: Array,
     specialClosedDays: Array,
 });
-
+const { smAndDown } = useDisplay();
 const shopShowUrl = computed(() => `/owner/shops/${props.shop.slug}`);
 
 const regularHoursEditUrl = computed(

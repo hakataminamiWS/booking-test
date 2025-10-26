@@ -5,21 +5,20 @@
         <div style="padding: 10px; background-color: #f0f0f0;">
             <h3>デバッグ用リンク</h3>
             <ul>
-                <li><a href="{{ route('debug.login-as', ['user' => 3]) }}">スタッフとしてログイン (ID: 3)</a></li>
                 <li><a href="{{ route('debug.login-as', ['user' => 4]) }}">予約者としてログイン (ID: 4)</a></li>
             </ul>
             <h3>管理者</h3>
             <ul>
                 <li><a href="{{ route('debug.login-as', ['user' => 1]) }}">管理者としてログイン (ID: 1)</a></li>
-                <li><a href="{{ route('admin.contract-applications.index') }}">契約申し込み一覧画面</a></li>
-                <li><a href="{{ route('admin.contract-applications.show', ['contract_application' => 1]) }}">契約申し込み詳細画面
+                <li><a href="{{ route('admin.contract-applications.index') }}">契約申し込み一覧</a></li>
+                <li><a href="{{ route('admin.contract-applications.show', ['contract_application' => 1]) }}">契約申し込み詳細
                         (ID: 1)</a></li>
-                <li><a href="{{ route('admin.contract-applications.edit', ['contract_application' => 1]) }}">契約申し込み詳細管理画面
+                <li><a href="{{ route('admin.contract-applications.edit', ['contract_application' => 1]) }}">契約申し込み編集
                         (ID: 1)</a></li>
-                <li><a href="{{ route('admin.contracts.create') }}">契約新規作成画面</a></li>
-                <li><a href="{{ route('admin.contracts.index') }}">契約一覧画面</a></li>
-                <li><a href="{{ route('admin.contracts.show', ['contract' => 1]) }}">契約詳細画面 (ID: 1)</a></li>
-                <li><a href="{{ route('admin.contracts.edit', ['contract' => 1]) }}">契約詳細管理画面 (ID: 1)</a></li>
+                <li><a href="{{ route('admin.contracts.create') }}">契約新規作成</a></li>
+                <li><a href="{{ route('admin.contracts.index') }}">契約一覧</a></li>
+                <li><a href="{{ route('admin.contracts.show', ['contract' => 1]) }}">契約詳細 (ID: 1)</a></li>
+                <li><a href="{{ route('admin.contracts.edit', ['contract' => 1]) }}">契約編集 (ID: 1)</a></li>
             </ul>
 
             <h3>オーナー</h3>
@@ -47,6 +46,16 @@
                 <li><a
                         href="{{ route('owner.shops.business-hours.special-closed-days.edit', ['shop' => 'test-shop', 'special_closed_day' => 1]) }}">特別休業日編集画面
                         (Slug: test-shop, ID: 1)</a></li>
+                <li><a href="{{ route('owner.shops.staff-applications.index', ['shop' => 'test-shop']) }}">スタッフ登録申し込み一覧画面
+                        (Slug: test-shop)</a></li>
+                <li><a href="{{ route('owner.shops.staffs.index', ['shop' => 'test-shop']) }}">スタッフ一覧画面 (Slug: test-shop)</a></li>
+            </ul>
+
+            <h3>スタッフ</h3>
+            <ul>
+                <li><a href="{{ route('debug.login-as', ['user' => 3]) }}">スタッフとしてログイン (ID: 3)</a></li>
+                <li><a href="{{ route('staff.application.create', ['shop' => 'test-shop']) }}">スタッフ登録申し込み画面 (Slug:
+                        test-shop)</a></li>
             </ul>
         </div>
     @endif

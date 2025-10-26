@@ -4,9 +4,13 @@ namespace App\Providers;
 
 use App\Models\Booking;
 use App\Models\Shop;
+use App\Models\ShopStaffApplication;
 use App\Models\User;
 use App\Policies\BookingPolicy;
 use App\Policies\ShopPolicy;
+use App\Policies\ShopStaffApplicationPolicy;
+use App\Models\ShopStaff;
+use App\Policies\ShopStaffPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -20,6 +24,8 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Shop::class => ShopPolicy::class,
         Booking::class => BookingPolicy::class,
+        ShopStaffApplication::class => ShopStaffApplicationPolicy::class,
+        ShopStaff::class => ShopStaffPolicy::class,
     ];
 
     /**

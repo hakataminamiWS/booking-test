@@ -8,10 +8,14 @@
                 >
                     営業時間一覧へ戻る
                 </v-btn>
+            </v-col>
+        </v-row>
 
-                <ShopHeader :shop="props.shop" class="mt-4" />
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="props.shop" />
 
-                <v-card class="mt-4">
+                <v-card>
                     <v-card-title>営業時間・定休日設定</v-card-title>
                     <v-card-text>
                         <form :action="formAction" method="POST">
@@ -129,34 +133,34 @@
                         </form>
                     </v-card-text>
                 </v-card>
+
+                <v-dialog v-model="dialog" width="auto">
+                    <v-card>
+                        <v-time-picker
+                            v-model="currentTime"
+                            format="24hr"
+                        ></v-time-picker>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                color="blue-darken-1"
+                                variant="text"
+                                @click="closeDialog"
+                            >
+                                キャンセル
+                            </v-btn>
+                            <v-btn
+                                color="blue-darken-1"
+                                variant="text"
+                                @click="saveTime"
+                            >
+                                OK
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
             </v-col>
         </v-row>
-
-        <v-dialog v-model="dialog" width="auto">
-            <v-card>
-                <v-time-picker
-                    v-model="currentTime"
-                    format="24hr"
-                ></v-time-picker>
-                <v-card-actions>
-                    <v-spacer></v-spacer>
-                    <v-btn
-                        color="blue-darken-1"
-                        variant="text"
-                        @click="closeDialog"
-                    >
-                        キャンセル
-                    </v-btn>
-                    <v-btn
-                        color="blue-darken-1"
-                        variant="text"
-                        @click="saveTime"
-                    >
-                        OK
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-        </v-dialog>
     </v-container>
 </template>
 

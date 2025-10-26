@@ -133,7 +133,7 @@
                                 <v-btn
                                     color="error"
                                     @click="deleteDialog = true"
-                                    >削除</v-btn
+                                    >削除する</v-btn
                                 >
                                 <v-spacer></v-spacer>
                                 <v-btn type="submit" color="primary"

@@ -33,6 +33,16 @@ class Shop extends Model
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    public function staffs(): HasMany
+    {
+        return $this->hasMany(ShopStaff::class);
+    }
+
+    public function staffApplications(): HasMany
+    {
+        return $this->hasMany(ShopStaffApplication::class);
+    }
+
     public function shopSpecialOpenDays(): HasMany
     {
         return $this->hasMany(ShopSpecialOpenDay::class);

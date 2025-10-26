@@ -45,6 +45,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/contract-applications/create', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'create'])->name('contract.application.create');
     Route::post('/contract-applications', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'store'])->name('contract.application.store');
 
+    // --- Staff Application Routes ---
+    Route::get('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'create'])->name('staff.application.create');
+    Route::post('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'store'])->name('staff.application.store');
+    Route::get('/staff/apply/complete', [App\Http\Controllers\Staff\ApplicationController::class, 'complete'])->name('staff.application.complete');
+
     Route::prefix('owner')->name('owner.')->middleware('owner')->group(function () {
         // Web
         Route::get('/shops', [App\Http\Controllers\Owner\ShopsController::class, 'index'])->name('shops.index');
@@ -66,10 +71,24 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}/edit', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'edit'])->name('shops.business-hours.special-closed-days.edit');
         Route::put('/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'update'])->name('shops.business-hours.special-closed-days.update');
 
+        Route::get('/shops/{shop:slug}/staff-applications', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'index'])->name('shops.staff-applications.index');
+        Route::put('/shops/{shop:slug}/staff-applications/{staff_application}/approve', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'approve'])->name('shops.staff-applications.approve');
+        Route::put('/shops/{shop:slug}/staff-applications/{staff_application}/reject', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'reject'])->name('shops.staff-applications.reject');
+
+        Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'index'])->name('shops.staffs.index');
+        Route::get('/shops/{shop:slug}/staffs/{staff}/edit', [App\Http\Controllers\Owner\ShopStaffController::class, 'edit'])->name('shops.staffs.edit');
+        Route::put('/shops/{shop:slug}/staffs/{staff}', [App\Http\Controllers\Owner\ShopStaffController::class, 'update'])->name('shops.staffs.update');
+
         // API
         Route::prefix('api')->name('api.')->group(function () {
             Route::get('/shops', [App\Http\Controllers\Api\Owner\ShopsController::class, 'index'])->name('shops.index');
             Route::get('/shops/validate-slug', [App\Http\Controllers\Api\Owner\ShopsController::class, 'validateSlug'])->name('shops.validate-slug');
+            Route::get('/shops/{shop:slug}/staff-applications', [App\Http\Controllers\Api\Owner\ShopStaffApplicationController::class, 'index'])->name('api.shops.staff-applications.index');
+            Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'index'])->name('api.shops.staffs.index');
+            Route::post('/shops/{shop:slug}/staffs/{staff}/small-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'storeSmallImage'])->name('shops.staffs.small-image.store');
+            Route::delete('/shops/{shop:slug}/staffs/{staff}/small-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'destroySmallImage'])->name('shops.staffs.small-image.destroy');
+            Route::post('/shops/{shop:slug}/staffs/{staff}/large-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'storeLargeImage'])->name('shops.staffs.large-image.store');
+            Route::delete('/shops/{shop:slug}/staffs/{staff}/large-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'destroyLargeImage'])->name('shops.staffs.large-image.destroy');
         });
     });
 

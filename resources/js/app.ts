@@ -7,6 +7,7 @@ import * as directives from "vuetify/directives";
 import { mdi } from "vuetify/iconsets/mdi"; // Import MDI iconset
 import { ja } from "vuetify/locale";
 
+import OwnerShopStaffsProfileEdit from "@/owner/shops/staffs/ProfileEdit.vue";
 // Vue Components
 // admin
 import AdminContractsCreate from "@/admin/contracts/Create.vue";
@@ -22,12 +23,16 @@ import OwnerShopsIndex from "@/owner/shops/Index.vue";
 import OwnerShopsCreate from "@/owner/shops/Create.vue";
 import OwnerShopsShow from "@/owner/shops/Show.vue";
 import OwnerShopsEdit from "@/owner/shops/Edit.vue";
+import OwnerShopStaffApplicationsIndex from "@/owner/shops/staff-applications/Index.vue";
+import OwnerShopStaffsIndex from "@/owner/shops/staffs/Index.vue";
 import BusinessHoursRegularEdit from "@/owner/shops/business-hours/regular/Edit.vue";
 import SpecialOpenDaysCreate from "@/owner/shops/business-hours/special-open-days/Create.vue";
 import SpecialClosedDaysCreate from "@/owner/shops/business-hours/special-closed-days/Create.vue";
 import OwnerBusinessHoursIndex from "@/owner/shops/business-hours/Index.vue";
 import SpecialOpenDaysEdit from "@/owner/shops/business-hours/special-open-days/Edit.vue";
 import SpecialClosedDaysEdit from "@/owner/shops/business-hours/special-closed-days/Edit.vue";
+import StaffApplicationCreate from "@/staff/applications/Create.vue";
+import StaffApplicationComplete from "@/staff/applications/Complete.vue";
 // import BookerBookingsCreate from './booker/bookings/Create.vue'; // TODO: Implement this component
 
 const vuetify = createVuetify({
@@ -102,6 +107,15 @@ if (appElement) {
         case "owner-shops-edit":
             component = OwnerShopsEdit;
             break;
+        case "owner/shops/staff-applications/Index":
+            component = OwnerShopStaffApplicationsIndex;
+            break;
+        case "owner/shops/staffs/Index":
+            component = OwnerShopStaffsIndex;
+            break;
+        case "owner-shops-staffs-edit":
+            component = OwnerShopStaffsProfileEdit;
+            break;
         case "owner-shops-business-hours-regular-edit":
             component = BusinessHoursRegularEdit;
             break;
@@ -119,6 +133,12 @@ if (appElement) {
             break;
         case "owner-shops-business-hours-special-closed-days-edit":
             component = SpecialClosedDaysEdit;
+            break;
+        case "StaffApplicationCreate":
+            component = StaffApplicationCreate;
+            break;
+        case "StaffApplicationComplete":
+            component = StaffApplicationComplete;
             break;
         // case 'booker-bookings-create':
         //     component = BookerBookingsCreate;

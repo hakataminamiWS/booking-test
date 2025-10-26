@@ -23,30 +23,24 @@
 -   主な機能（オーナー予定者）:
     -   契約申し込み画面(`/contract-applications/create`)
 -   主な機能（予約システム管理者）:
-    -   契約申し込み一覧画面(`/admin/contract-applications`)
-    -   契約申し込み詳細画面(`/admin/contract-applications/{id}`)
-    -   契約申し込み詳細管理画面(`/admin/contract-applications/{id}/edit`)
-    -   契約新規作成画面(`/admin/contracts/create`)
-    -   契約一覧画面(`/admin/contracts`)
-    -   契約詳細画面(`/admin/contracts/{id}`)
-    -   契約詳細管理画面(`/admin/contracts/{id}/edit`)
-    -   （削除予定）オーナー一覧画面(`/admin/owners`)
-    -   （削除予定）オーナー詳細画面(`/admin/owners/{public-id}`)
-    -   （削除予定）オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
+    -   契約申し込み一覧(`/admin/contract-applications`)
+    -   契約申し込み詳細(`/admin/contract-applications/{id}`)
+    -   契約申し込み編集(`/admin/contract-applications/{id}/edit`)
+    -   契約新規作成(`/admin/contracts/create`)
+    -   契約一覧(`/admin/contracts`)
+    -   契約詳細(`/admin/contracts/{id}`)
+    -   契約編集(`/admin/contracts/{id}/edit`)
 
 ### 完了タスク
 
 -   オーナー契約申し込み画面(`/contract-applications/create`)
--   契約申し込み一覧画面(`/admin/contract-applications`)
--   契約申し込み詳細画面(`/admin/contract-applications/{id}`)
--   契約申し込み詳細管理画面(`/admin/contract-applications/{id}/edit`)
--   契約新規作成画面(`/admin/contracts/create`)
--   契約一覧画面(`/admin/contracts`)
--   契約詳細画面(`/admin/contracts/{id}`)
--   契約詳細管理画面(`/admin/contracts/{id}/edit`)
--   （削除予定）オーナー一覧画面(`/admin/owners`)
--   （削除予定）オーナー詳細画面(`/admin/owners/{public-id}`)
--   （削除予定）オーナー詳細管理画面(`/admin/owners/{public-id}/edit`)
+-   契約申し込み一覧(`/admin/contract-applications`)
+-   契約申し込み詳細(`/admin/contract-applications/{id}`)
+-   契約申し込み編集(`/admin/contract-applications/{id}/edit`)
+-   契約新規作成(`/admin/contracts/create`)
+-   契約一覧(`/admin/contracts`)
+-   契約詳細(`/admin/contracts/{id}`)
+-   契約編集(`/admin/contracts/{id}/edit`)
 
 ---
 
@@ -75,14 +69,13 @@
 -   特別営業日編集画面
 -   特別休業日登録画面
 -   特別休業日編集画面
+-   スタッフ登録申し込み一覧画面
+-   スタッフ一覧画面
 
 ### 未完了タスク
 
--   スタッフ招待画面
--   スタッフ一覧画面
--   スタッフ登録画面
--   スタッフ詳細画面
--   スタッフ詳細管理画面
+-   スタッフプロフィール登録
+-   スタッフプロフィール編集
 -   シフト一覧画面
 -   シフト登録画面
 -   シフト詳細画面
@@ -110,6 +103,14 @@
 店舗のスタッフが、自身のシフトや店舗の予約を管理するための機能群を実装します。
 
 -   **主な機能**: シフト登録・管理、店舗の予約一覧の確認・管理
+
+### 完了タスク
+
+-   スタッフ登録申し込み画面
+
+### 未完了タスク
+
+上記以外のスタッフ機能全般
 
 ---
 

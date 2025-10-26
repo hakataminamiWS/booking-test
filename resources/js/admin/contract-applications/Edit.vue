@@ -13,21 +13,23 @@
             </v-col>
         </v-row>
 
+        <!-- Top Link -->
         <v-row>
             <v-col cols="12">
                 <v-btn :href="showUrl" prepend-icon="mdi-arrow-left">
-                    契約申し込み詳細
+                    契約申し込み詳細へ戻る
                 </v-btn>
             </v-col>
         </v-row>
 
+        <!-- Contents -->
         <v-row>
             <v-col cols="12">
                 <v-card>
                     <v-card-title
                         class="d-flex justify-space-between align-center"
                     >
-                        <span>契約申し込み編集</span>
+                        契約申し込み編集
                     </v-card-title>
                     <v-divider></v-divider>
 
@@ -41,6 +43,7 @@
                         <input type="hidden" name="_method" value="PUT" />
 
                         <v-card-text>
+                            <!-- Readonly -->
                             <v-row>
                                 <v-col cols="12" md="6">
                                     <v-text-field
@@ -64,6 +67,7 @@
                                         disabled
                                     ></v-text-field>
                                 </v-col>
+
                                 <v-col cols="12" md="6">
                                     <v-text-field
                                         label="メールアドレス"
@@ -74,7 +78,11 @@
                                         disabled
                                     ></v-text-field>
                                 </v-col>
-                                <v-col cols="12">
+                            </v-row>
+
+                            <!-- Editable -->
+                            <v-row>
+                                <v-col cols="12" md="6">
                                     <v-select
                                         name="status"
                                         label="申し込みステータス"
@@ -91,7 +99,7 @@
 
                         <v-card-actions>
                             <v-spacer></v-spacer>
-                            <v-btn color="primary" type="submit"> 更新</v-btn>
+                            <v-btn color="primary" type="submit"> 更新 </v-btn>
                         </v-card-actions>
                     </form>
                 </v-card>
@@ -106,7 +114,6 @@ import { ref, computed, onMounted } from "vue";
 // --- Interfaces ---
 interface User {
     id: number;
-    public_id: string;
 }
 
 interface ContractApplication {

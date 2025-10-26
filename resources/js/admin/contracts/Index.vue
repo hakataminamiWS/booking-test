@@ -1,108 +1,123 @@
 <template>
     <v-container>
-        <v-card>
-            <v-card-title class="d-flex justify-space-between align-center">
-                <span>契約一覧</span>
-            </v-card-title>
-            <v-card-text>
-                <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
-                <v-row class="align-center mb-2" dense>
-                    <!-- Filter Button -->
-                    <v-col cols="auto">
-                        <v-btn
-                            variant="tonal"
-                            @click="filterDialog = true"
-                            append-icon="mdi-filter-variant"
-                        >
-                            絞り込み
-                        </v-btn>
-                    </v-col>
+        <v-row>
+            <v-col cols="12">
+                <v-card>
+                    <v-card-title
+                        class="d-flex justify-space-between align-center"
+                    >
+                        <span>契約一覧</span>
+                    </v-card-title>
 
-                    <!-- Sort Button -->
-                    <v-col cols="auto">
-                        <v-btn
-                            variant="tonal"
-                            @click="sortDialog = true"
-                            prepend-icon="mdi-sort"
-                        >
-                            並び替え
-                        </v-btn>
-                    </v-col>
+                    <v-card-text>
+                        <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
+                        <v-row class="align-center mb-2" dense>
+                            <!-- Filter Button -->
+                            <v-col cols="auto">
+                                <v-btn
+                                    variant="tonal"
+                                    @click="filterDialog = true"
+                                    append-icon="mdi-filter-variant"
+                                >
+                                    絞り込み
+                                </v-btn>
+                            </v-col>
 
-                    <v-spacer></v-spacer>
+                            <!-- Sort Button -->
+                            <v-col cols="auto">
+                                <v-btn
+                                    variant="tonal"
+                                    @click="sortDialog = true"
+                                    prepend-icon="mdi-sort"
+                                >
+                                    並び替え
+                                </v-btn>
+                            </v-col>
 
-                    <!-- Total Items Count -->
-                    <v-col cols="auto">
-                        <span class="text-body-2"
-                            >全 {{ totalItems }} 件中 {{ from }} -
-                            {{ to }} 件表示</span
-                        >
-                    </v-col>
+                            <v-spacer></v-spacer>
 
-                    <!-- Pagination -->
-                    <v-col cols="auto">
-                        <v-pagination
-                            v-model="page"
-                            :length="totalPages"
-                            :total-visible="5"
-                            density="compact"
-                        ></v-pagination>
-                    </v-col>
-                </v-row>
+                            <!-- Total Items Count -->
+                            <v-col cols="auto">
+                                <span class="text-body-2"
+                                    >全 {{ totalItems }} 件中 {{ from }} -
+                                    {{ to }} 件表示</span
+                                >
+                            </v-col>
 
-                <!-- Applied Filters & Sort Chips -->
-                <v-row dense>
-                    <v-col cols="12">
-                        <v-chip
-                            v-for="filter in activeFiltersText"
-                            :key="filter.id"
-                            class="mr-2 mb-2"
-                            closable
-                            @click:close="removeFilter(filter.id)"
-                        >
-                            {{ filter.text }}: {{ filter.value }}
-                        </v-chip>
-                        <v-chip
-                            v-if="sortChipText"
-                            class="mr-2 mb-2"
-                            closable
-                            @click:close="removeSort"
-                        >
-                            {{ sortChipText }}
-                        </v-chip>
-                    </v-col>
-                </v-row>
+                            <!-- Pagination -->
+                            <v-col cols="auto">
+                                <v-pagination
+                                    v-model="page"
+                                    :length="totalPages"
+                                    :total-visible="5"
+                                    density="compact"
+                                ></v-pagination>
+                            </v-col>
+                        </v-row>
 
-                <!-- Data Table -->
-                <v-data-table-server
-                    v-model:page="page"
-                    v-model:items-per-page="itemsPerPage"
-                    :headers="headers"
-                    :items="serverItems"
-                    :items-length="totalItems"
-                    :loading="loading"
-                    @update:options="loadItems"
-                    hide-default-footer
-                    class="elevation-1 mt-4"
-                >
-                    <template v-slot:item.start_date="{ item }">
-                        {{ new Date(item.start_date).toLocaleDateString() }}
-                    </template>
-                    <template v-slot:item.end_date="{ item }">
-                        {{ new Date(item.end_date).toLocaleDateString() }}
-                    </template>
-                    <template v-slot:item.actions="{ item }">
-                        <v-btn
-                            color="primary"
-                            size="small"
-                            :href="`/admin/contracts/${item.id}`"
+                        <!-- Applied Filters & Sort Chips -->
+                        <v-row dense>
+                            <v-col cols="12">
+                                <v-chip
+                                    v-for="filter in activeFiltersText"
+                                    :key="filter.id"
+                                    class="mr-2 mb-2"
+                                    closable
+                                    @click:close="removeFilter(filter.id)"
+                                >
+                                    {{ filter.text }}: {{ filter.value }}
+                                </v-chip>
+                                <v-chip
+                                    v-if="sortChipText"
+                                    class="mr-2 mb-2"
+                                    closable
+                                    @click:close="removeSort"
+                                >
+                                    {{ sortChipText }}
+                                </v-chip>
+                            </v-col>
+                        </v-row>
+
+                        <!-- Data Table -->
+                        <v-data-table-server
+                            v-model:page="page"
+                            v-model:items-per-page="itemsPerPage"
+                            :headers="headers"
+                            :items="serverItems"
+                            :items-length="totalItems"
+                            :loading="loading"
+                            :mobile="smAndDown"
+                            @update:options="loadItems"
+                            hide-default-footer
+                            class="elevation-1 mt-4"
                         >
-                            契約の詳細
-                        </v-btn>
-                    </template>
-                </v-data-table-server>
-            </v-card-text>
-        </v-card>
+                            <template v-slot:item.start_date="{ item }">
+                                {{
+                                    new Date(
+                                        item.start_date
+                                    ).toLocaleDateString()
+                                }}
+                            </template>
+                            <template v-slot:item.end_date="{ item }">
+                                {{
+                                    new Date(item.end_date).toLocaleDateString()
+                                }}
+                            </template>
+
+                            <template v-slot:item.actions="{ item }">
+                                <v-btn
+                                    color="primary"
+                                    size="small"
+                                    :href="`/admin/contracts/${item.id}`"
+                                >
+                                    契約の詳細
+                                </v-btn>
+                            </template>
+                        </v-data-table-server>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
 
         <!-- Filter Dialog -->
         <v-dialog v-model="filterDialog" max-width="800px">
@@ -141,7 +156,7 @@
                                 dense
                                 hide-details
                             ></v-select>
-                             <v-text-field
+                            <v-text-field
                                 v-if="getColumnType(filter.column) === 'date'"
                                 v-model="filter.value"
                                 label="値"
@@ -190,9 +205,12 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="6">
-                             <v-select
+                            <v-select
                                 v-model="sortBy.order"
-                                :items="[{text: '昇順', value: 'asc'}, {text: '降順', value: 'desc'}]"
+                                :items="[
+                                    { text: '昇順', value: 'asc' },
+                                    { text: '降順', value: 'desc' },
+                                ]"
                                 item-title="text"
                                 item-value="value"
                                 label="順序"
@@ -216,6 +234,9 @@
 import { ref, computed } from "vue";
 import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
+import { useDisplay } from "vuetify";
+
+const { smAndDown } = useDisplay();
 
 type Options = InstanceType<typeof VDataTableServer>["$props"]["options"];
 type Headers = InstanceType<typeof VDataTableServer>["$props"]["headers"];
@@ -229,10 +250,13 @@ const totalItems = ref(0);
 const page = ref(1);
 const itemsPerPage = ref(20);
 const from = computed(() => (page.value - 1) * itemsPerPage.value + 1);
-const to = computed(() => Math.min(page.value * itemsPerPage.value, totalItems.value));
-const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
+const to = computed(() =>
+    Math.min(page.value * itemsPerPage.value, totalItems.value)
+);
+const totalPages = computed(() =>
+    Math.ceil(totalItems.value / itemsPerPage.value)
+);
 let isInitialLoad = true;
-
 
 // --- Filtering ---
 interface Filter {
@@ -243,7 +267,6 @@ interface Filter {
 
 const filterableColumns = ref([
     { text: "契約名", value: "name", type: "text" },
-    { text: "Public ID", value: "public_id", type: "text" },
     {
         text: "ステータス",
         value: "status",
@@ -261,11 +284,17 @@ const activeFilters = ref<Filter[]>([]);
 
 const getColumnType = (columnValue: string | null) => {
     if (!columnValue) return "text";
-    return filterableColumns.value.find((c) => c.value === columnValue)?.type || "text";
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.type ||
+        "text"
+    );
 };
 const getColumnItems = (columnValue: string | null) => {
     if (!columnValue) return [];
-    return filterableColumns.value.find((c) => c.value === columnValue)?.items || [];
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.items ||
+        []
+    );
 };
 
 const addFilter = () => {
@@ -281,12 +310,14 @@ const removeFilter = (id: number) => {
 };
 
 const activeFiltersText = computed(() => {
-    return activeFilters.value.map(f => {
-        const column = filterableColumns.value.find(c => c.value === f.column);
+    return activeFilters.value.map((f) => {
+        const column = filterableColumns.value.find(
+            (c) => c.value === f.column
+        );
         return {
             id: f.id,
-            text: column ? column.text : '',
-            value: f.value
+            text: column ? column.text : "",
+            value: f.value,
         };
     });
 });
@@ -299,7 +330,11 @@ const applyFilters = (shouldCloseDialog = true) => {
         filterDialog.value = false;
     }
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 // --- Sorting ---
@@ -310,7 +345,6 @@ interface Sort {
 
 const sortableColumns = ref([
     { text: "契約名", value: "name" },
-    { text: "Public ID", value: "public_id" },
     { text: "契約開始日", value: "start_date" },
     { text: "契約終了日", value: "end_date" },
 ]);
@@ -322,24 +356,33 @@ const applySort = () => {
     activeSort.value = JSON.parse(JSON.stringify(sortBy.value));
     sortDialog.value = false;
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const removeSort = () => {
     sortBy.value = { column: null, order: null };
     activeSort.value = { column: null, order: null };
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const sortChipText = computed(() => {
     if (!activeSort.value.column || !activeSort.value.order) return null;
-    const column = sortableColumns.value.find(c => c.value === activeSort.value.column);
+    const column = sortableColumns.value.find(
+        (c) => c.value === activeSort.value.column
+    );
     if (!column) return null;
-    const orderText = activeSort.value.order === 'asc' ? '昇順' : '降順';
+    const orderText = activeSort.value.order === "asc" ? "昇順" : "降順";
     return `並び替え: ${column.text} (${orderText})`;
 });
-
 
 // --- Data Loading ---
 const loadItems = async (options: Options) => {
@@ -347,11 +390,14 @@ const loadItems = async (options: Options) => {
 
     if (isInitialLoad) {
         const urlParams = new URLSearchParams(window.location.search);
-        const urlPage = urlParams.get('page');
+        const urlPage = urlParams.get("page");
         if (urlPage) page.value = parseInt(urlPage, 10);
 
-        const urlSortBy = urlParams.get('sort_by');
-        const urlSortOrder = urlParams.get('sort_order') as 'asc' | 'desc' | null;
+        const urlSortBy = urlParams.get("sort_by");
+        const urlSortOrder = urlParams.get("sort_order") as
+            | "asc"
+            | "desc"
+            | null;
         if (urlSortBy && urlSortOrder) {
             sortBy.value = { column: urlSortBy, order: urlSortOrder };
             activeSort.value = { column: urlSortBy, order: urlSortOrder };
@@ -359,10 +405,16 @@ const loadItems = async (options: Options) => {
 
         const tempFilters: Filter[] = [];
         urlParams.forEach((value, key) => {
-            const columnDef = filterableColumns.value.find(c => c.value === key || `statuses[]` === key);
+            const columnDef = filterableColumns.value.find(
+                (c) => c.value === key || `statuses[]` === key
+            );
             if (columnDef) {
-                const colVal = key.endsWith('[]') ? key.slice(0, -2) : key;
-                tempFilters.push({ id: Date.now() + Math.random(), column: colVal, value });
+                const colVal = key.endsWith("[]") ? key.slice(0, -2) : key;
+                tempFilters.push({
+                    id: Date.now() + Math.random(),
+                    column: colVal,
+                    value,
+                });
             }
         });
         if (tempFilters.length > 0) {
@@ -395,7 +447,7 @@ const loadItems = async (options: Options) => {
     });
 
     const apiUrl = `/admin/api/contracts?${params.toString()}`;
-    history.pushState(null, '', `/admin/contracts?${params.toString()}`);
+    history.pushState(null, "", `/admin/contracts?${params.toString()}`);
 
     try {
         const response = await axios.get(apiUrl);
@@ -409,12 +461,11 @@ const loadItems = async (options: Options) => {
 };
 
 const headers: Headers = [
-    { title: '契約 ID', key: 'id', sortable: false },
-    { title: '契約名', key: 'name', sortable: false },
-    { title: 'Public ID', key: 'user.public_id', sortable: false },
-    { title: '契約開始日', key: 'start_date', sortable: false },
-    { title: '契約終了日', key: 'end_date', sortable: false },
-    { title: 'ステータス', key: 'status', sortable: false },
-    { title: '操作', key: 'actions', sortable: false },
+    { title: "契約 ID", key: "id", sortable: false },
+    { title: "契約名", key: "name", sortable: false },
+    { title: "契約開始日", key: "start_date", sortable: false },
+    { title: "契約終了日", key: "end_date", sortable: false },
+    { title: "ステータス", key: "status", sortable: false },
+    { title: "操作", key: "actions", sortable: false },
 ];
 </script>

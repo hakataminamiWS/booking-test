@@ -34,31 +34,43 @@
                     <v-card-text>
                         <v-list-item>
                             <v-list-item-title>契約ID</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.id }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                contract.id
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>契約名</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.name }}</v-list-item-subtitle>
-                        </v-list-item>
-                        <v-list-item v-if="contract.user">
-                            <v-list-item-title>PublicID</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.user.public_id }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                contract.name
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>店舗上限数</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.max_shops }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                contract.max_shops
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
-                            <v-list-item-title>契約ステータス</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.status }}</v-list-item-subtitle>
+                            <v-list-item-title
+                                >契約ステータス</v-list-item-title
+                            >
+                            <v-list-item-subtitle>{{
+                                contract.status
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>契約開始日</v-list-item-title>
-                            <v-list-item-subtitle>{{ new Date(contract.start_date).toLocaleDateString() }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                new Date(
+                                    contract.start_date
+                                ).toLocaleDateString()
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>契約終了日</v-list-item-title>
-                            <v-list-item-subtitle>{{ new Date(contract.end_date).toLocaleDateString() }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                new Date(contract.end_date).toLocaleDateString()
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                     </v-card-text>
                 </v-card>
@@ -73,19 +85,31 @@
                     <v-card-text>
                         <v-list-item>
                             <v-list-item-title>申込ID</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.application.id }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                contract.application.id
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>お客様名称</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.application.customer_name }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                contract.application.customer_name
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
-                            <v-list-item-title>お客様メールアドレス</v-list-item-title>
-                            <v-list-item-subtitle>{{ contract.application.email }}</v-list-item-subtitle>
+                            <v-list-item-title
+                                >お客様メールアドレス</v-list-item-title
+                            >
+                            <v-list-item-subtitle>{{
+                                contract.application.email
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                         <v-list-item>
                             <v-list-item-title>申込日時</v-list-item-title>
-                            <v-list-item-subtitle>{{ new Date(contract.application.created_at).toLocaleString() }}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{
+                                new Date(
+                                    contract.application.created_at
+                                ).toLocaleString()
+                            }}</v-list-item-subtitle>
                         </v-list-item>
                     </v-card-text>
                 </v-card>
@@ -95,12 +119,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useDisplay } from 'vuetify';
+import { computed } from "vue";
+import { useDisplay } from "vuetify";
 
 interface User {
     id: number;
-    public_id: string;
 }
 
 interface ContractApplication {
@@ -128,5 +151,4 @@ const props = defineProps<{
 const { smAndDown } = useDisplay();
 
 const editUrl = computed(() => `/admin/contracts/${props.contract.id}/edit`);
-
 </script>

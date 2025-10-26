@@ -8,10 +8,14 @@
                 >
                     営業時間一覧へ戻る
                 </v-btn>
+            </v-col>
+        </v-row>
 
-                <ShopHeader :shop="props.shop" class="mt-4" />
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="props.shop" />
 
-                <v-card class="mt-4">
+                <v-card>
                     <v-card-title>特別休業日登録</v-card-title>
                     <v-card-text>
                         <form :action="formAction" method="POST">

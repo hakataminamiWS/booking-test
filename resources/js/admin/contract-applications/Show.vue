@@ -1,5 +1,6 @@
 <template>
     <v-container>
+        <!-- Top Link -->
         <v-row>
             <v-col cols="12">
                 <v-btn
@@ -11,6 +12,7 @@
             </v-col>
         </v-row>
 
+        <!-- Contents -->
         <v-row>
             <v-col cols="12">
                 <v-card>
@@ -41,12 +43,14 @@
                                 contractApplication.id
                             }}</v-list-item-subtitle>
                         </v-list-item>
+
                         <v-list-item>
                             <v-list-item-title>お客様名称</v-list-item-title>
                             <v-list-item-subtitle>{{
                                 contractApplication.customer_name
                             }}</v-list-item-subtitle>
                         </v-list-item>
+
                         <v-list-item>
                             <v-list-item-title
                                 >メールアドレス</v-list-item-title
@@ -55,6 +59,7 @@
                                 contractApplication.email
                             }}</v-list-item-subtitle>
                         </v-list-item>
+
                         <v-list-item>
                             <v-list-item-title
                                 >申し込みステータス</v-list-item-title
@@ -63,6 +68,7 @@
                                 contractApplication.status
                             }}</v-list-item-subtitle>
                         </v-list-item>
+
                         <v-list-item>
                             <v-list-item-title>申込日時</v-list-item-title>
                             <v-list-item-subtitle>{{
@@ -84,7 +90,6 @@ import { useDisplay } from "vuetify";
 
 interface User {
     id: number;
-    public_id: string;
 }
 
 interface ContractApplication {

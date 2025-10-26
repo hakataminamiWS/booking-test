@@ -95,15 +95,16 @@
 
 ### `shop_staffs`
 
-このテーブルのレコードが存在するユーザーは、その店舗のスタッフであるとみなす。
+店舗のスタッフ登録を管理します。
+user_id が NULL の場合、そのスタッフはオーナーのみが操作可能とします。
 
-| カラム名     | データ型    | 制約                                 | 説明                  |
-| :----------- | :---------- | :----------------------------------- | :-------------------- |
-| `id`         | `bigint`    | `PK`, `AI`                           | 主キー                |
-| `shop_id`    | `bigint`    | `FK (shops.id)`, `onDelete: CASCADE` | 店舗 ID               |
-| `user_id`    | `bigint`    | `FK (users.id)`, `onDelete: CASCADE` | スタッフのユーザー ID |
-| `created_at` | `timestamp` |                                      | 作成日時              |
-| `updated_at` | `timestamp` |                                      | 更新日時              |
+| カラム名     | データ型    | 制約                                             | 説明                  |
+| :----------- | :---------- | :----------------------------------------------- | :-------------------- |
+| `id`         | `bigint`    | `PK`, `AI`                                       | 主キー                |
+| `shop_id`    | `bigint`    | `FK (shops.id)`, `onDelete: CASCADE`             | 店舗 ID               |
+| `user_id`    | `bigint`    | `FK (users.id)`, `Nullable`, `onDelete: CASCADE` | スタッフのユーザー ID |
+| `created_at` | `timestamp` |                                                  | 作成日時              |
+| `updated_at` | `timestamp` |                                                  | 更新日時              |
 
 **ユニーク制約** (`shop_id`, `user_id`)
 
@@ -111,15 +112,15 @@
 
 店舗スタッフのプロフィール情報を管理します。
 
-| カラム名          | データ型       | 制約                                                 | 説明                             |
-| :---------------- | :------------- | :--------------------------------------------------- | :------------------------------- |
-| `id`              | `bigint`       | `PK`, `AI`                                           | 主キー                           |
-| `shop_staff_id`   | `bigint`       | `FK (shop_staffs.id)`, `Unique`, `onDelete: CASCADE` | 店舗スタッフ ID                  |
-| `nickname`        | `varchar(255)` |                                                      | 店舗で表示されるニックネーム     |
-| `small_image_url` | `varchar(255)` | `Nullable`                                           | 店舗で表示される画像（小）の URL |
-| `large_image_url` | `varchar(255)` | `Nullable`                                           | 店舗で表示される画像（大）の URL |
-| `created_at`      | `timestamp`    |                                                      | 作成日時                         |
-| `updated_at`      | `timestamp`    |                                                      | 更新日時                         |
+| カラム名          | データ型       | 制約                                                 | 説明                                     |
+| :---------------- | :------------- | :--------------------------------------------------- | :--------------------------------------- |
+| `id`              | `bigint`       | `PK`, `AI`                                           | 主キー                                   |
+| `shop_staff_id`   | `bigint`       | `FK (shop_staffs.id)`, `Unique`, `onDelete: CASCADE` | 店舗スタッフ ID                          |
+| `nickname`        | `varchar(255)` |                                                      | 店舗で表示されるニックネーム             |
+| `small_image_url` | `varchar(255)` | `Nullable`                                           | 店舗で表示される画像（小）のファイルパス |
+| `large_image_url` | `varchar(255)` | `Nullable`                                           | 店舗で表示される画像（大）のファイルパス |
+| `created_at`      | `timestamp`    |                                                      | 作成日時                                 |
+| `updated_at`      | `timestamp`    |                                                      | 更新日時                                 |
 
 ### `shop_staff_schedules`
 

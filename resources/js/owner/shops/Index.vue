@@ -2,8 +2,8 @@
     <v-container>
         <v-row>
             <v-col cols="12">
-                <v-card class="mb-4">
-                    <v-card-title>登録店舗数</v-card-title>
+                <v-card>
+                    <v-card-title> 登録店舗数 </v-card-title>
                     <v-card-text>
                         {{ props.currentShopsCount }} / {{ props.maxShops }}
                     </v-card-text>
@@ -11,136 +11,147 @@
             </v-col>
         </v-row>
 
-        <v-card>
-            <v-card-title
-                :class="{
-                    'd-flex': true,
-                    'flex-column': smAndDown,
-                    'align-start': smAndDown,
-                    'justify-space-between': !smAndDown,
-                    'align-center': !smAndDown,
-                }"
-            >
-                <span>店舗一覧</span>
-                <v-btn
-                    :disabled="props.currentShopsCount >= props.maxShops"
-                    href="/owner/shops/create"
-                    color="primary"
-                    :class="{ 'mt-2': smAndDown }"
-                >
-                    店舗を新規作成する
-                </v-btn>
-            </v-card-title>
-            <v-card-text>
-                <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
-                <v-row class="align-center mb-2" dense>
-                    <!-- Filter Button -->
-                    <v-col cols="auto">
+        <v-row>
+            <v-col cols="12">
+                <v-card>
+                    <v-card-title
+                        :class="{
+                            'd-flex': true,
+                            'flex-column': smAndDown,
+                            'align-start': smAndDown,
+                            'justify-space-between': !smAndDown,
+                            'align-center': !smAndDown,
+                        }"
+                    >
+                        <span>店舗一覧</span>
                         <v-btn
-                            variant="tonal"
-                            @click="filterDialog = true"
-                            append-icon="mdi-filter-variant"
-                        >
-                            絞り込み
-                        </v-btn>
-                    </v-col>
-
-                    <!-- Sort Button -->
-                    <v-col cols="auto">
-                        <v-btn
-                            variant="tonal"
-                            @click="sortDialog = true"
-                            prepend-icon="mdi-sort"
-                        >
-                            並び替え
-                        </v-btn>
-                    </v-col>
-
-                    <v-spacer></v-spacer>
-
-                    <!-- Total Items Count -->
-                    <v-col cols="auto">
-                        <span class="text-body-2"
-                            >全 {{ totalItems }} 件中 {{ from }} -
-                            {{ to }} 件表示</span
-                        >
-                    </v-col>
-
-                    <!-- Pagination -->
-                    <v-col cols="auto">
-                        <v-pagination
-                            v-model="page"
-                            :length="totalPages"
-                            :total-visible="5"
-                            density="compact"
-                        ></v-pagination>
-                    </v-col>
-                </v-row>
-
-                <!-- Applied Filters & Sort Chips -->
-                <v-row dense>
-                    <v-col cols="12">
-                        <v-chip
-                            v-for="filter in activeFiltersText"
-                            :key="filter.id"
-                            class="mr-2 mb-2"
-                            closable
-                            @click:close="removeFilter(filter.id)"
-                        >
-                            {{ filter.text }}: {{ filter.value }}
-                        </v-chip>
-                        <v-chip
-                            v-if="sortChipText"
-                            class="mr-2 mb-2"
-                            closable
-                            @click:close="removeSort"
-                        >
-                            {{ sortChipText }}
-                        </v-chip>
-                    </v-col>
-                </v-row>
-
-                <!-- Data Table -->
-                <v-data-table-server
-                    v-model:page="page"
-                    v-model:items-per-page="itemsPerPage"
-                    :headers="headers"
-                    :items="serverItems"
-                    :items-length="totalItems"
-                    :loading="loading"
-                    @update:options="loadItems"
-                    hide-default-footer
-                    class="elevation-1 mt-4"
-                >
-                    <template v-slot:item.accepts_online_bookings="{ item }">
-                        <v-chip
-                            :color="
-                                item.accepts_online_bookings ? 'green' : 'red'
+                            :disabled="
+                                props.currentShopsCount >= props.maxShops
                             "
-                            dark
-                            small
-                            >{{
-                                item.accepts_online_bookings
-                                    ? "受付中"
-                                    : "停止中"
-                            }}</v-chip
-                        >
-                    </template>
-                    <template v-slot:item.created_at="{ item }">
-                        {{ new Date(item.created_at).toLocaleString() }}
-                    </template>
-                    <template v-slot:item.actions="{ item }">
-                        <v-btn
+                            href="/owner/shops/create"
                             color="primary"
-                            size="small"
-                            :href="`/owner/shops/${item.slug}`"
+                            :class="{ 'mt-2': smAndDown }"
                         >
-                            詳細
+                            店舗を新規作成する
                         </v-btn>
-                    </template>
-                </v-data-table-server>
-            </v-card-text>
-        </v-card>
+                    </v-card-title>
+                    <v-card-text>
+                        <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
+                        <v-row class="align-center mb-2" dense>
+                            <!-- Filter Button -->
+                            <v-col cols="auto">
+                                <v-btn
+                                    variant="tonal"
+                                    @click="filterDialog = true"
+                                    append-icon="mdi-filter-variant"
+                                >
+                                    絞り込み
+                                </v-btn>
+                            </v-col>
+
+                            <!-- Sort Button -->
+                            <v-col cols="auto">
+                                <v-btn
+                                    variant="tonal"
+                                    @click="sortDialog = true"
+                                    prepend-icon="mdi-sort"
+                                >
+                                    並び替え
+                                </v-btn>
+                            </v-col>
+
+                            <v-spacer></v-spacer>
+
+                            <!-- Total Items Count -->
+                            <v-col cols="auto">
+                                <span class="text-body-2"
+                                    >全 {{ totalItems }} 件中 {{ from }} -
+                                    {{ to }} 件表示</span
+                                >
+                            </v-col>
+
+                            <!-- Pagination -->
+                            <v-col cols="auto">
+                                <v-pagination
+                                    v-model="page"
+                                    :length="totalPages"
+                                    :total-visible="5"
+                                    density="compact"
+                                ></v-pagination>
+                            </v-col>
+                        </v-row>
+
+                        <!-- Applied Filters & Sort Chips -->
+                        <v-row dense>
+                            <v-col cols="12">
+                                <v-chip
+                                    v-for="filter in activeFiltersText"
+                                    :key="filter.id"
+                                    class="mr-2 mb-2"
+                                    closable
+                                    @click:close="removeFilter(filter.id)"
+                                >
+                                    {{ filter.text }}: {{ filter.value }}
+                                </v-chip>
+                                <v-chip
+                                    v-if="sortChipText"
+                                    class="mr-2 mb-2"
+                                    closable
+                                    @click:close="removeSort"
+                                >
+                                    {{ sortChipText }}
+                                </v-chip>
+                            </v-col>
+                        </v-row>
+
+                        <!-- Data Table -->
+                        <v-data-table-server
+                            v-model:page="page"
+                            v-model:items-per-page="itemsPerPage"
+                            :headers="headers"
+                            :items="serverItems"
+                            :items-length="totalItems"
+                            :loading="loading"
+                            :mobile="smAndDown"
+                            @update:options="loadItems"
+                            hide-default-footer
+                            class="elevation-1 mt-4"
+                        >
+                            <template
+                                v-slot:item.accepts_online_bookings="{ item }"
+                            >
+                                <v-chip
+                                    :color="
+                                        item.accepts_online_bookings
+                                            ? 'green'
+                                            : 'red'
+                                    "
+                                    dark
+                                    small
+                                    >{{
+                                        item.accepts_online_bookings
+                                            ? "受付中"
+                                            : "停止中"
+                                    }}</v-chip
+                                >
+                            </template>
+                            <template v-slot:item.created_at="{ item }">
+                                {{ new Date(item.created_at).toLocaleString() }}
+                            </template>
+                            <template v-slot:item.actions="{ item }">
+                                <v-btn
+                                    color="primary"
+                                    size="small"
+                                    :href="`/owner/shops/${item.slug}`"
+                                >
+                                    詳細
+                                </v-btn>
+                            </template>
+                        </v-data-table-server>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
 
         <!-- Filter Dialog -->
         <v-dialog v-model="filterDialog" max-width="800px">

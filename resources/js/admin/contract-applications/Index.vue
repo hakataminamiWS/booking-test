@@ -1,119 +1,128 @@
 <template>
     <v-container>
-        <v-card>
-            <v-card-title class="d-flex justify-space-between align-center">
-                <span>契約申し込み一覧</span>
-            </v-card-title>
-            <v-card-text>
-                <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
-                <v-row class="align-center mb-2" dense>
-                    <!-- Filter Button -->
-                    <v-col cols="auto">
-                        <v-btn
-                            variant="tonal"
-                            @click="filterDialog = true"
-                            append-icon="mdi-filter-variant"
+        <v-row>
+            <v-col cols="12">
+                <v-card>
+                    <v-card-title
+                        class="d-flex justify-space-between align-center"
+                    >
+                        <span>契約申し込み一覧</span>
+                    </v-card-title>
+
+                    <v-card-text>
+                        <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
+                        <v-row class="align-center mb-2" dense>
+                            <!-- Filter Button -->
+                            <v-col cols="auto">
+                                <v-btn
+                                    variant="tonal"
+                                    @click="filterDialog = true"
+                                    append-icon="mdi-filter-variant"
+                                >
+                                    絞り込み
+                                </v-btn>
+                            </v-col>
+
+                            <!-- Sort Button -->
+                            <v-col cols="auto">
+                                <v-btn
+                                    variant="tonal"
+                                    @click="sortDialog = true"
+                                    prepend-icon="mdi-sort"
+                                >
+                                    並び替え
+                                </v-btn>
+                            </v-col>
+
+                            <v-spacer></v-spacer>
+
+                            <!-- Total Items Count -->
+                            <v-col cols="auto">
+                                <span class="text-body-2"
+                                    >全 {{ totalItems }} 件中 {{ from }} -
+                                    {{ to }} 件表示</span
+                                >
+                            </v-col>
+
+                            <!-- Pagination -->
+                            <v-col cols="auto">
+                                <v-pagination
+                                    v-model="page"
+                                    :length="totalPages"
+                                    :total-visible="5"
+                                    density="compact"
+                                ></v-pagination>
+                            </v-col>
+                        </v-row>
+
+                        <!-- Applied Filters & Sort Chips -->
+                        <v-row dense>
+                            <v-col cols="12">
+                                <v-chip
+                                    v-for="filter in activeFiltersText"
+                                    :key="filter.id"
+                                    class="mr-2 mb-2"
+                                    closable
+                                    @click:close="removeFilter(filter.id)"
+                                >
+                                    {{ filter.text }}: {{ filter.value }}
+                                </v-chip>
+                                <v-chip
+                                    v-if="sortChipText"
+                                    class="mr-2 mb-2"
+                                    closable
+                                    @click:close="removeSort"
+                                >
+                                    {{ sortChipText }}
+                                </v-chip>
+                            </v-col>
+                        </v-row>
+
+                        <!-- Data Table -->
+                        <v-data-table-server
+                            v-model:page="page"
+                            v-model:items-per-page="itemsPerPage"
+                            :headers="headers"
+                            :items="serverItems"
+                            :items-length="totalItems"
+                            :loading="loading"
+                            :mobile="smAndDown"
+                            @update:options="loadItems"
+                            hide-default-footer
+                            class="elevation-1 mt-4"
                         >
-                            絞り込み
-                        </v-btn>
-                    </v-col>
+                            <template v-slot:item.created_at="{ item }">
+                                {{ new Date(item.created_at).toLocaleString() }}
+                            </template>
 
-                    <!-- Sort Button -->
-                    <v-col cols="auto">
-                        <v-btn
-                            variant="tonal"
-                            @click="sortDialog = true"
-                            prepend-icon="mdi-sort"
-                        >
-                            並び替え
-                        </v-btn>
-                    </v-col>
+                            <template v-slot:item.contract_status="{ item }">
+                                {{
+                                    item.contract
+                                        ? item.contract.status
+                                        : "なし"
+                                }}
+                            </template>
 
-                    <v-spacer></v-spacer>
+                            <template v-slot:item.actions="{ item }">
+                                <v-btn
+                                    :href="`/admin/contract-applications/${item.id}`"
+                                    class="mr-2"
+                                >
+                                    申し込み詳細
+                                </v-btn>
 
-                    <!-- Total Items Count -->
-                    <v-col cols="auto">
-                        <span class="text-body-2"
-                            >全 {{ totalItems }} 件中 {{ from }} -
-                            {{ to }} 件表示</span
-                        >
-                    </v-col>
-
-                    <!-- Pagination -->
-                    <v-col cols="auto">
-                        <v-pagination
-                            v-model="page"
-                            :length="totalPages"
-                            :total-visible="5"
-                            density="compact"
-                        ></v-pagination>
-                    </v-col>
-                </v-row>
-
-                <!-- Applied Filters & Sort Chips -->
-                <v-row dense>
-                    <v-col cols="12">
-                        <v-chip
-                            v-for="filter in activeFiltersText"
-                            :key="filter.id"
-                            class="mr-2 mb-2"
-                            closable
-                            @click:close="removeFilter(filter.id)"
-                        >
-                            {{ filter.text }}: {{ filter.value }}
-                        </v-chip>
-                        <v-chip
-                            v-if="sortChipText"
-                            class="mr-2 mb-2"
-                            closable
-                            @click:close="removeSort"
-                        >
-                            {{ sortChipText }}
-                        </v-chip>
-                    </v-col>
-                </v-row>
-
-                <!-- Data Table -->
-                <v-data-table-server
-                    v-model:page="page"
-                    v-model:items-per-page="itemsPerPage"
-                    :headers="headers"
-                    :items="serverItems"
-                    :items-length="totalItems"
-                    :loading="loading"
-                    :mobile="smAndDown"
-                    @update:options="loadItems"
-                    hide-default-footer
-                    class="elevation-1 mt-4"
-                >
-                    <template v-slot:item.created_at="{ item }">
-                        {{ new Date(item.created_at).toLocaleString() }}
-                    </template>
-
-                    <template v-slot:item.contract_status="{ item }">
-                        {{ item.contract ? item.contract.status : 'なし' }}
-                    </template>
-
-                    <template v-slot:item.actions="{ item }">
-                        <v-btn
-                            color="secondary"
-                            size="small"
-                            :href="`/admin/contract-applications/${item.id}`"
-                            class="mr-2"
-                        >
-                            申し込み詳細
-                        </v-btn>
-                        <v-btn
-                            color="primary"
-                            size="small"
-                            :href="`/admin/contracts/create?application_id=${item.id}`"
-                        >
-                            契約を作成
-                        </v-btn>
-                    </template>
-                </v-data-table-server>
-            </v-card-text>
-        </v-card>
+                                <v-btn
+                                    color="primary"
+                                    :href="`/admin/contracts/create?application_id=${item.id}`"
+                                >
+                                    契約を作成
+                                </v-btn>
+                            </template>
+                        </v-data-table-server>
+                    </v-card-text>
+                </v-card>
+            </v-col>
+        </v-row>
 
         <!-- Filter Dialog -->
         <v-dialog v-model="filterDialog" max-width="800px">
@@ -134,7 +143,10 @@
                                 label="対象列"
                                 dense
                                 hide-details
-                                @update:modelValue="(newColumn) => onFilterColumnChange(filter, newColumn)"
+                                @update:modelValue="
+                                    (newColumn) =>
+                                        onFilterColumnChange(filter, newColumn)
+                                "
                             ></v-select>
                         </v-col>
                         <v-col cols="7">
@@ -153,7 +165,12 @@
                                 dense
                                 hide-details
                             ></v-select>
-                            <div v-if="getColumnType(filter.column) === 'date-range'">
+                            <div
+                                v-if="
+                                    getColumnType(filter.column) ===
+                                    'date-range'
+                                "
+                            >
                                 <v-row dense>
                                     <v-col cols="6">
                                         <v-text-field
@@ -216,9 +233,12 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="6">
-                             <v-select
+                            <v-select
                                 v-model="sortBy.order"
-                                :items="[{text: '昇順', value: 'asc'}, {text: '降順', value: 'desc'}]"
+                                :items="[
+                                    { text: '昇順', value: 'asc' },
+                                    { text: '降順', value: 'desc' },
+                                ]"
                                 item-title="text"
                                 item-value="value"
                                 label="順序"
@@ -258,8 +278,12 @@ const totalItems = ref(0);
 const page = ref(1);
 const itemsPerPage = ref(20);
 const from = computed(() => (page.value - 1) * itemsPerPage.value + 1);
-const to = computed(() => Math.min(page.value * itemsPerPage.value, totalItems.value));
-const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
+const to = computed(() =>
+    Math.min(page.value * itemsPerPage.value, totalItems.value)
+);
+const totalPages = computed(() =>
+    Math.ceil(totalItems.value / itemsPerPage.value)
+);
 let isInitialLoad = true;
 
 // --- Filtering ---
@@ -294,17 +318,23 @@ const activeFilters = ref<Filter[]>([]);
 
 const getColumnType = (columnValue: string | null) => {
     if (!columnValue) return "text";
-    return filterableColumns.value.find((c) => c.value === columnValue)?.type || "text";
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.type ||
+        "text"
+    );
 };
 const getColumnItems = (columnValue: string | null) => {
     if (!columnValue) return [];
-    return filterableColumns.value.find((c) => c.value === columnValue)?.items || [];
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.items ||
+        []
+    );
 };
 
 const onFilterColumnChange = (filter: Filter, newColumn: string | null) => {
     filter.column = newColumn;
     const columnType = getColumnType(newColumn);
-    if (columnType === 'date-range') {
+    if (columnType === "date-range") {
         filter.value = { start: null, end: null };
     } else {
         filter.value = null;
@@ -321,7 +351,7 @@ const removeFilter = (id: number) => {
         filters.value.splice(index, 1);
     }
     // Also remove from active filters if it exists
-    const activeIndex = activeFilters.value.findIndex(f => f.id === id);
+    const activeIndex = activeFilters.value.findIndex((f) => f.id === id);
     if (activeIndex > -1) {
         activeFilters.value.splice(activeIndex, 1);
     }
@@ -329,44 +359,62 @@ const removeFilter = (id: number) => {
 };
 
 const activeFiltersText = computed(() => {
-    return activeFilters.value.flatMap(f => {
-        const column = filterableColumns.value.find(c => c.value === f.column);
+    return activeFilters.value.flatMap((f) => {
+        const column = filterableColumns.value.find(
+            (c) => c.value === f.column
+        );
         if (!column) return [];
 
-        if (column.type === 'date-range') {
+        if (column.type === "date-range") {
             const result = [];
             if (f.value.start) {
-                result.push({ id: f.id + '_start', text: `${column.text} (開始)`, value: f.value.start });
+                result.push({
+                    id: f.id + "_start",
+                    text: `${column.text} (開始)`,
+                    value: f.value.start,
+                });
             }
             if (f.value.end) {
-                result.push({ id: f.id + '_end', text: `${column.text} (終了)`, value: f.value.end });
+                result.push({
+                    id: f.id + "_end",
+                    text: `${column.text} (終了)`,
+                    value: f.value.end,
+                });
             }
             return result;
         } else {
-            return [{
-                id: f.id,
-                text: column.text,
-                value: f.value
-            }];
+            return [
+                {
+                    id: f.id,
+                    text: column.text,
+                    value: f.value,
+                },
+            ];
         }
     });
 });
 
 const applyFilters = (shouldCloseDialog = true) => {
     activeFilters.value = JSON.parse(
-        JSON.stringify(filters.value.filter((f) => {
-            if (!f.column) return false;
-            if (getColumnType(f.column) === 'date-range') {
-                return f.value.start || f.value.end;
-            }
-            return f.value;
-        }))
+        JSON.stringify(
+            filters.value.filter((f) => {
+                if (!f.column) return false;
+                if (getColumnType(f.column) === "date-range") {
+                    return f.value.start || f.value.end;
+                }
+                return f.value;
+            })
+        )
     );
     if (shouldCloseDialog) {
         filterDialog.value = false;
     }
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 // --- Sorting ---
@@ -388,24 +436,33 @@ const applySort = () => {
     activeSort.value = JSON.parse(JSON.stringify(sortBy.value));
     sortDialog.value = false;
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const removeSort = () => {
     sortBy.value = { column: null, order: null };
     activeSort.value = { column: null, order: null };
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const sortChipText = computed(() => {
     if (!activeSort.value.column || !activeSort.value.order) return null;
-    const column = sortableColumns.value.find(c => c.value === activeSort.value.column);
+    const column = sortableColumns.value.find(
+        (c) => c.value === activeSort.value.column
+    );
     if (!column) return null;
-    const orderText = activeSort.value.order === 'asc' ? '昇順' : '降順';
+    const orderText = activeSort.value.order === "asc" ? "昇順" : "降順";
     return `並び替え: ${column.text} (${orderText})`;
 });
-
 
 // --- Data Loading ---
 const loadItems = async (options: Options) => {
@@ -413,11 +470,14 @@ const loadItems = async (options: Options) => {
 
     if (isInitialLoad) {
         const urlParams = new URLSearchParams(window.location.search);
-        const urlPage = urlParams.get('page');
+        const urlPage = urlParams.get("page");
         if (urlPage) page.value = parseInt(urlPage, 10);
 
-        const urlSortBy = urlParams.get('sort_by');
-        const urlSortOrder = urlParams.get('sort_order') as 'asc' | 'desc' | null;
+        const urlSortBy = urlParams.get("sort_by");
+        const urlSortOrder = urlParams.get("sort_order") as
+            | "asc"
+            | "desc"
+            | null;
         if (urlSortBy && urlSortOrder) {
             sortBy.value = { column: urlSortBy, order: urlSortOrder };
             activeSort.value = { column: urlSortBy, order: urlSortOrder };
@@ -425,23 +485,35 @@ const loadItems = async (options: Options) => {
 
         const tempFilters: Filter[] = [];
         urlParams.forEach((value, key) => {
-            const colName = key.replace(/_after$|_before$|\u005b\u005d$/g, '');
-            const columnDef = filterableColumns.value.find(c => c.value === colName);
+            const colName = key.replace(/_after$|_before$|\u005b\u005d$/g, "");
+            const columnDef = filterableColumns.value.find(
+                (c) => c.value === colName
+            );
             if (columnDef) {
-                let existingFilter = tempFilters.find(f => f.column === colName);
-                if (columnDef.type === 'date-range') {
+                let existingFilter = tempFilters.find(
+                    (f) => f.column === colName
+                );
+                if (columnDef.type === "date-range") {
                     if (!existingFilter) {
-                        existingFilter = { id: Date.now() + Math.random(), column: colName, value: { start: null, end: null } };
+                        existingFilter = {
+                            id: Date.now() + Math.random(),
+                            column: colName,
+                            value: { start: null, end: null },
+                        };
                         tempFilters.push(existingFilter);
                     }
-                    if (key.endsWith('_after')) {
+                    if (key.endsWith("_after")) {
                         existingFilter.value.start = value;
-                    } else if (key.endsWith('_before')) {
+                    } else if (key.endsWith("_before")) {
                         existingFilter.value.end = value;
                     }
                 } else {
-                     if (!existingFilter) {
-                        tempFilters.push({ id: Date.now() + Math.random(), column: colName, value });
+                    if (!existingFilter) {
+                        tempFilters.push({
+                            id: Date.now() + Math.random(),
+                            column: colName,
+                            value,
+                        });
                     }
                 }
             }
@@ -468,8 +540,10 @@ const loadItems = async (options: Options) => {
 
     activeFilters.value.forEach((filter) => {
         if (filter.column && filter.value) {
-            const columnDef = filterableColumns.value.find(c => c.value === filter.column);
-            if (columnDef?.type === 'date-range') {
+            const columnDef = filterableColumns.value.find(
+                (c) => c.value === filter.column
+            );
+            if (columnDef?.type === "date-range") {
                 if (filter.value.start) {
                     params.append(`${filter.column}_after`, filter.value.start);
                 }
@@ -485,7 +559,11 @@ const loadItems = async (options: Options) => {
     });
 
     const apiUrl = `/admin/api/contract-applications?${params.toString()}`;
-    history.pushState(null, '', `/admin/contract-applications?${params.toString()}`);
+    history.pushState(
+        null,
+        "",
+        `/admin/contract-applications?${params.toString()}`
+    );
 
     try {
         const response = await axios.get(apiUrl);

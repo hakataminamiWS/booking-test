@@ -20,6 +20,6 @@ class OwnerMiddleware
             abort(403, 'Unauthorized action.');
         }
 
-        return $next($request);
+        return $next(request());
     }
 }

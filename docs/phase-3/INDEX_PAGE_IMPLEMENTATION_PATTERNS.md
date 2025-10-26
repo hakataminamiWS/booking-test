@@ -29,12 +29,11 @@
 
 一覧画面に表示される項目とその仕様を定義します。画面仕様詳細の表示項目一覧に記載される予定であり、実装の際は対象ドキュメントを確認して実装される。
 
-| カラム名  | データソース                                                                        | フィルタ                | ソート | 操作 |
-| :-------- | :---------------------------------------------------------------------------------- | :---------------------- | :----- | :--- |
-| Public ID | users.public_id                                                                     | 可 (インプット)         | 可     |
-| 役割      | {Owner かどうか。owners テーブルとの関連}                                           | 可 (セレクト)           | 可     |
-| 登録日時  | users.created_at {クライアントのタイムゾーンに合わせる 例：yyyy-mm-ddThh:mm:ss JST} | 可 (日付選択、範囲指定) | 可     |
-| 操作      | -                                                                                   | 不可                    | 不可   |
+| カラム名 | データソース                                                                        | フィルタ                | ソート | 操作 |
+| :------- | :---------------------------------------------------------------------------------- | :---------------------- | :----- | :--- |
+| 役割     | {Owner かどうか。}                                                                  | 可 (セレクト)           | 可     |
+| 登録日時 | users.created_at {クライアントのタイムゾーンに合わせる 例：yyyy-mm-ddThh:mm:ss JST} | 可 (日付選択、範囲指定) | 可     |
+| 操作     | -                                                                                   | 不可                    | 不可   |
 
 #### 3.2. UI 構成
 
@@ -262,9 +261,12 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="6">
-                             <v-select
+                            <v-select
                                 v-model="sortBy.order"
-                                :items="[{text: '昇順', value: 'asc'}, {text: '降順', value: 'desc'}]"
+                                :items="[
+                                    { text: '昇順', value: 'asc' },
+                                    { text: '降順', value: 'desc' },
+                                ]"
                                 item-title="text"
                                 item-value="value"
                                 label="順序"
@@ -297,11 +299,11 @@
 3.  **ヘルパー関数**: `getColumnType`など、動的 UI を実現するための補助関数を定義します。
 4.  **フィルタ・ソート操作関数**: `addFilter`, `removeFilter`, `applyFilters`, `applySort`, `removeSort`などを定義します。
 5.  **表示用`computed`プロパティ**: `activeFiltersText` や `sortChipText` など、適用中の条件をチップに表示するためのテキストを生成します。
-6.  **データ取得とURL同期 (`loadItems`)**: `@update:options`イベントから呼び出される中心的な関数です。以下の責務を持ちます。
-    -   **初回読み込み時の状態復元**: 初めて実行される際に、現在のURLのクエリパラメータを解釈し、ページ、ソート順、フィルタの状態をコンポーネントの`ref`に反映します。
-    -   **APIリクエストの構築**: 現在のページ、ソート順、フィルタ条件を元に、APIリクエストのクエリパラメータを動的に構築します。
-    -   **URLの更新**: 構築したクエリパラメータを元にブラウザのURLを`history.pushState`で更新し、リロードしても状態が復元できるようにします。
-    -   **APIリクエストの実行**: `axios`でAPIを呼び出し、取得したデータをテーブルに反映します。
+6.  **データ取得と URL 同期 (`loadItems`)**: `@update:options`イベントから呼び出される中心的な関数です。以下の責務を持ちます。
+    -   **初回読み込み時の状態復元**: 初めて実行される際に、現在の URL のクエリパラメータを解釈し、ページ、ソート順、フィルタの状態をコンポーネントの`ref`に反映します。
+    -   **API リクエストの構築**: 現在のページ、ソート順、フィルタ条件を元に、API リクエストのクエリパラメータを動的に構築します。
+    -   **URL の更新**: 構築したクエリパラメータを元にブラウザの URL を`history.pushState`で更新し、リロードしても状態が復元できるようにします。
+    -   **API リクエストの実行**: `axios`で API を呼び出し、取得したデータをテーブルに反映します。
 
 ```vue
 <!-- resources/js/{role}/{resource}/Index.vue (スクリプトのイメージ) -->
@@ -325,10 +327,13 @@ const totalItems = ref(0);
 const page = ref(1);
 const itemsPerPage = ref(20); // Or your default
 const from = computed(() => (page.value - 1) * itemsPerPage.value + 1);
-const to = computed(() => Math.min(page.value * itemsPerPage.value, totalItems.value));
-const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
+const to = computed(() =>
+    Math.min(page.value * itemsPerPage.value, totalItems.value)
+);
+const totalPages = computed(() =>
+    Math.ceil(totalItems.value / itemsPerPage.value)
+);
 let isInitialLoad = true;
-
 
 // --- Filtering ---
 interface Filter {
@@ -339,7 +344,6 @@ interface Filter {
 
 const filterableColumns = ref([
     { text: "お客様名称", value: "customer_name", type: "text" },
-    { text: "Public ID", value: "public_id", type: "text" },
     {
         text: "ステータス",
         value: "status",
@@ -353,11 +357,17 @@ const activeFilters = ref<Filter[]>([]);
 
 const getColumnType = (columnValue: string | null) => {
     if (!columnValue) return "text";
-    return filterableColumns.value.find((c) => c.value === columnValue)?.type || "text";
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.type ||
+        "text"
+    );
 };
 const getColumnItems = (columnValue: string | null) => {
     if (!columnValue) return [];
-    return filterableColumns.value.find((c) => c.value === columnValue)?.items || [];
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.items ||
+        []
+    );
 };
 
 const addFilter = () => {
@@ -373,12 +383,14 @@ const removeFilter = (id: number) => {
 };
 
 const activeFiltersText = computed(() => {
-    return activeFilters.value.map(f => {
-        const column = filterableColumns.value.find(c => c.value === f.column);
+    return activeFilters.value.map((f) => {
+        const column = filterableColumns.value.find(
+            (c) => c.value === f.column
+        );
         return {
             id: f.id,
-            text: column ? column.text : '',
-            value: f.value
+            text: column ? column.text : "",
+            value: f.value,
         };
     });
 });
@@ -391,7 +403,11 @@ const applyFilters = (shouldCloseDialog = true) => {
         filterDialog.value = false;
     }
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 // --- Sorting ---
@@ -412,24 +428,33 @@ const applySort = () => {
     activeSort.value = JSON.parse(JSON.stringify(sortBy.value));
     sortDialog.value = false;
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const removeSort = () => {
     sortBy.value = { column: null, order: null };
     activeSort.value = { column: null, order: null };
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const sortChipText = computed(() => {
     if (!activeSort.value.column || !activeSort.value.order) return null;
-    const column = sortableColumns.value.find(c => c.value === activeSort.value.column);
+    const column = sortableColumns.value.find(
+        (c) => c.value === activeSort.value.column
+    );
     if (!column) return null;
-    const orderText = activeSort.value.order === 'asc' ? '昇順' : '降順';
+    const orderText = activeSort.value.order === "asc" ? "昇順" : "降順";
     return `並び替え: ${column.text} (${orderText})`;
 });
-
 
 // --- Data Loading ---
 const loadItems = async (options: Options) => {
@@ -438,12 +463,15 @@ const loadItems = async (options: Options) => {
     // 初回読み込み時にURLから状態を復元
     if (isInitialLoad) {
         const urlParams = new URLSearchParams(window.location.search);
-        const urlPage = urlParams.get('page');
+        const urlPage = urlParams.get("page");
         if (urlPage) page.value = parseInt(urlPage, 10);
 
         // ソートの復元
-        const urlSortBy = urlParams.get('sort_by');
-        const urlSortOrder = urlParams.get('sort_order') as 'asc' | 'desc' | null;
+        const urlSortBy = urlParams.get("sort_by");
+        const urlSortOrder = urlParams.get("sort_order") as
+            | "asc"
+            | "desc"
+            | null;
         if (urlSortBy && urlSortOrder) {
             sortBy.value = { column: urlSortBy, order: urlSortOrder };
             activeSort.value = { column: urlSortBy, order: urlSortOrder };
@@ -452,11 +480,17 @@ const loadItems = async (options: Options) => {
         // フィルタの復元
         const tempFilters: Filter[] = [];
         urlParams.forEach((value, key) => {
-            const columnDef = filterableColumns.value.find(c => c.value === key || `statuses[]` === key);
+            const columnDef = filterableColumns.value.find(
+                (c) => c.value === key || `statuses[]` === key
+            );
             if (columnDef) {
-                 // `statuses[]`のような配列パラメータを考慮
-                const colVal = key.endsWith('[]') ? key.slice(0, -2) : key;
-                tempFilters.push({ id: Date.now() + Math.random(), column: colVal, value });
+                // `statuses[]`のような配列パラメータを考慮
+                const colVal = key.endsWith("[]") ? key.slice(0, -2) : key;
+                tempFilters.push({
+                    id: Date.now() + Math.random(),
+                    column: colVal,
+                    value,
+                });
             }
         });
         if (tempFilters.length > 0) {
@@ -491,7 +525,7 @@ const loadItems = async (options: Options) => {
     });
 
     const apiUrl = `/api/{role}/{resource}?${params.toString()}`;
-    history.pushState(null, '', `/{role}/{resource}?${params.toString()}`);
+    history.pushState(null, "", `/{role}/{resource}?${params.toString()}`);
 
     try {
         const response = await axios.get(apiUrl);
@@ -505,10 +539,9 @@ const loadItems = async (options: Options) => {
 };
 
 const headers: Headers = [
-    { title: 'Public ID', key: 'public_id', sortable: false },
-    { title: '役割', key: 'role', sortable: false },
-    { title: '登録日時', key: 'created_at', sortable: false },
-    { title: '操作', key: 'actions', sortable: false },
+    { title: "役割", key: "role", sortable: false },
+    { title: "登録日時", key: "created_at", sortable: false },
+    { title: "操作", key: "actions", sortable: false },
 ];
 </script>
 ```
