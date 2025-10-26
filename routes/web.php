@@ -85,10 +85,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/shops/validate-slug', [App\Http\Controllers\Api\Owner\ShopsController::class, 'validateSlug'])->name('shops.validate-slug');
             Route::get('/shops/{shop:slug}/staff-applications', [App\Http\Controllers\Api\Owner\ShopStaffApplicationController::class, 'index'])->name('api.shops.staff-applications.index');
             Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'index'])->name('api.shops.staffs.index');
-            Route::post('/shops/{shop:slug}/staffs/{staff}/small-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'storeSmallImage'])->name('shops.staffs.small-image.store');
-            Route::delete('/shops/{shop:slug}/staffs/{staff}/small-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'destroySmallImage'])->name('shops.staffs.small-image.destroy');
-            Route::post('/shops/{shop:slug}/staffs/{staff}/large-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'storeLargeImage'])->name('shops.staffs.large-image.store');
-            Route::delete('/shops/{shop:slug}/staffs/{staff}/large-image', [App\Http\Controllers\Api\Owner\ShopStaffImageController::class, 'destroyLargeImage'])->name('shops.staffs.large-image.destroy');
         });
     });
 

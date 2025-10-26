@@ -17,11 +17,6 @@ class ShopStaffProfile extends Model
     protected $fillable = [
         'shop_staff_id',
         'nickname',
-        'small_image_path',
-        'large_image_path',
-    ];
-
-    protected $appends = [
         'small_image_url',
         'large_image_url',
     ];
@@ -29,19 +24,5 @@ class ShopStaffProfile extends Model
     public function shopStaff(): BelongsTo
     {
         return $this->belongsTo(ShopStaff::class);
-    }
-
-    protected function smallImageUrl(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->small_image_path ? Storage::url($this->small_image_path) : null,
-        );
-    }
-
-    protected function largeImageUrl(): Attribute
-    {
-        return Attribute::make(
-            get: fn () => $this->large_image_path ? Storage::url($this->large_image_path) : null,
-        );
     }
 }

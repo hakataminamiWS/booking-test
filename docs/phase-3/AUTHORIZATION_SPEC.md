@@ -93,15 +93,7 @@
 
 #### 予約作成
 
--   ゲストが予約を作成する際、`users`テーブルに`is_guest = true`として新しいユーザーレコードを作成します。
--   これにより、全ての予約は`bookers`テーブルを介して`users`テーブルのレコードに紐付き、データの一貫性を保ちます。
--   `BookingPolicy`の`create`メソッドは、ログインしていないユーザーも許容するため、引数の型を`?User`とします。
-    ```php
-    public function create(?User $user): bool
-    {
-        return true;
-    }
-    ```
+（未決定）
 
 #### 予約キャンセル（削除）
 

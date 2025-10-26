@@ -23,8 +23,8 @@ class UpdateShopStaffRequest extends FormRequest
     {
         return [
             'nickname' => ['required', 'string', 'max:255'],
-            'small_image_url' => ['nullable', 'url'],
-            'large_image_url' => ['nullable', 'url'],
+            'small_image' => ['nullable', 'image', 'max:1024'], // 1MB
+            'large_image' => ['nullable', 'image', 'max:3072'], // 3MB
         ];
     }
 }
