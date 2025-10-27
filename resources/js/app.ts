@@ -8,6 +8,7 @@ import { mdi } from "vuetify/iconsets/mdi"; // Import MDI iconset
 import { ja } from "vuetify/locale";
 
 import OwnerShopStaffsProfileEdit from "@/owner/shops/staffs/ProfileEdit.vue";
+import OwnerShopStaffsCreate from "@/owner/shops/staffs/Create.vue";
 // Vue Components
 // admin
 import AdminContractsCreate from "@/admin/contracts/Create.vue";
@@ -115,6 +116,9 @@ if (appElement) {
             break;
         case "owner-shops-staffs-edit":
             component = OwnerShopStaffsProfileEdit;
+            break;
+        case "owner-shops-staffs-create":
+            component = OwnerShopStaffsCreate;
             break;
         case "owner-shops-business-hours-regular-edit":
             component = BusinessHoursRegularEdit;

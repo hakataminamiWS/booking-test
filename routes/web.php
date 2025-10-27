@@ -78,6 +78,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'index'])->name('shops.staffs.index');
         Route::get('/shops/{shop:slug}/staffs/{staff}/edit', [App\Http\Controllers\Owner\ShopStaffController::class, 'edit'])->name('shops.staffs.edit');
         Route::put('/shops/{shop:slug}/staffs/{staff}', [App\Http\Controllers\Owner\ShopStaffController::class, 'update'])->name('shops.staffs.update');
+        Route::get('/shops/{shop:slug}/staffs/create', [App\Http\Controllers\Owner\ShopStaffController::class, 'create'])->name('shops.staffs.create');
+        Route::post('/shops/{shop:slug}/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'store'])->name('shops.staffs.store');
 
         // API
         Route::prefix('api')->name('api.')->group(function () {

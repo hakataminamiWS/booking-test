@@ -48,8 +48,12 @@
                         (Slug: test-shop, ID: 1)</a></li>
                 <li><a href="{{ route('owner.shops.staff-applications.index', ['shop' => 'test-shop']) }}">スタッフ登録申し込み一覧画面
                         (Slug: test-shop)</a></li>
-                <li><a href="{{ route('owner.shops.staffs.index', ['shop' => 'test-shop']) }}">スタッフ一覧画面 (Slug: test-shop)</a></li>
-                <li><a href="{{ route('owner.shops.staffs.edit', ['shop' => 'test-shop', 'staff' => 1]) }}">スタッフプロフィール編集画面 (Slug: test-shop, ID: 1)</a></li>
+                <li><a href="{{ route('owner.shops.staffs.index', ['shop' => 'test-shop']) }}">スタッフ一覧画面 (Slug:
+                        test-shop)</a></li>
+                <li><a href="{{ route('owner.shops.staffs.create', ['shop' => 'test-shop']) }}">予約枠用スタッフ登録画面 (Slug:
+                        test-shop)</a></li>
+                <li><a href="{{ route('owner.shops.staffs.edit', ['shop' => 'test-shop', 'staff' => 1]) }}">スタッフプロフィール編集画面
+                        (Slug: test-shop, ID: 1)</a></li>
             </ul>
 
             <h3>スタッフ</h3>
