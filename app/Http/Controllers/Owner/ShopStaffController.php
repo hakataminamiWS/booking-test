@@ -29,6 +29,14 @@ class ShopStaffController extends Controller
 
         $staff->load('profile');
 
+        // パスを完全なURLに変換
+        if ($staff->profile?->small_image_url) {
+            $staff->profile->small_image_url = Storage::disk('public')->url($staff->profile->small_image_url);
+        }
+        if ($staff->profile?->large_image_url) {
+            $staff->profile->large_image_url = Storage::disk('public')->url($staff->profile->large_image_url);
+        }
+
         return view('owner.shops.staffs.edit', compact('shop', 'staff'));
     }
 
@@ -37,38 +45,40 @@ class ShopStaffController extends Controller
         $validated = $request->validated();
         $profileData = ['nickname' => $validated['nickname']];
 
+        // プロフィールを先にロードしておく
+        $staff->load('profile');
+        $profile = $staff->profile;
+
         if ($request->hasFile('small_image')) {
             // 古い画像を削除
-            if ($staff->profile && $staff->profile->small_image_url) {
-                $oldPath = str_replace('/storage/', '', parse_url($staff->profile->small_image_url, PHP_URL_PATH));
-                Storage::disk('public')->delete($oldPath);
+            if ($profile && $profile->small_image_url) {
+                Storage::disk('public')->delete($profile->small_image_url);
             }
 
             $file = $request->file('small_image');
             $image = Image::read($file)
                 ->resize(300, 300, fn ($constraint) => $constraint->aspectRatio())
-                ->encode(new JpegEncoder(80));
-            $fileName = Str::random(40) . '.jpeg';
+                ->encode(new JpegEncoder(90)); // 品質を90に変更
+            $fileName = Str::random(40) . '.jpg'; // 拡張子を.jpgに変更
             $path = 'staff_profiles/small/' . $fileName;
             Storage::disk('public')->put($path, (string) $image);
-            $profileData['small_image_url'] = Storage::url($path);
+            $profileData['small_image_url'] = $path; // URLではなくパスを保存
         }
 
         if ($request->hasFile('large_image')) {
             // 古い画像を削除
-            if ($staff->profile && $staff->profile->large_image_url) {
-                $oldPath = str_replace('/storage/', '', parse_url($staff->profile->large_image_url, PHP_URL_PATH));
-                Storage::disk('public')->delete($oldPath);
+            if ($profile && $profile->large_image_url) {
+                Storage::disk('public')->delete($profile->large_image_url);
             }
 
             $file = $request->file('large_image');
             $image = Image::read($file)
                 ->resize(800, 800, fn ($constraint) => $constraint->aspectRatio())
-                ->encode(new JpegEncoder(80));
-            $fileName = Str::random(40) . '.jpeg';
+                ->encode(new JpegEncoder(90)); // 品質を90に変更
+            $fileName = Str::random(40) . '.jpg'; // 拡張子を.jpgに変更
             $path = 'staff_profiles/large/' . $fileName;
             Storage::disk('public')->put($path, (string) $image);
-            $profileData['large_image_url'] = Storage::url($path);
+            $profileData['large_image_url'] = $path; // URLではなくパスを保存
         }
 
         $staff->profile()->updateOrCreate(

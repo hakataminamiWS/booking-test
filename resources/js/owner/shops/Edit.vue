@@ -165,6 +165,7 @@
                         outlined
                     ></v-text-field>
                 </v-card-text>
+
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn text @click="deleteDialog = false">キャンセル</v-btn>
