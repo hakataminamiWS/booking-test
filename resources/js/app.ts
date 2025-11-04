@@ -9,6 +9,8 @@ import { ja } from "vuetify/locale";
 
 import OwnerShopStaffsProfileEdit from "@/owner/shops/staffs/ProfileEdit.vue";
 import OwnerShopStaffsCreate from "@/owner/shops/staffs/Create.vue";
+import OwnerShopStaffsShiftsEdit from "@/owner/shops/staffs/shifts/Edit.vue";
+import OwnerShopsStaffsShiftsIndex from "@/owner/shops/staffs/shifts/Index.vue"; // 追加
 // Vue Components
 // admin
 import AdminContractsCreate from "@/admin/contracts/Create.vue";
@@ -119,6 +121,12 @@ if (appElement) {
             break;
         case "owner-shops-staffs-create":
             component = OwnerShopStaffsCreate;
+            break;
+        case "owner/shops/staffs/shifts/Edit":
+            component = OwnerShopStaffsShiftsEdit;
+            break;
+        case "owner/shops/staffs/shifts/Index": // 追加
+            component = OwnerShopsStaffsShiftsIndex;
             break;
         case "owner-shops-business-hours-regular-edit":
             component = BusinessHoursRegularEdit;

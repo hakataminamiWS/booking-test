@@ -81,6 +81,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops/{shop:slug}/staffs/create', [App\Http\Controllers\Owner\ShopStaffController::class, 'create'])->name('shops.staffs.create');
         Route::post('/shops/{shop:slug}/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'store'])->name('shops.staffs.store');
 
+        // Shift Management
+        Route::get('/shops/{shop:slug}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'index'])->name('shops.shifts.index');
+        Route::get('/shops/{shop:slug}/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'edit'])->name('shops.staffs.shifts.edit');
+        Route::put('/shops/{shop:slug}/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'update'])->name('shops.staffs.shifts.update');
+
         // API
         Route::prefix('api')->name('api.')->group(function () {
             Route::get('/shops', [App\Http\Controllers\Api\Owner\ShopsController::class, 'index'])->name('shops.index');

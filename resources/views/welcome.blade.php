@@ -54,6 +54,10 @@
                         test-shop)</a></li>
                 <li><a href="{{ route('owner.shops.staffs.edit', ['shop' => 'test-shop', 'staff' => 1]) }}">スタッフプロフィール編集画面
                         (Slug: test-shop, ID: 1)</a></li>
+                <li><a href="{{ route('owner.shops.shifts.index', ['shop' => 'test-shop']) }}">シフト一覧画面 (Slug:
+                        test-shop)</a></li>
+                <li><a href="{{ route('owner.shops.staffs.shifts.edit', ['shop' => 'test-shop', 'staff' => 1]) }}">シフト登録・編集画面
+                        (Slug: test-shop, ID: 1)</a></li>
             </ul>
 
             <h3>スタッフ</h3>
