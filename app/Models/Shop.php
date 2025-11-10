@@ -52,4 +52,9 @@ class Shop extends Model
     {
         return $this->hasMany(ShopSpecialClosedDay::class);
     }
+
+    public function menus(): HasMany
+    {
+        return $this->hasMany(ShopMenu::class);
+    }
 }

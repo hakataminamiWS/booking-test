@@ -8,7 +8,7 @@
     @endphp
     <div
         id="app"
-        data-page="admin-contracts-show"
+        data-page="admin/contracts/Show"
         data-props="{{ json_encode($props) }}"
     >
     </div>

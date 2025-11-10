@@ -11,5 +11,5 @@
             'csrfToken' => csrf_token(),
         ];
     @endphp
-    <div id="app" data-page="StaffApplicationCreate" data-props='{{ json_encode($props) }}'></div>
+    <div id="app" data-page="staff/applications/Create" data-props='{{ json_encode($props) }}'></div>
 @endsection

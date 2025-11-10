@@ -98,7 +98,11 @@
                                     v-for="day in props.specialOpenDays"
                                     :key="day.id"
                                 >
-                                    <td>{{ day.date }}</td>
+                                    <td>
+                                        {{ day.date }} ({{
+                                            getDayOfWeekString(day.date)
+                                        }})
+                                    </td>
                                     <td>
                                         {{ day.start_time }} -
                                         {{ day.end_time }}
@@ -215,4 +219,9 @@ const dayOfWeek = computed(() => {
         6: "土曜",
     };
 });
+
+const getDayOfWeekString = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("ja-JP", { weekday: "short" });
+};
 </script>

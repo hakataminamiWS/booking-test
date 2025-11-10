@@ -13,7 +13,7 @@
     @endphp
     <div
         id="app"
-        data-page="owner-shops-edit"
+        data-page="owner/shops/Edit"
         data-props="{{ json_encode($props) }}"
     >
     </div>

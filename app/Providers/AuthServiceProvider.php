@@ -4,13 +4,17 @@ namespace App\Providers;
 
 use App\Models\Booking;
 use App\Models\Shop;
+use App\Models\ShopOption;
 use App\Models\ShopStaffApplication;
 use App\Models\User;
 use App\Policies\BookingPolicy;
+use App\Policies\ShopOptionPolicy;
 use App\Policies\ShopPolicy;
 use App\Policies\ShopStaffApplicationPolicy;
 use App\Models\ShopStaff;
+use App\Models\ShopMenu;
 use App\Policies\ShopStaffPolicy;
+use App\Policies\ShopMenuPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -26,6 +30,8 @@ class AuthServiceProvider extends ServiceProvider
         Booking::class => BookingPolicy::class,
         ShopStaffApplication::class => ShopStaffApplicationPolicy::class,
         ShopStaff::class => ShopStaffPolicy::class,
+        ShopMenu::class => ShopMenuPolicy::class,
+        ShopOption::class => ShopOptionPolicy::class,
     ];
 
     /**

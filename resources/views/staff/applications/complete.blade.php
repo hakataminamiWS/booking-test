@@ -6,5 +6,5 @@
     @php
         $props = [];
     @endphp
-    <div id="app" data-page="StaffApplicationComplete" data-props='{{ json_encode($props) }}'></div>
+    <div id="app" data-page="staff/applications/Complete" data-props='{{ json_encode($props) }}'></div>
 @endsection

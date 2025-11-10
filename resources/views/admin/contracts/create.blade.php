@@ -11,7 +11,7 @@
     @endphp
     <div
         id="app"
-        data-page="admin-contracts-create"
+        data-page="admin/contracts/Create"
         data-props="{{ json_encode($props) }}"
     ></div>
 @endsection

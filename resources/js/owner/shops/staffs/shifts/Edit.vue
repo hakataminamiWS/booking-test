@@ -98,6 +98,15 @@
                                 :key="day.formattedDate"
                                 align="center"
                                 class="my-2 pa-2 border rounded"
+                                :class="{
+                                    'bg-grey-lighten-4':
+                                        day.shopBusinessInfo.includes(
+                                            '定休日'
+                                        ) ||
+                                        day.shopBusinessInfo.includes(
+                                            '特別休業日'
+                                        ),
+                                }"
                             >
                                 <v-col cols="12" md="3">
                                     <h3 class="text-h6">

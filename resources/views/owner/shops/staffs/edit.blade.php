@@ -13,5 +13,5 @@
             'successMessage' => session('success'),
         ];
     @endphp
-    <div id="app" data-page="owner-shops-staffs-edit" data-props="{{ json_encode($props) }}"></div>
+    <div id="app" data-page="owner/shops/staffs/ProfileEdit" data-props="{{ json_encode($props) }}"></div>
 @endsection

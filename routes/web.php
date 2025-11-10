@@ -86,12 +86,30 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops/{shop:slug}/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'edit'])->name('shops.staffs.shifts.edit');
         Route::put('/shops/{shop:slug}/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'update'])->name('shops.staffs.shifts.update');
 
+        // Menu Management
+        Route::get('/shops/{shop:slug}/menus', [App\Http\Controllers\Owner\ShopMenuController::class, 'index'])->name('shops.menus.index');
+        Route::get('/shops/{shop:slug}/menus/create', [App\Http\Controllers\Owner\ShopMenuController::class, 'create'])->name('shops.menus.create');
+        Route::post('/shops/{shop:slug}/menus', [App\Http\Controllers\Owner\ShopMenuController::class, 'store'])->name('shops.menus.store');
+        Route::get('/shops/{shop:slug}/menus/{menu}/edit', [App\Http\Controllers\Owner\ShopMenuController::class, 'edit'])->name('shops.menus.edit');
+        Route::put('/shops/{shop:slug}/menus/{menu}', [App\Http\Controllers\Owner\ShopMenuController::class, 'update'])->name('shops.menus.update');
+        Route::delete('/shops/{shop:slug}/menus/{menu}', [App\Http\Controllers\Owner\ShopMenuController::class, 'destroy'])->name('shops.menus.destroy');
+
+        // Option Management
+        Route::get('/shops/{shop:slug}/options', [App\Http\Controllers\Owner\ShopOptionController::class, 'index'])->name('shops.options.index');
+        Route::get('/shops/{shop:slug}/options/create', [App\Http\Controllers\Owner\ShopOptionController::class, 'create'])->name('shops.options.create');
+        Route::post('/shops/{shop:slug}/options', [App\Http\Controllers\Owner\ShopOptionController::class, 'store'])->name('shops.options.store');
+        Route::get('/shops/{shop:slug}/options/{option}/edit', [App\Http\Controllers\Owner\ShopOptionController::class, 'edit'])->name('shops.options.edit');
+        Route::put('/shops/{shop:slug}/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'update'])->name('shops.options.update');
+        Route::delete('/shops/{shop:slug}/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'destroy'])->name('shops.options.destroy');
+
         // API
         Route::prefix('api')->name('api.')->group(function () {
             Route::get('/shops', [App\Http\Controllers\Api\Owner\ShopsController::class, 'index'])->name('shops.index');
             Route::get('/shops/validate-slug', [App\Http\Controllers\Api\Owner\ShopsController::class, 'validateSlug'])->name('shops.validate-slug');
             Route::get('/shops/{shop:slug}/staff-applications', [App\Http\Controllers\Api\Owner\ShopStaffApplicationController::class, 'index'])->name('api.shops.staff-applications.index');
             Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'index'])->name('api.shops.staffs.index');
+            Route::get('/shops/{shop:slug}/menus', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'index'])->name('api.shops.menus.index');
+            Route::get('/shops/{shop:slug}/options', [App\Http\Controllers\Api\Owner\ShopOptionController::class, 'index'])->name('api.shops.options.index');
         });
     });
 
