@@ -29,4 +29,19 @@ class StoreShopOptionRequest extends FormRequest
             'description' => ['nullable', 'string'],
         ];
     }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'name' => 'オプション名',
+            'price' => '追加料金',
+            'additional_duration' => '追加所要時間',
+            'description' => 'オプションの説明',
+        ];
+    }
 }

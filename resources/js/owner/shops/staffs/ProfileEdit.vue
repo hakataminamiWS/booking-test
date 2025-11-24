@@ -33,6 +33,7 @@
                                 name="nickname"
                                 label="ニックネーム *"
                                 required
+                                :rules="[rules.required]"
                             ></v-text-field>
 
                             <v-label>プロフィール画像(小)</v-label>
@@ -101,7 +102,12 @@
 
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn form="form" color="primary" type="submit">
+                        <v-btn
+                            form="form"
+                            color="primary"
+                            type="submit"
+                            @click="validateAndSubmit"
+                        >
                             更新する
                         </v-btn>
                     </v-card-actions>
@@ -183,4 +189,14 @@ onMounted(() => {
         form.value.nickname = props.oldInput.nickname ?? form.value.nickname;
     }
 });
+
+const rules = {
+    required: (value: any) => !!(value || value === 0) || "必須項目です。",
+};
+
+const validateAndSubmit = (event: Event) => {
+    if (rules.required(form.value.nickname) !== true) {
+        event.preventDefault();
+    }
+};
 </script>

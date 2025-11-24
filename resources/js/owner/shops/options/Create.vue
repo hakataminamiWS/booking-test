@@ -50,9 +50,11 @@
 
                             <v-text-field
                                 v-model="formData.price"
+                                @update:model-value="formData.price = formatNumericInput($event)"
                                 name="price"
                                 label="追加料金"
-                                type="number"
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                                 suffix="円"
                                 required
                                 hint="オプションの価格を円単位で入力します。"
@@ -62,9 +64,11 @@
 
                             <v-text-field
                                 v-model="formData.additional_duration"
+                                @update:model-value="formData.additional_duration = formatNumericInput($event)"
                                 name="additional_duration"
                                 label="追加所要時間"
-                                type="number"
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                                 suffix="分"
                                 required
                                 hint="サービスの所要時間に追加される時間を分単位で入力します。"
@@ -83,7 +87,10 @@
 
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn type="submit" color="primary"
+                                <v-btn
+                                    type="submit"
+                                    color="primary"
+                                    @click="validateAndSubmit"
                                     >登録する</v-btn
                                 >
                             </v-card-actions>
@@ -96,13 +103,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import { formatNumericInput } from "@/composables/useNumericInput";
 
 const props = defineProps({
     shop: { type: Object, required: true },
     csrfToken: { type: String, required: true },
     errors: { type: Array, default: () => [] },
+    oldInput: { type: Object, default: () => ({}) },
 });
 
 const optionsIndexUrl = computed(() => `/owner/shops/${props.shop.slug}/options`);
@@ -114,4 +123,36 @@ const formData = ref({
     additional_duration: 0,
     description: "",
 });
+
+onMounted(() => {
+    if (props.oldInput && Object.keys(props.oldInput).length > 0) {
+        formData.value.name = props.oldInput.name ?? "";
+        formData.value.price = props.oldInput.price ?? 0;
+        formData.value.additional_duration =
+            props.oldInput.additional_duration ?? 0;
+        formData.value.description = props.oldInput.description ?? "";
+    }
+});
+
+const rules = {
+    required: (value: any) => !!(value || value === 0) || "必須項目です。",
+    numeric: (value: string) =>
+        /^(0|[1-9][0-9]*)$/.test(value) || "半角数字で入力してください。",
+};
+
+const validateAndSubmit = (event: Event) => {
+    const priceStr = String(formData.value.price ?? "");
+    const durationStr = String(formData.value.additional_duration ?? "");
+
+    // rulesオブジェクトの関数を再利用してチェックする
+    const isPriceValid =
+        rules.numeric(priceStr) === true && rules.required(priceStr) === true;
+    const isDurationValid =
+        rules.numeric(durationStr) === true &&
+        rules.required(durationStr) === true;
+
+    if (!isPriceValid || !isDurationValid) {
+        event.preventDefault();
+    }
+};
 </script>

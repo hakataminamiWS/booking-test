@@ -55,14 +55,19 @@
                                         name="name"
                                         label="契約名"
                                         v-model="form.name"
+                                        :rules="[rules.required]"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-text-field
+                                        v-model="form.max_shops"
+                                        @update:model-value="
+                                            form.max_shops = formatNumericInput($event)
+                                        "
                                         name="max_shops"
                                         label="店舗上限数"
-                                        v-model="form.max_shops"
-                                        type="number"
+                                        :rules="[rules.required, rules.numeric]"
+                                        inputmode="numeric"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" md="6">
@@ -71,6 +76,7 @@
                                         label="契約ステータス"
                                         v-model="form.status"
                                         :items="['active', 'expired']"
+                                        :rules="[rules.required]"
                                     ></v-select>
                                 </v-col>
 
@@ -82,6 +88,7 @@
                                         type="text"
                                         placeholder="YYYY-MM-DD"
                                         required
+                                        :rules="[rules.required]"
                                         append-inner-icon="mdi-calendar"
                                         @click:append-inner="
                                             openDatePicker('start_date')
@@ -110,6 +117,7 @@
                                         type="text"
                                         placeholder="YYYY-MM-DD"
                                         required
+                                        :rules="[rules.required]"
                                         :error-messages="form.endDateError"
                                         append-inner-icon="mdi-calendar"
                                         @click:append-inner="
@@ -201,6 +209,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import { formatNumericInput } from "@/composables/useNumericInput";
 
 // --- Interfaces ---
 interface User {
@@ -251,6 +260,12 @@ const updateUrl = computed(() => `/admin/contracts/${props.contract.id}`);
 const deleteUrl = computed(() => `/admin/contracts/${props.contract.id}`);
 
 // --- Validation ---
+const rules = {
+    required: (value: any) => !!(value || value === 0) || "必須項目です。",
+    numeric: (value: string) =>
+        /^(0|[1-9][0-9]*)$/.test(value) || "半角数字で入力してください。",
+};
+
 const validateForm = (event: Event) => {
     form.value.endDateError = "";
     if (
@@ -260,6 +275,28 @@ const validateForm = (event: Event) => {
     ) {
         form.value.endDateError = "契約終了日は契約開始日以降にしてください。";
         event.preventDefault();
+    }
+
+    // Add validation for other fields
+    const fieldsToValidate = {
+        name: form.value.name,
+        max_shops: form.value.max_shops,
+        status: form.value.status,
+        start_date: form.value.start_date,
+        end_date: form.value.end_date,
+    };
+
+    for (const [key, value] of Object.entries(fieldsToValidate)) {
+        if (rules.required(value) !== true) {
+            event.preventDefault();
+            return;
+        }
+        if (key === "max_shops") {
+            if (rules.numeric(String(value)) !== true) {
+                event.preventDefault();
+                return;
+            }
+        }
     }
 };
 

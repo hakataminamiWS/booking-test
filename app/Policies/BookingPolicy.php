@@ -34,9 +34,14 @@ class BookingPolicy
     /**
      * Determine whether the user can create bookings.
      */
-    public function create(?User $user): bool
+    public function create(?User $user, ?Shop $shop = null): bool
     {
-        return true; // Anyone (including guests) can create bookings
+        // If shop is provided, it's a manual booking by owner/staff
+        if ($shop && $user) {
+            return $user->isOwnerOf($shop) || $user->isStaffOf($shop);
+        }
+        // If shop is not provided, it's a booking by a customer (guest or logged-in user)
+        return true;
     }
 
     /**

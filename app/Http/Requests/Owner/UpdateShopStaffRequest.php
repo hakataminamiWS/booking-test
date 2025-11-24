@@ -27,4 +27,18 @@ class UpdateShopStaffRequest extends FormRequest
             'large_image' => ['nullable', 'image', 'max:3072'], // 3MB
         ];
     }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'nickname' => 'ニックネーム',
+            'small_image' => 'プロフィール画像(小)',
+            'large_image' => 'プロフィール画像(大)',
+        ];
+    }
 }

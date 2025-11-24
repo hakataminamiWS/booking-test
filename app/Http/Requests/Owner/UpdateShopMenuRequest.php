@@ -40,6 +40,28 @@ class UpdateShopMenuRequest extends FormRequest
     }
 
     /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'name' => 'メニュー名',
+            'price' => '価格',
+            'duration' => '所要時間',
+            'description' => 'メニューの説明',
+            'requires_staff_assignment' => '担当者の割り当て',
+            'requires_cancellation_deadline' => '特別なキャンセル期限',
+            'cancellation_deadline_minutes' => 'キャンセル期限',
+            'requires_booking_deadline' => '特別な予約締切',
+            'booking_deadline_minutes' => '予約締切',
+            'staff_ids' => '担当スタッフ',
+            'option_ids' => '関連オプション',
+        ];
+    }
+
+    /**
      * Configure the validator instance.
      *
      * @param  \Illuminate\Validation\Validator  $validator

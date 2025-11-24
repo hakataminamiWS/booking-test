@@ -44,7 +44,7 @@ class ShopMenuController extends Controller
         $sortOrder = $request->input('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $menus = $query->paginate($request->input('per_page', 20));
+        $menus = $query->with(['staffs.profile', 'options'])->paginate($request->input('per_page', 20));
 
         return response()->json($menus);
     }

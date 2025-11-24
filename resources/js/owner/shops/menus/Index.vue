@@ -119,13 +119,72 @@
                             <template v-slot:item.duration="{ item }">
                                 {{ item.duration }} 分
                             </template>
-                            <template v-slot:item.requires_staff_assignment="{ item }">
-                                <v-chip :color="item.requires_staff_assignment ? 'blue' : 'grey'" dark small>
-                                    {{ item.requires_staff_assignment ? "必須" : "不要" }}
+                            <template
+                                v-slot:item.requires_staff_assignment="{ item }"
+                            >
+                                <v-chip
+                                    :color="
+                                        item.requires_staff_assignment
+                                            ? 'blue'
+                                            : 'grey'
+                                    "
+                                    dark
+                                    small
+                                >
+                                    {{
+                                        item.requires_staff_assignment
+                                            ? "必須"
+                                            : "不要"
+                                    }}
                                 </v-chip>
                             </template>
-                            <template v-slot:item.created_at="{ item }">
-                                {{ new Date(item.created_at).toLocaleString() }}
+                            <template v-slot:item.staffs="{ item }">
+                                {{
+                                    item.staffs
+                                        .map((s: any) => s.profile.nickname)
+                                        .join(", ")
+                                }}
+                            </template>
+                            <template v-slot:item.options="{ item }">
+                                {{
+                                    item.options
+                                        .map((o: any) => o.name)
+                                        .join(", ")
+                                }}
+                            </template>
+                            <template
+                                v-slot:item.cancellation_deadline_minutes="{
+                                    item,
+                                }"
+                            >
+                                {{
+                                    item.requires_cancellation_deadline
+                                        ? `${item.cancellation_deadline_minutes} 分前`
+                                        : `店舗設定（${
+                                              props.shop
+                                                  .cancellation_deadline_minutes !==
+                                              null
+                                                  ? props.shop
+                                                        .cancellation_deadline_minutes
+                                                  : ""
+                                          }分前）`
+                                }}
+                            </template>
+                            <template
+                                v-slot:item.booking_deadline_minutes="{ item }"
+                            >
+                                {{
+                                    item.requires_booking_deadline
+                                        ? `${item.booking_deadline_minutes} 分前`
+                                        : `店舗設定（${
+                                              props.shop
+                                                  .booking_deadline_minutes !==
+                                              null
+                                                  ? props.shop
+                                                        .booking_deadline_minutes
+                                                  : ""
+                                          }分前）`
+                                }}
                             </template>
                             <template v-slot:item.actions="{ item }">
                                 <v-btn
@@ -145,7 +204,11 @@
             <v-card>
                 <v-card-title>絞り込み</v-card-title>
                 <v-card-text>
-                    <v-row v-for="filter in filters" :key="filter.id" align="center">
+                    <v-row
+                        v-for="filter in filters"
+                        :key="filter.id"
+                        align="center"
+                    >
                         <v-col cols="4">
                             <v-select
                                 v-model="filter.column"
@@ -158,6 +221,36 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="7">
+                            <div
+                                v-if="getColumnType(filter.column) === 'range'"
+                                class="d-flex align-center"
+                            >
+                                <v-text-field
+                                    v-model="filter.value"
+                                    @update:model-value="
+                                        filter.value =
+                                            formatNumericInput($event)
+                                    "
+                                    label="開始値"
+                                    dense
+                                    hide-details
+                                    class="mr-2"
+                                    inputmode="numeric"
+                                ></v-text-field>
+                                <span>-</span>
+                                <v-text-field
+                                    v-model="filter.value_to"
+                                    @update:model-value="
+                                        filter.value_to =
+                                            formatNumericInput($event)
+                                    "
+                                    label="終了値"
+                                    dense
+                                    hide-details
+                                    class="ml-2"
+                                    inputmode="numeric"
+                                ></v-text-field>
+                            </div>
                             <v-text-field
                                 v-if="getColumnType(filter.column) === 'text'"
                                 v-model="filter.value"
@@ -165,7 +258,7 @@
                                 dense
                                 hide-details
                             ></v-text-field>
-                             <v-select
+                            <v-select
                                 v-if="getColumnType(filter.column) === 'select'"
                                 v-model="filter.value"
                                 :items="getColumnItems(filter.column)"
@@ -177,12 +270,18 @@
                             ></v-select>
                         </v-col>
                         <v-col cols="1">
-                            <v-btn icon size="small" @click="removeFilter(filter.id)">
+                            <v-btn
+                                icon
+                                size="small"
+                                @click="removeFilter(filter.id)"
+                            >
                                 <v-icon>mdi-close</v-icon>
                             </v-btn>
                         </v-col>
                     </v-row>
-                    <v-btn text @click="addFilter" class="mt-4">+ フィルタを追加</v-btn>
+                    <v-btn text @click="addFilter" class="mt-4"
+                        >+ フィルタを追加</v-btn
+                    >
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
@@ -241,9 +340,15 @@ import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
 import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import { formatNumericInput } from "@/composables/useNumericInput";
 
 const props = defineProps<{
-    shop: { name: string; slug: string };
+    shop: {
+        name: string;
+        slug: string;
+        cancellation_deadline_minutes: number | null;
+        booking_deadline_minutes: number | null;
+    };
     csrfToken: string;
 }>();
 
@@ -263,8 +368,12 @@ const totalItems = ref(0);
 const page = ref(1);
 const itemsPerPage = ref(20);
 const from = computed(() => (page.value - 1) * itemsPerPage.value + 1);
-const to = computed(() => Math.min(page.value * itemsPerPage.value, totalItems.value));
-const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
+const to = computed(() =>
+    Math.min(page.value * itemsPerPage.value, totalItems.value)
+);
+const totalPages = computed(() =>
+    Math.ceil(totalItems.value / itemsPerPage.value)
+);
 let isInitialLoad = true;
 
 // --- Filtering ---
@@ -272,21 +381,20 @@ interface Filter {
     id: number;
     column: string | null;
     value: string | null;
+    value_to?: string | null;
 }
 
 const filterableColumns = ref([
     { text: "メニュー名", value: "name", type: "text" },
-    { text: "価格 (以上)", value: "price_from", type: "text" },
-    { text: "価格 (以下)", value: "price_to", type: "text" },
-    { text: "所要時間 (以上)", value: "duration_from", type: "text" },
-    { text: "所要時間 (以下)", value: "duration_to", type: "text" },
+    { text: "価格", value: "price", type: "range" },
+    { text: "所要時間", value: "duration", type: "range" },
     {
         text: "担当者必須",
         value: "requires_staff_assignment",
         type: "select",
         items: [
-            { title: '必須', value: '1' },
-            { title: '不要', value: '0' },
+            { title: "必須", value: "1" },
+            { title: "不要", value: "0" },
         ],
     },
 ]);
@@ -296,11 +404,17 @@ const activeFilters = ref<Filter[]>([]);
 
 const getColumnType = (columnValue: string | null) => {
     if (!columnValue) return "text";
-    return filterableColumns.value.find((c) => c.value === columnValue)?.type || "text";
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.type ||
+        "text"
+    );
 };
 const getColumnItems = (columnValue: string | null) => {
     if (!columnValue) return [];
-    return filterableColumns.value.find((c) => c.value === columnValue)?.items || [];
+    return (
+        filterableColumns.value.find((c) => c.value === columnValue)?.items ||
+        []
+    );
 };
 
 const addFilter = () => {
@@ -317,17 +431,35 @@ const removeFilter = (id: number) => {
         filters.value.splice(fIndex, 1);
     }
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const activeFiltersText = computed(() => {
     return activeFilters.value.map((f) => {
-        const column = filterableColumns.value.find((c) => c.value === f.column);
-        let displayValue = f.value;
-        if (f.column === 'requires_staff_assignment') {
-            const item = getColumnItems(f.column).find(i => i.value === f.value);
+        const column = filterableColumns.value.find(
+            (c) => c.value === f.column
+        );
+        let displayValue: string | null = f.value;
+
+        if (column?.type === "range") {
+            if (f.value && f.value_to) {
+                displayValue = `${f.value} - ${f.value_to}`;
+            } else if (f.value) {
+                displayValue = `${f.value} 以上`;
+            } else if (f.value_to) {
+                displayValue = `${f.value_to} 以下`;
+            }
+        } else if (f.column === "requires_staff_assignment") {
+            const item = getColumnItems(f.column).find(
+                (i) => i.value === f.value
+            );
             displayValue = item ? item.title : f.value;
         }
+
         return {
             id: f.id,
             text: column ? column.text : "",
@@ -337,12 +469,20 @@ const activeFiltersText = computed(() => {
 });
 
 const applyFilters = (shouldCloseDialog = true) => {
-    activeFilters.value = JSON.parse(JSON.stringify(filters.value.filter((f) => f.column && f.value)));
+    activeFilters.value = JSON.parse(
+        JSON.stringify(
+            filters.value.filter((f) => f.column && (f.value || f.value_to))
+        )
+    );
     if (shouldCloseDialog) {
         filterDialog.value = false;
     }
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 // --- Sorting ---
@@ -356,7 +496,8 @@ const sortableColumns = ref([
     { text: "価格", value: "price" },
     { text: "所要時間", value: "duration" },
     { text: "担当者必須", value: "requires_staff_assignment" },
-    { text: "登録日時", value: "created_at" },
+    { text: "特別キャンセル期限", value: "cancellation_deadline_minutes" },
+    { text: "特別予約締切", value: "booking_deadline_minutes" },
 ]);
 
 const sortBy = ref<Sort>({ column: null, order: null });
@@ -366,19 +507,29 @@ const applySort = () => {
     activeSort.value = JSON.parse(JSON.stringify(sortBy.value));
     sortDialog.value = false;
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const removeSort = () => {
     sortBy.value = { column: null, order: null };
     activeSort.value = { column: null, order: null };
     page.value = 1;
-    loadItems({ page: page.value, itemsPerPage: itemsPerPage.value, sortBy: [] });
+    loadItems({
+        page: page.value,
+        itemsPerPage: itemsPerPage.value,
+        sortBy: [],
+    });
 };
 
 const sortChipText = computed(() => {
     if (!activeSort.value.column || !activeSort.value.order) return null;
-    const column = sortableColumns.value.find((c) => c.value === activeSort.value.column);
+    const column = sortableColumns.value.find(
+        (c) => c.value === activeSort.value.column
+    );
     if (!column) return null;
     const orderText = activeSort.value.order === "asc" ? "昇順" : "降順";
     return `並び替え: ${column.text} (${orderText})`;
@@ -394,7 +545,10 @@ const loadItems = async (options: Options) => {
         if (urlPage) page.value = parseInt(urlPage, 10);
 
         const urlSortBy = urlParams.get("sort_by");
-        const urlSortOrder = urlParams.get("sort_order") as "asc" | "desc" | null;
+        const urlSortOrder = urlParams.get("sort_order") as
+            | "asc"
+            | "desc"
+            | null;
         if (urlSortBy && urlSortOrder) {
             sortBy.value = { column: urlSortBy, order: urlSortOrder };
             activeSort.value = { column: urlSortBy, order: urlSortOrder };
@@ -402,9 +556,15 @@ const loadItems = async (options: Options) => {
 
         const tempFilters: Filter[] = [];
         urlParams.forEach((value, key) => {
-            const columnDef = filterableColumns.value.find((c) => c.value === key);
+            const columnDef = filterableColumns.value.find(
+                (c) => c.value === key
+            );
             if (columnDef) {
-                tempFilters.push({ id: Date.now() + Math.random(), column: key, value });
+                tempFilters.push({
+                    id: Date.now() + Math.random(),
+                    column: key,
+                    value,
+                });
             }
         });
         if (tempFilters.length > 0) {
@@ -427,13 +587,31 @@ const loadItems = async (options: Options) => {
     }
 
     activeFilters.value.forEach((filter) => {
-        if (filter.column && filter.value) {
-            params.append(filter.column, filter.value);
+        const columnDef = filterableColumns.value.find(
+            (c) => c.value === filter.column
+        );
+        if (columnDef?.type === "range") {
+            if (filter.value) {
+                params.append(`${filter.column}_from`, filter.value);
+            }
+            if (filter.value_to) {
+                params.append(`${filter.column}_to`, filter.value_to);
+            }
+        } else {
+            if (filter.column && filter.value) {
+                params.append(filter.column, filter.value);
+            }
         }
     });
 
-    const apiUrl = `/owner/api/shops/${props.shop.slug}/menus?${params.toString()}`;
-    history.pushState(null, "", `/owner/shops/${props.shop.slug}/menus?${params.toString()}`);
+    const apiUrl = `/owner/api/shops/${
+        props.shop.slug
+    }/menus?${params.toString()}`;
+    history.pushState(
+        null,
+        "",
+        `/owner/shops/${props.shop.slug}/menus?${params.toString()}`
+    );
 
     try {
         const response = await axios.get(apiUrl);
@@ -451,7 +629,18 @@ const headers: Headers = [
     { title: "価格", key: "price", sortable: false },
     { title: "所要時間", key: "duration", sortable: false },
     { title: "担当者必須", key: "requires_staff_assignment", sortable: false },
-    { title: "登録日時", key: "created_at", sortable: false },
+    { title: "担当スタッフ", key: "staffs", sortable: false },
+    { title: "関連オプション", key: "options", sortable: false },
+    {
+        title: "特別キャンセル期限",
+        key: "cancellation_deadline_minutes",
+        sortable: false,
+    },
+    {
+        title: "特別予約締切",
+        key: "booking_deadline_minutes",
+        sortable: false,
+    },
     { title: "操作", key: "actions", sortable: false },
 ];
 </script>

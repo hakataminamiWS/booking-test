@@ -113,22 +113,22 @@
                             ></v-text-field>
 
                             <v-text-field
-                                v-model.number="
-                                    form.cancellation_deadline_minutes
-                                "
+                                :value="form.cancellation_deadline_minutes"
+                                @update:model-value="form.cancellation_deadline_minutes = formatNumericInput($event)"
                                 name="cancellation_deadline_minutes"
                                 label="キャンセル期限（分前） *"
-                                type="number"
+                                inputmode="numeric"
                                 required
                                 hint="予約の何分前までお客様によるキャンセルを許可するか設定します。(例: 1440 分 = 24 時間前)"
                                 persistent-hint
                             ></v-text-field>
 
                             <v-text-field
-                                v-model.number="form.booking_deadline_minutes"
+                                :value="form.booking_deadline_minutes"
+                                @update:model-value="form.booking_deadline_minutes = formatNumericInput($event)"
                                 name="booking_deadline_minutes"
                                 label="予約締切（分前） *"
-                                type="number"
+                                inputmode="numeric"
                                 required
                                 hint="予約の何分前でオンライン予約の受付を締め切るか設定します。(0 は直前まで許可)"
                                 persistent-hint
@@ -158,6 +158,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import axios from "axios";
+import { formatNumericInput } from "@/composables/useNumericInput";
 
 const props = defineProps<{
     errors: string[];

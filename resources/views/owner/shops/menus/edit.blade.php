@@ -8,8 +8,10 @@
             'shop' => $shop,
             'menu' => $menu,
             'staffs' => $staffs,
+            'options' => $options,
             'csrfToken' => csrf_token(),
             'errors' => $errors->all(),
+            'oldInput' => session()->getOldInput(),
         ];
     @endphp
     <div id="app" data-page="owner/shops/menus/Edit" data-props="{{ json_encode($props) }}">

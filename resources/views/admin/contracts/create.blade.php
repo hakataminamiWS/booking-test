@@ -9,9 +9,5 @@
             'errors' => $errors->getMessages(),
         ];
     @endphp
-    <div
-        id="app"
-        data-page="admin/contracts/Create"
-        data-props="{{ json_encode($props) }}"
-    ></div>
+    <div id="app" data-page="admin/contracts/Create" data-props="{{ json_encode($props) }}"></div>
 @endsection

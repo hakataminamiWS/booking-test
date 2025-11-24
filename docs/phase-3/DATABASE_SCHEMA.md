@@ -130,7 +130,7 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 -   時間帯の一部重複（オーバーラップ）チェックは、データベースの制約では保証しません。
 -   アプリケーション側で、既存のスケジュールと重ならないことを確認した上で登録・更新処理を行う必要があります。
 -   オーナーやスタッフが、スタッフの稼働時間外に予約を入れようとした場合に、ワーニング表示します。あくまでワーニング表示のために利用し、予約登録は可能とします。
--   **休日として設定された日は、`workable_start_at` と `workable_end_at` に同じ日時（例: `YYYY-MM-DD 00:00:00`）を設定したレコードを1件登録することで表現します。レコードが1件も存在しない日は「未設定」状態として扱います。**
+-   **休日として設定された日は、`workable_start_at` と `workable_end_at` に同じ日時（例: `YYYY-MM-DD 00:00:00`）を設定したレコードを 1 件登録することで表現します。レコードが 1 件も存在しない日は「未設定」状態として扱います。**
 
 | カラム名            | データ型    | 制約                                       | 説明            |
 | :------------------ | :---------- | :----------------------------------------- | :-------------- |
@@ -274,22 +274,35 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 
 店舗の予約者情報を管理します。予約者情報は店舗ごとに異なる場合があるため、各店舗ごとに管理します。
 
-| カラム名           | データ型       | 制約                                                    | 説明                                                                          |
-| :----------------- | :------------- | :------------------------------------------------------ | :---------------------------------------------------------------------------- |
-| `id`               | `bigint`       | `PK`, `AI`                                              | 予約者識別子 ID                                                               |
-| `canonical_id`     | `bigint`       | `FK (shop_bookers.id)`, `Nullable`, `onDelete: CASCADE` | 統合先の予約者 ID（自分がマージされた場合に設定）。将来、統合機能追加時に使用 |
-| `shop_id`          | `bigint`       | `FK (shops.id)`, `onDelete: CASCADE`                    | 店舗 ID                                                                       |
-| `user_id`          | `bigint`       | `FK (users.id)`, `Nullable`, `onDelete: CASCADE`        | ユーザー ID。管理画面からの登録も可能とするため、Nullable                     |
-| `public_id`        | `char(26)`     | `Unique`                                                | 公開用 ID (ULID)。ユーザーが予約状況を参照する際に使用                        |
-| `nickname`         | `varchar(255)` |                                                         | 表示される予約者のニックネーム                                                |
-| `contact_email`    | `varchar(255)` |                                                         | 予約者の連絡先メールアドレス                                                  |
-| `contact_phone`    | `varchar(255)` |                                                         | 予約者の連絡先電話番号                                                        |
-| `note_from_booker` | `text`         | `Nullable`                                              | 予約者からのメモ。予約者、および店舗側が参照可能                              |
-| `shop_memo`        | `text`         | `Nullable`                                              | 予約者の店舗側メモ。予約者には表示されない                                    |
-| `created_at`       | `timestamp`    |                                                         | 作成日時                                                                      |
-| `updated_at`       | `timestamp`    |                                                         | 更新日時                                                                      |
+| カラム名           | データ型       | 制約                                             | 説明                                                     |
+| :----------------- | :------------- | :----------------------------------------------- | :------------------------------------------------------- |
+| `id`               | `bigint`       | `PK`, `AI`                                       | 予約者識別子 ID                                          |
+| `shop_id`          | `bigint`       | `FK (shops.id)`, `onDelete: CASCADE`             | 店舗 ID                                                  |
+| `user_id`          | `bigint`       | `FK (users.id)`, `Nullable`, `onDelete: CASCADE` | ユーザー ID。Google や LINE でのログインに生成されたもの |
+| `number`           | `integer`      | `Unique`                                         | 会員番号。予約者が予約を見るときの path としても利用     |
+| `name`             | `varchar(255)` |                                                  | 表示される予約者の名前、予約者側で設定・変更するもの     |
+| `contact_email`    | `varchar(255)` |                                                  | 予約者の連絡先メールアドレス                             |
+| `contact_phone`    | `varchar(255)` |                                                  | 予約者の連絡先電話番号                                   |
+| `note_from_booker` | `text`         | `Nullable`                                       | 予約者からのメモ。予約者側で設定・変更するもの           |
+| `created_at`       | `timestamp`    |                                                  | 作成日時                                                 |
+| `updated_at`       | `timestamp`    |                                                  | 更新日時                                                 |
 
 **ユニーク制約** (`shop_id`, `user_id`)
+
+### `shop_bookers_crm`
+
+店舗予約者の店舗側のみに見える追加情報を管理します。予約者には表示されません。
+
+| カラム名          | データ型       | 制約                                                  | 説明                                         |
+| :---------------- | :------------- | :---------------------------------------------------- | :------------------------------------------- |
+| `id`              | `bigint`       | `PK`, `AI`                                            | 主キー                                       |
+| `shop_bookers_id` | `bigint`       | `FK (shop_bookers.id)`, `onDelete: CASCADE`, `Unique` | 予約者識別子 ID                              |
+| `name_kana`       | `varchar(255)` | `Nullable`                                            | 予約者のよみがな、店舗側だけで設定・変更可能 |
+| `shop_memo`       | `text`         | `Nullable`                                            | 予約者の店舗側メモ                           |
+| `last_booking_at` | `timestamp`    | `Nullable`                                            | 最終予約日時                                 |
+| `booking_count`   | `integer`      | `Nullable`, `default: 0`                              | 予約回数                                     |
+| `created_at`      | `timestamp`    |                                                       | 作成日時                                     |
+| `updated_at`      | `timestamp`    |                                                       | 更新日時                                     |
 
 ### `bookings`
 

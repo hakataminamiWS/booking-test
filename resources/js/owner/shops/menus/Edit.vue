@@ -51,9 +51,11 @@
 
                             <v-text-field
                                 v-model="formData.price"
+                                @update:model-value="formData.price = formatNumericInput($event)"
                                 name="price"
                                 label="価格"
-                                type="number"
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                                 suffix="円"
                                 required
                                 hint="メニューの価格を円単位で入力します。"
@@ -63,9 +65,11 @@
 
                             <v-text-field
                                 v-model="formData.duration"
+                                @update:model-value="formData.duration = formatNumericInput($event)"
                                 name="duration"
                                 label="所要時間"
-                                type="number"
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                                 suffix="分"
                                 required
                                 hint="サービスの所要時間を分単位で入力します。"
@@ -90,6 +94,7 @@
                                 hint="このメニューの予約時に、担当スタッフの選択を必須にするかどうかを設定します。"
                                 persistent-hint
                                 inset
+                                color="primary"
                             ></v-switch>
                             <input
                                 type="hidden"
@@ -124,6 +129,31 @@
                                 />
                             </template>
 
+                            <v-select
+                                v-model="formData.option_ids"
+                                :items="props.options"
+                                item-title="name"
+                                item-value="id"
+                                label="関連オプション"
+                                multiple
+                                chips
+                                closable-chips
+                                hint="このメニューに適用可能なオプションをすべて選択してください。"
+                                persistent-hint
+                                class="mb-4"
+                            ></v-select>
+
+                            <template
+                                v-for="optionId in formData.option_ids"
+                                :key="optionId"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="option_ids[]"
+                                    :value="optionId"
+                                />
+                            </template>
+
                             <v-switch
                                 v-model="
                                     formData.requires_cancellation_deadline
@@ -134,6 +164,7 @@
                                 hint="店舗の基本設定とは異なるキャンセル期限を設定する場合にオンにします。"
                                 persistent-hint
                                 inset
+                                color="primary"
                             ></v-switch>
                             <input
                                 type="hidden"
@@ -148,9 +179,12 @@
                             <v-text-field
                                 v-if="formData.requires_cancellation_deadline"
                                 v-model="formData.cancellation_deadline_minutes"
+                                @update:model-value="formData.cancellation_deadline_minutes = formatNumericInput($event)
+                                "
                                 name="cancellation_deadline_minutes"
                                 label="キャンセル期限"
-                                type="number"
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                                 suffix="分前"
                                 hint="予約の何分前までお客様によるキャンセルを許可するか設定します。"
                                 persistent-hint
@@ -165,6 +199,7 @@
                                 hint="店舗の基本設定とは異なる予約締切を設定する場合にオンにします。"
                                 persistent-hint
                                 inset
+                                color="primary"
                             ></v-switch>
                             <input
                                 type="hidden"
@@ -177,9 +212,12 @@
                             <v-text-field
                                 v-if="formData.requires_booking_deadline"
                                 v-model="formData.booking_deadline_minutes"
+                                @update:model-value="formData.booking_deadline_minutes = formatNumericInput($event)
+                                "
                                 name="booking_deadline_minutes"
                                 label="予約締切"
-                                type="number"
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                                 suffix="分前"
                                 hint="予約の何分前でオンライン予約の受付を締め切るか設定します。"
                                 persistent-hint
@@ -193,7 +231,10 @@
                                     >削除する</v-btn
                                 >
                                 <v-spacer></v-spacer>
-                                <v-btn type="submit" color="primary"
+                                <v-btn
+                                    type="submit"
+                                    color="primary"
+                                    @click="validateAndSubmit"
                                     >更新する</v-btn
                                 >
                             </v-card-actions>
@@ -236,8 +277,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import { formatNumericInput } from "@/composables/useNumericInput";
 
 const deleteDialog = ref(false);
 
@@ -245,8 +287,10 @@ const props = defineProps({
     shop: { type: Object, required: true },
     menu: { type: Object, required: true },
     staffs: { type: Array, required: true },
+    options: { type: Array, required: true },
     csrfToken: { type: String, required: true },
     errors: { type: Array, default: () => [] },
+    oldInput: { type: Object, default: () => ({}) },
 });
 
 const menusIndexUrl = computed(() => `/owner/shops/${props.shop.slug}/menus`);
@@ -267,6 +311,69 @@ const formData = ref({
     cancellation_deadline_minutes: props.menu.cancellation_deadline_minutes,
     requires_booking_deadline: props.menu.requires_booking_deadline,
     booking_deadline_minutes: props.menu.booking_deadline_minutes,
-    staff_ids: props.menu.staffs.map((staff) => staff.id),
+    staff_ids: props.menu.staffs.map((staff: any) => staff.id),
+    option_ids: props.menu.options.map((option: any) => option.id),
 });
+
+onMounted(() => {
+    if (props.oldInput && Object.keys(props.oldInput).length > 0) {
+        formData.value.name = props.oldInput.name ?? props.menu.name;
+        formData.value.price = props.oldInput.price ?? props.menu.price;
+        formData.value.duration = props.oldInput.duration ?? props.menu.duration;
+        formData.value.description =
+            props.oldInput.description ?? props.menu.description;
+        formData.value.requires_staff_assignment =
+            props.oldInput.requires_staff_assignment ??
+            props.menu.requires_staff_assignment;
+        formData.value.requires_cancellation_deadline =
+            props.oldInput.requires_cancellation_deadline ??
+            props.menu.requires_cancellation_deadline;
+        formData.value.cancellation_deadline_minutes =
+            props.oldInput.cancellation_deadline_minutes ??
+            props.menu.cancellation_deadline_minutes;
+        formData.value.requires_booking_deadline =
+            props.oldInput.requires_booking_deadline ??
+            props.menu.requires_booking_deadline;
+        formData.value.booking_deadline_minutes =
+            props.oldInput.booking_deadline_minutes ??
+            props.menu.booking_deadline_minutes;
+        formData.value.staff_ids =
+            props.oldInput.staff_ids ??
+            props.menu.staffs.map((staff: any) => staff.id);
+        formData.value.option_ids =
+            props.oldInput.option_ids ??
+            props.menu.options.map((option: any) => option.id);
+    }
+});
+
+const rules = {
+    required: (value: any) => !!(value || value === 0) || "必須項目です。",
+    numeric: (value: string) =>
+        /^(0|[1-9][0-9]*)$/.test(value) || "半角数字で入力してください。",
+};
+
+const validateAndSubmit = (event: Event) => {
+    const fieldsToValidate = [
+        String(formData.value.price ?? ""),
+        String(formData.value.duration ?? ""),
+    ];
+
+    if (formData.value.requires_cancellation_deadline) {
+        fieldsToValidate.push(
+            String(formData.value.cancellation_deadline_minutes ?? "")
+        );
+    }
+    if (formData.value.requires_booking_deadline) {
+        fieldsToValidate.push(
+            String(formData.value.booking_deadline_minutes ?? "")
+        );
+    }
+
+    for (const val of fieldsToValidate) {
+        if (rules.required(val) !== true || rules.numeric(val) !== true) {
+            event.preventDefault();
+            return;
+        }
+    }
+};
 </script>

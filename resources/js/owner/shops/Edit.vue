@@ -50,6 +50,7 @@
                                 name="name"
                                 label="店舗名 *"
                                 required
+                                :rules="[rules.required]"
                             ></v-text-field>
 
                             <v-text-field
@@ -66,12 +67,14 @@
                                 :items="[15, 30, 60]"
                                 label="予約枠の間隔（分） *"
                                 required
+                                :rules="[rules.required]"
                             ></v-select>
 
                             <v-radio-group
                                 v-model="form.booking_confirmation_type"
                                 name="booking_confirmation_type"
                                 required
+                                :rules="[rules.required]"
                             >
                                 <template v-slot:label
                                     ><div>予約承認方法 *</div></template
@@ -90,6 +93,7 @@
                                 v-model="form.accepts_online_bookings"
                                 name="accepts_online_bookings"
                                 required
+                                :rules="[rules.required]"
                             >
                                 <template v-slot:label
                                     ><div>オンライン予約受付 *</div></template
@@ -115,18 +119,22 @@
                                 v-model.number="
                                     form.cancellation_deadline_minutes
                                 "
+                                @update:model-value="form.cancellation_deadline_minutes = formatNumericInput($event) as any"
                                 name="cancellation_deadline_minutes"
                                 label="キャンセル期限（分前） *"
-                                type="number"
                                 required
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                             ></v-text-field>
 
                             <v-text-field
                                 v-model.number="form.booking_deadline_minutes"
+                                @update:model-value="form.booking_deadline_minutes = formatNumericInput($event) as any"
                                 name="booking_deadline_minutes"
                                 label="予約締切（分前） *"
-                                type="number"
                                 required
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                             ></v-text-field>
 
                             <v-card-actions>
@@ -136,7 +144,10 @@
                                     >削除する</v-btn
                                 >
                                 <v-spacer></v-spacer>
-                                <v-btn type="submit" color="primary"
+                                <v-btn
+                                    type="submit"
+                                    color="primary"
+                                    @click="validateAndSubmit"
                                     >更新する</v-btn
                                 >
                             </v-card-actions>
@@ -193,6 +204,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import ShopHeader from "./components/ShopHeader.vue";
+import { formatNumericInput } from "@/composables/useNumericInput";
 
 interface Shop {
     name: string;
@@ -254,4 +266,40 @@ const confirmationText = ref("");
 const isDeleteConfirmed = computed(
     () => confirmationText.value === props.shop.name
 );
+
+// --- Validation ---
+const rules = {
+    required: (value: any) => !!(value || value === 0) || "必須項目です。",
+    numeric: (value: string) =>
+        /^(0|[1-9][0-9]*)$/.test(value) || "半角数字で入力してください。",
+};
+
+const validateAndSubmit = (event: Event) => {
+    const fieldsToValidate = {
+        name: form.value.name,
+        time_slot_interval: form.value.time_slot_interval,
+        booking_confirmation_type: form.value.booking_confirmation_type,
+        accepts_online_bookings: form.value.accepts_online_bookings,
+        cancellation_deadline_minutes: form.value.cancellation_deadline_minutes,
+        booking_deadline_minutes: form.value.booking_deadline_minutes,
+    };
+
+    const numericFields = [
+        "cancellation_deadline_minutes",
+        "booking_deadline_minutes",
+    ];
+
+    for (const [key, value] of Object.entries(fieldsToValidate)) {
+        if (rules.required(value) !== true) {
+            event.preventDefault();
+            return;
+        }
+        if (numericFields.includes(key)) {
+            if (rules.numeric(String(value)) !== true) {
+                event.preventDefault();
+                return;
+            }
+        }
+    }
+};
 </script>

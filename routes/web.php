@@ -102,6 +102,19 @@ Route::middleware('auth')->group(function () {
         Route::put('/shops/{shop:slug}/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'update'])->name('shops.options.update');
         Route::delete('/shops/{shop:slug}/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'destroy'])->name('shops.options.destroy');
 
+        // Booking Management
+        Route::get('/shops/{shop:slug}/bookings', [App\Http\Controllers\Owner\BookingController::class, 'index'])->name('shops.bookings.index');
+        Route::get('/shops/{shop:slug}/bookings/create', [App\Http\Controllers\Owner\BookingController::class, 'create'])->name('shops.bookings.create');
+        Route::post('/shops/{shop:slug}/bookings', [App\Http\Controllers\Owner\BookingController::class, 'store'])->name('shops.bookings.store');
+
+        // Booker Management
+        Route::get('/shops/{shop:slug}/bookers', [App\Http\Controllers\Owner\ShopBookerController::class, 'index'])->name('shops.bookers.index');
+        Route::get('/shops/{shop:slug}/bookers/create', [App\Http\Controllers\Owner\ShopBookerController::class, 'create'])->name('shops.bookers.create');
+        Route::post('/shops/{shop:slug}/bookers', [App\Http\Controllers\Owner\ShopBookerController::class, 'store'])->name('shops.bookers.store');
+        Route::get('/shops/{shop:slug}/bookers/{booker}/edit', [App\Http\Controllers\Owner\ShopBookerController::class, 'edit'])->name('shops.bookers.edit');
+        Route::put('/shops/{shop:slug}/bookers/{booker}', [App\Http\Controllers\Owner\ShopBookerController::class, 'update'])->name('shops.bookers.update');
+
+
         // API
         Route::prefix('api')->name('api.')->group(function () {
             Route::get('/shops', [App\Http\Controllers\Api\Owner\ShopsController::class, 'index'])->name('shops.index');
@@ -110,6 +123,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'index'])->name('api.shops.staffs.index');
             Route::get('/shops/{shop:slug}/menus', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'index'])->name('api.shops.menus.index');
             Route::get('/shops/{shop:slug}/options', [App\Http\Controllers\Api\Owner\ShopOptionController::class, 'index'])->name('api.shops.options.index');
+            Route::get('/shops/{shop:slug}/bookers', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'index'])->name('api.shops.bookers.index');
         });
     });
 
@@ -122,7 +136,6 @@ Route::middleware('auth')->group(function () {
         //     // Future staff APIs go here
         // });
     });
-
 });
 
 // ==============================================================================

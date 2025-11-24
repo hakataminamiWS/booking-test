@@ -68,13 +68,18 @@
                                 name="name"
                                 label="契約名"
                                 required
+                                :rules="[rules.required]"
                             ></v-text-field>
 
                             <v-text-field
-                                v-model.number="form.max_shops"
+                                v-model="form.max_shops"
+                                @update:model-value="
+                                    form.max_shops = formatNumericInput($event)
+                                "
                                 name="max_shops"
                                 label="店舗上限数"
-                                type="number"
+                                :rules="[rules.required, rules.numeric]"
+                                inputmode="numeric"
                                 required
                             ></v-text-field>
 
@@ -84,6 +89,7 @@
                                 :items="['active', 'expired']"
                                 label="契約ステータス"
                                 required
+                                :rules="[rules.required]"
                             ></v-select>
 
                             <v-text-field
@@ -92,6 +98,7 @@
                                 label="契約開始日"
                                 type="date"
                                 required
+                                :rules="[rules.required]"
                             ></v-text-field>
 
                             <v-text-field
@@ -100,6 +107,7 @@
                                 label="契約終了日"
                                 type="date"
                                 required
+                                :rules="[rules.required]"
                             ></v-text-field>
 
                             <v-card-actions>
@@ -108,6 +116,7 @@
                                     type="submit"
                                     color="primary"
                                     :disabled="application.status !== 'pending'"
+                                    @click="validateAndSubmit"
                                 >
                                     契約を作成する
                                 </v-btn>
@@ -122,6 +131,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { formatNumericInput } from "@/composables/useNumericInput";
 
 const props = defineProps<{
     application: any;
@@ -148,4 +158,33 @@ onMounted(() => {
         csrfToken.value = token.getAttribute("content") || "";
     }
 });
+
+const rules = {
+    required: (value: any) => !!(value || value === 0) || "必須項目です。",
+    numeric: (value: string) =>
+        /^(0|[1-9][0-9]*)$/.test(value) || "半角数字で入力してください。",
+};
+
+const validateAndSubmit = (event: Event) => {
+    const fieldsToValidate = {
+        name: form.value.name,
+        max_shops: form.value.max_shops,
+        status: form.value.status,
+        start_date: form.value.start_date,
+        end_date: form.value.end_date,
+    };
+
+    for (const [key, value] of Object.entries(fieldsToValidate)) {
+        if (rules.required(value) !== true) {
+            event.preventDefault();
+            return;
+        }
+        if (key === "max_shops") {
+            if (rules.numeric(String(value)) !== true) {
+                event.preventDefault();
+                return;
+            }
+        }
+    }
+};
 </script>

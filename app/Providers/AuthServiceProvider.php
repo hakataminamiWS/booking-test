@@ -15,6 +15,8 @@ use App\Models\ShopStaff;
 use App\Models\ShopMenu;
 use App\Policies\ShopStaffPolicy;
 use App\Policies\ShopMenuPolicy;
+use App\Models\ShopBooker;
+use App\Policies\ShopBookerPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -32,6 +34,7 @@ class AuthServiceProvider extends ServiceProvider
         ShopStaff::class => ShopStaffPolicy::class,
         ShopMenu::class => ShopMenuPolicy::class,
         ShopOption::class => ShopOptionPolicy::class,
+        ShopBooker::class => ShopBookerPolicy::class,
     ];
 
     /**

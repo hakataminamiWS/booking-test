@@ -107,6 +107,19 @@ const pages = {
     "owner/shops/options/Edit": defineAsyncComponent(
         () => import("@/owner/shops/options/Edit.vue")
     ),
+    "owner/shops/bookings/Create": defineAsyncComponent(
+        () => import("@/owner/shops/bookings/Create.vue")
+    ),
+
+    "owner/shops/bookers/Index": defineAsyncComponent(
+        () => import("@/owner/shops/bookers/Index.vue")
+    ),
+    "owner/shops/bookers/Create": defineAsyncComponent(
+        () => import("@/owner/shops/bookers/Create.vue")
+    ),
+    "owner/shops/bookers/Edit": defineAsyncComponent(
+        () => import("@/owner/shops/bookers/Edit.vue")
+    ),
 
     // Staff
     "staff/applications/Create": defineAsyncComponent(

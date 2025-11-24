@@ -58,7 +58,13 @@
                         test-shop)</a></li>
                 <li><a href="{{ route('owner.shops.menus.index', ['shop' => 'test-shop']) }}">メニュー一覧画面 (Slug:
                         test-shop)</a></li>
-                <li><a href="{{ route('owner.shops.options.index', ['shop' => 'test-shop']) }}">オプション一覧画面 (Slug: test-shop)</a></li>
+                <li><a href="{{ route('owner.shops.options.index', ['shop' => 'test-shop']) }}">オプション一覧画面 (Slug:
+                        test-shop)</a></li>
+                <li><a href="{{ route('owner.shops.bookers.index', ['shop' => 'test-shop']) }}">予約者一覧画面 (Slug:
+                        test-shop)</a></li>
+                <li><a href="{{ route('owner.shops.bookings.create', ['shop' => 'test-shop']) }}">手動予約登録画面 (Slug:
+                        test-shop)</a></li>
+
             </ul>
 
             <h3>スタッフ</h3>

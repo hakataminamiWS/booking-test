@@ -43,6 +43,11 @@ class Shop extends Model
         return $this->hasMany(ShopStaffApplication::class);
     }
 
+    public function businessHoursRegular(): HasMany
+    {
+        return $this->hasMany(ShopBusinessHoursRegular::class);
+    }
+
     public function shopSpecialOpenDays(): HasMany
     {
         return $this->hasMany(ShopSpecialOpenDay::class);
@@ -56,5 +61,20 @@ class Shop extends Model
     public function menus(): HasMany
     {
         return $this->hasMany(ShopMenu::class);
+    }
+
+    public function options(): HasMany
+    {
+        return $this->hasMany(ShopOption::class);
+    }
+
+    public function bookers(): HasMany
+    {
+        return $this->hasMany(ShopBooker::class);
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
     }
 }
