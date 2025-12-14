@@ -38,4 +38,12 @@ class ShopStaff extends Model
     {
         return $this->hasMany(ShopStaffSchedule::class);
     }
+
+    /**
+     * このスタッフに割り当てられている予約を取得する
+     */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'assigned_staff_id');
+    }
 }

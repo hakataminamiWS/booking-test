@@ -14,7 +14,9 @@ class BookingPolicy
     public function viewAny(User $user): bool
     {
         // Only admins, owners, or staff can view all bookings
-        return $user->isAdmin() || $user->shops()->wherePivot('role', 'owner')->exists() || $user->shops()->wherePivot('role', 'staff')->exists();
+        // Note: shops() is a HasMany relation for owners, so wherePivot is invalid.
+        // TODO: Add proper staff check when User-Staff relation is implemented.
+        return $user->isAdmin() || $user->shops()->exists();
     }
 
     /**
@@ -36,11 +38,7 @@ class BookingPolicy
      */
     public function create(?User $user, ?Shop $shop = null): bool
     {
-        // If shop is provided, it's a manual booking by owner/staff
-        if ($shop && $user) {
-            return $user->isOwnerOf($shop) || $user->isStaffOf($shop);
-        }
-        // If shop is not provided, it's a booking by a customer (guest or logged-in user)
+        // If shop is provided, it's a manual booking by owner/staffomer (guest or logged-in user)
         return true;
     }
 

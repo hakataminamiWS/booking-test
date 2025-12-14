@@ -18,7 +18,7 @@ class ShopBookerController extends Controller
     {
         $this->authorize('viewAny', [ShopBooker::class, $shop]);
 
-        return view('owner.bookers.index', ['shop' => $shop]);
+        return view('owner.shops.bookers.index', ['shop' => $shop]);
     }
 
     /**
@@ -28,7 +28,7 @@ class ShopBookerController extends Controller
     {
         $this->authorize('create', [ShopBooker::class, $shop]);
 
-        return view('owner.bookers.create', compact('shop'));
+        return view('owner.shops.bookers.create', compact('shop'));
     }
 
     /**
@@ -80,7 +80,7 @@ class ShopBookerController extends Controller
             $booker->setRelation('crm', new \App\Models\ShopBookerCrm());
         }
 
-        return view('owner.bookers.edit', compact('shop', 'booker'));
+        return view('owner.shops.bookers.edit', compact('shop', 'booker'));
     }
 
     /**

@@ -27,6 +27,22 @@ class ShopBooker extends Model
     ];
 
     /**
+     * The "booting" method of the model.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($shopBooker) {
+            if (empty($shopBooker->number)) {
+                // 同じshop_id内での最大値+1を設定
+                $maxNumber = static::where('shop_id', $shopBooker->shop_id)->max('number') ?? 0;
+                $shopBooker->number = $maxNumber + 1;
+            }
+        });
+    }
+
+    /**
      * Get the shop that owns the booker.
      */
     public function shop(): BelongsTo

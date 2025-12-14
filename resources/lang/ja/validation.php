@@ -20,4 +20,32 @@ return [
     'regex' => ':attributeの形式が正しくありません。',
     'unique' => ':attributeの値は既に存在しています。',
     'date_format' => ':attributeの形式は、:formatと一致しません。',
+
+    'attributes' => [
+        'start_at' => '予約日時',
+        'menu_id' => 'メニュー',
+        'option_ids' => 'オプション',
+        'assigned_staff_id' => '担当スタッフ',
+        'shop_booker_id' => '予約者',
+        'booker_name' => '予約者名',
+        'contact_email' => 'メールアドレス',
+        'contact_phone' => '電話番号',
+        'note_from_booker' => '予約時メモ',
+        'shop_memo' => '店舗メモ',
+    ],
+
+    'custom' => [
+        'menu_id' => [
+            'exists' => '選択されたメニューは存在しません。',
+        ],
+        'option_ids.*' => [
+            'exists' => '選択されたオプションの一部が存在しません。',
+        ],
+        'assigned_staff_id' => [
+            'exists' => '選択されたスタッフは存在しません。',
+        ],
+        'shop_booker_id' => [
+            'exists' => '選択された予約者が見つかりません。画面を更新して再度お試しください。',
+        ],
+    ],
 ];

@@ -1,6 +1,6 @@
 @extends('app')
 
-@section('title', '予約登録')
+@section('title', '予約一覧')
 
 @section('content')
     @php
@@ -8,13 +8,11 @@
             'shop' => $shop,
             'menus' => $menus,
             'staffs' => $staffs,
-            'bookers' => $bookers,
-            'bookings' => $bookings,
         ];
     @endphp
     <div
         id="app"
-        data-page="owner/shops/bookings/Create"
+        data-page="owner/shops/bookings/Index"
         data-props="{{ json_encode($props) }}"
     >
     </div>

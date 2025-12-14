@@ -1,6 +1,6 @@
 {
     "mcpServers": {
-        "laravel": {
+        "laravel-boost": {
             "command": "php",
             "args": ["./artisan", "boost:mcp"],
             "timeout": 30000,

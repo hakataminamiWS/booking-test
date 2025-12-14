@@ -110,6 +110,12 @@ const pages = {
     "owner/shops/bookings/Create": defineAsyncComponent(
         () => import("@/owner/shops/bookings/Create.vue")
     ),
+    "owner/shops/bookings/Index": defineAsyncComponent(
+        () => import("@/owner/shops/bookings/Index.vue")
+    ),
+    "owner/shops/bookings/Edit": defineAsyncComponent(
+        () => import("@/owner/shops/bookings/Edit.vue")
+    ),
 
     "owner/shops/bookers/Index": defineAsyncComponent(
         () => import("@/owner/shops/bookers/Index.vue")

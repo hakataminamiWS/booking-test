@@ -7,6 +7,8 @@ use App\Http\Requests\Api\Owner\IndexShopMenusRequest;
 use App\Models\Shop;
 use App\Models\ShopMenu;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ShopMenuController extends Controller
@@ -47,5 +49,36 @@ class ShopMenuController extends Controller
         $menus = $query->with(['staffs.profile', 'options'])->paginate($request->input('per_page', 20));
 
         return response()->json($menus);
+    }
+
+    /**
+     * 指定されたメニューに割り当たっているスタッフのリストを返す
+     */
+    public function staffs(Request $request, Shop $shop, ShopMenu $menu)
+    {
+        // 認可チェック (ShopStaffPolicy などでの認可を想定)
+        // $this->authorize('viewAny', [ShopStaff::class, $shop]);
+
+        $staffsQuery = $shop->staffs()->with('profile');
+
+        // メニューに割り当たっているスタッフのIDを取得
+        $assignedStaffIds = DB::table('shop_menu_staffs')
+                              ->where('shop_menu_id', $menu->id)
+                              ->pluck('shop_staff_id');
+
+        // 割り当てられているスタッフのみにフィルタリング
+        $staffsQuery->whereIn('id', $assignedStaffIds);
+
+        $staffs = $staffsQuery->get()->map(function ($staff) {
+            // Vueコンポーネントが期待する形式に変換
+            return [
+                'id' => $staff->id,
+                'profile' => [
+                    'nickname' => $staff->profile->nickname ?? '',
+                ],
+            ];
+        });
+
+        return response()->json(['staffs' => $staffs]);
     }
 }

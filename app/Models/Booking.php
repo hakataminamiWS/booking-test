@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\BookingOption;
 
 class Booking extends Model
 {
@@ -52,8 +53,8 @@ class Booking extends Model
         return $this->belongsTo(ShopStaff::class, 'assigned_staff_id');
     }
     
-    // public function bookingOptions(): HasMany
-    // {
-    //     return $this->hasMany(BookingOption::class);
-    // }
+    public function bookingOptions(): HasMany
+    {
+        return $this->hasMany(BookingOption::class);
+    }
 }

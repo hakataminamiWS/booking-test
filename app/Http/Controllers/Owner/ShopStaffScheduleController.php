@@ -48,8 +48,8 @@ class ShopStaffScheduleController extends Controller
 
         $schedules = ShopStaffSchedule::whereIn('shop_staff_id', $staffs->pluck('id'))
             ->whereBetween('workable_start_at', [
-                $startOfMonth->copy()->setTimezone('UTC'),
-                $endOfMonth->copy()->endOfDay()->setTimezone('UTC'),
+                $startOfMonth->copy()->utc(),
+                $endOfMonth->copy()->endOfDay()->utc(),
             ])
             ->get();
 
@@ -94,8 +94,8 @@ class ShopStaffScheduleController extends Controller
 
         $schedules = ShopStaffSchedule::where('shop_staff_id', $staff->id)
             ->whereBetween('workable_start_at', [
-                $startOfWeek->copy()->setTimezone('UTC'),
-                $endOfWeek->copy()->setTimezone('UTC'),
+                $startOfWeek->copy()->utc(),
+                $endOfWeek->copy()->utc(),
             ])
             ->get();
 
@@ -155,8 +155,8 @@ class ShopStaffScheduleController extends Controller
             // Delete existing schedules for the week
             ShopStaffSchedule::where('shop_staff_id', $staff->id)
                 ->whereBetween('workable_start_at', [
-                    $startOfWeek->copy()->setTimezone('UTC'),
-                    $endOfWeek->copy()->endOfDay()->setTimezone('UTC'),
+                    $startOfWeek->copy()->utc(),
+                    $endOfWeek->copy()->endOfDay()->utc(),
                 ])
                 ->delete();
 

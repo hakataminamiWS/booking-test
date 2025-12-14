@@ -12,12 +12,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-        ]);
+        $this->call([]);
 
         if (app()->environment() !== 'production') {
             $this->call([
-                TestUserSeeder::class,
+                TestDataSeeder::class,
             ]);
         }
     }

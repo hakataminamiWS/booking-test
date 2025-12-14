@@ -106,6 +106,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops/{shop:slug}/bookings', [App\Http\Controllers\Owner\BookingController::class, 'index'])->name('shops.bookings.index');
         Route::get('/shops/{shop:slug}/bookings/create', [App\Http\Controllers\Owner\BookingController::class, 'create'])->name('shops.bookings.create');
         Route::post('/shops/{shop:slug}/bookings', [App\Http\Controllers\Owner\BookingController::class, 'store'])->name('shops.bookings.store');
+        Route::get('/shops/{shop:slug}/bookings/{booking}/edit', [App\Http\Controllers\Owner\BookingController::class, 'edit'])->name('shops.bookings.edit');
+        Route::put('/shops/{shop:slug}/bookings/{booking}', [App\Http\Controllers\Owner\BookingController::class, 'update'])->name('shops.bookings.update');
+        Route::delete('/shops/{shop:slug}/bookings/{booking}', [App\Http\Controllers\Owner\BookingController::class, 'destroy'])->name('shops.bookings.destroy');
 
         // Booker Management
         Route::get('/shops/{shop:slug}/bookers', [App\Http\Controllers\Owner\ShopBookerController::class, 'index'])->name('shops.bookers.index');
@@ -122,8 +125,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/shops/{shop:slug}/staff-applications', [App\Http\Controllers\Api\Owner\ShopStaffApplicationController::class, 'index'])->name('api.shops.staff-applications.index');
             Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'index'])->name('api.shops.staffs.index');
             Route::get('/shops/{shop:slug}/menus', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'index'])->name('api.shops.menus.index');
+            Route::get('/shops/{shop:slug}/menus/{menu}/staffs', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'staffs'])->name('api.shops.menus.staffs');
             Route::get('/shops/{shop:slug}/options', [App\Http\Controllers\Api\Owner\ShopOptionController::class, 'index'])->name('api.shops.options.index');
             Route::get('/shops/{shop:slug}/bookers', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'index'])->name('api.shops.bookers.index');
+            Route::get('/shops/{shop:slug}/bookings/validate-staff', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateStaff'])->name('api.shops.bookings.validate-staff');
+            Route::get('/shops/{shop:slug}/bookings/validate-shift', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateShift'])->name('api.shops.bookings.validate-shift');
+            Route::get('/shops/{shop:slug}/bookings/validate-conflict', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateConflict'])->name('api.shops.bookings.validate-conflict');
+            Route::get('/shops/{shop:slug}/staffs/{staff}/working-days', [App\Http\Controllers\Api\Owner\BookingController::class, 'getWorkingDays'])->name('api.shops.staffs.working-days');
+            Route::get('/shops/{shop:slug}/bookings', [App\Http\Controllers\Api\Owner\BookingController::class, 'index'])->name('api.shops.bookings.index');
+            Route::get('/shops/{shop:slug}/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Owner\TimeSlotController::class, 'index'])->name('staffs.timeslots');
         });
     });
 

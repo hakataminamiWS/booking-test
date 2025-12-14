@@ -279,7 +279,7 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 | `id`               | `bigint`       | `PK`, `AI`                                       | 予約者識別子 ID                                          |
 | `shop_id`          | `bigint`       | `FK (shops.id)`, `onDelete: CASCADE`             | 店舗 ID                                                  |
 | `user_id`          | `bigint`       | `FK (users.id)`, `Nullable`, `onDelete: CASCADE` | ユーザー ID。Google や LINE でのログインに生成されたもの |
-| `number`           | `integer`      | `Unique`                                         | 会員番号。予約者が予約を見るときの path としても利用     |
+| `number`           | `integer`      |                                                  | 会員番号。予約者が予約を見るときの path としても利用     |
 | `name`             | `varchar(255)` |                                                  | 表示される予約者の名前、予約者側で設定・変更するもの     |
 | `contact_email`    | `varchar(255)` |                                                  | 予約者の連絡先メールアドレス                             |
 | `contact_phone`    | `varchar(255)` |                                                  | 予約者の連絡先電話番号                                   |
@@ -287,7 +287,7 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 | `created_at`       | `timestamp`    |                                                  | 作成日時                                                 |
 | `updated_at`       | `timestamp`    |                                                  | 更新日時                                                 |
 
-**ユニーク制約** (`shop_id`, `user_id`)
+**ユニーク制約** (`shop_id`, `user_id`), (`shop_id`, `number`)
 
 ### `shop_bookers_crm`
 
@@ -328,8 +328,7 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 | `booker_name`          | `varchar(255)` |                                                        | 予約者名（スナップショット）                               |
 | `contact_email`        | `varchar(255)` |                                                        | 予約者メールアドレス（スナップショット）                   |
 | `contact_phone`        | `varchar(255)` |                                                        | 予約者電話番号（スナップショット）                         |
-| `note_from_booker`     | `text`         | `Nullable`                                             | 予約者からのメモ。予約者、および店舗側が参照可能           |
-| `shop_memo`            | `text`         | `Nullable`                                             | 予約者の店舗側メモ。予約者には表示されない                 |
+| `memo`                 | `text`         | `Nullable`                                             | 予約時のメモ。予約者、および店舗側が参照可能               |
 | `booking_channel`      | `varchar(255)` | `Not NULL`, `Default: 'web'`                           | 予約経路 (例: `web`, `line`, `instagram`)                  |
 | `created_at`           | `timestamp`    |                                                        | 作成日時                                                   |
 | `updated_at`           | `timestamp`    |                                                        | 更新日時                                                   |

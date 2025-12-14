@@ -152,11 +152,11 @@
                             <v-card-actions class="mt-4">
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                                                    type="submit"
-                                                                    color="primary"
-                                                                    @click="validateForm"
-                                                                    >登録する</v-btn
-                                                                >
+                                    type="submit"
+                                    color="primary"
+                                    :disabled="!isFormValid"
+                                    @click="validateForm"
+                                >登録する</v-btn>
                             </v-card-actions>
                         </form>
                     </v-card-text>
@@ -221,37 +221,28 @@ const lastBookingAtRule = [
     }
 ];
 
+const isFormValid = computed(() => {
+    // Required fields check
+    const requiredValid = !!formData.value.name && 
+                         !!formData.value.contact_email && 
+                         !!formData.value.contact_phone;
+    if (!requiredValid) return false;
+
+    // Rules check
+    const nameValid = rules.maxLength(255)(formData.value.name) === true;
+    const emailValid = rules.email(formData.value.contact_email) === true;
+    const phoneValid = rules.maxLength(20)(formData.value.contact_phone) === true;
+    const kanaValid = rules.maxLength(255)(formData.value.name_kana) === true;
+    const countValid = rules.numeric(String(formData.value.booking_count)) === true; // Convert to string for safety
+    const dateValid = lastBookingAtRule[0](formData.value.last_booking_at) === true;
+
+    return nameValid && emailValid && phoneValid && kanaValid && countValid && dateValid;
+});
+
 const validateForm = (event: Event) => {
-    const fieldsToValidate = {
-        name: formData.value.name,
-        contact_email: formData.value.contact_email,
-        contact_phone: formData.value.contact_phone,
-        name_kana: formData.value.name_kana,
-        booking_count: formData.value.booking_count,
-    };
-
-    const rulesToApply: { [key: string]: Function[] } = {
-        name: [rules.required, rules.maxLength(255)],
-        contact_email: [rules.required, rules.email],
-        contact_phone: [rules.required, rules.maxLength(20)],
-        name_kana: [rules.maxLength(255)],
-        booking_count: [rules.numeric],
-    };
-
-    for (const [key, value] of Object.entries(fieldsToValidate)) {
-        for (const rule of rulesToApply[key]) {
-            const result = rule(value);
-            if (result !== true) {
-                event.preventDefault();
-                return;
-            }
-        }
-    }
-
-    // Date format validation
-    const dateResult = lastBookingAtRule[0](formData.value.last_booking_at);
-    if (dateResult !== true) {
+    if (!isFormValid.value) {
         event.preventDefault();
+        alert("必須項目を正しく入力してください。");
         return;
     }
 };

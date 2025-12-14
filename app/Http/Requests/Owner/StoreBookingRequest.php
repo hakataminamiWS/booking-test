@@ -14,8 +14,10 @@ class StoreBookingRequest extends FormRequest
     {
         // ルートからshopモデルインスタンスを取得
         $shop = $this->route('shop');
-        // BookingPolicyのcreateメソッドで認可チェック
-        return $this->user()->can('create', [Booking::class, $shop]);
+        // BookingPolicyのcreateではなく、
+        // ShopPolicyのupdate（店舗情報の更新権限）を確認する形で統一する
+        // (StoreShopMenuRequestと同様の実装)
+        return $this->user()->can('update', $shop);
     }
 
     /**
