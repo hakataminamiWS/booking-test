@@ -3,12 +3,21 @@
         <ShopHeader :shop="shop" />
         
         <v-card>
-            <v-card-title class="d-flex justify-space-between align-center">
+            <v-card-title
+                :class="{
+                    'd-flex': true,
+                    'flex-column': smAndDown,
+                    'align-start': smAndDown,
+                    'justify-space-between': !smAndDown,
+                    'align-center': !smAndDown,
+                }"
+            >
                 <span>予約一覧</span>
                 <v-btn
                     color="primary"
                     :href="`/owner/shops/${shop.slug}/bookings/create`"
                     prepend-icon="mdi-plus"
+                    :class="{ 'mt-2': smAndDown }"
                 >
                     手動で予約を登録する
                 </v-btn>
@@ -94,6 +103,7 @@
                     :items="serverItems"
                     :items-length="totalItems"
                     :loading="loading"
+                    :mobile="smAndDown"
                     @update:options="loadItems"
                     hide-default-footer
                     class="elevation-1 mt-4"
@@ -180,6 +190,12 @@
                                 dense
                                 hide-details
                             ></v-text-field>
+                            <div v-if="getColumnType(filter.column) === 'date-range'">
+                                <FilterDateRangePicker
+                                    v-model:value="filter.value"
+                                    v-model:valueTo="filter.value_to"
+                                />
+                            </div>
                             <v-select
                                 v-if="getColumnType(filter.column) === 'select'"
                                 v-model="filter.value"
@@ -263,6 +279,7 @@ import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
 import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import FilterDateRangePicker from "@/owner/shops/components/FilterDateRangePicker.vue";
 
 interface Shop {
     id: number;
@@ -328,15 +345,15 @@ interface Filter {
     id: number;
     column: string | null;
     value: any;
+    value_to?: any;
 }
 
 const filterableColumns = ref([
-    { text: "予約開始日(から)", value: "start_at_from", type: "date" },
-    { text: "予約開始日(まで)", value: "start_at_to", type: "date" },
+    { text: "予約開始日", value: "start_at", type: "date-range" },
     { text: "予約者番号", value: "booker_number", type: "number" },
     { text: "顧客名", value: "booker_name", type: "text" },
-    { text: "メニュー", value: "menu_id", type: "select", items: props.menus.map(m => ({ text: m.name, value: m.id })) }, // int value
-    { text: "担当スタッフ", value: "assigned_staff_id", type: "select", items: props.staffs.map(s => ({ text: s.name, value: s.id })) }, // int value
+    { text: "メニュー", value: "menu_id", type: "select", items: props.menus.map(m => ({ text: m.name, value: m.id })) },
+    { text: "担当スタッフ", value: "assigned_staff_id", type: "select", items: props.staffs.map(s => ({ text: s.name, value: s.id })) },
     { 
         text: "ステータス", 
         value: "status", 
@@ -380,14 +397,23 @@ const addFilter = () => {
     filters.value.push({ id: Date.now(), column: null, value: null });
 };
 
+// No specific onColumnChange needed as value and value_to are independent/flat
 const removeFilter = (id: number) => {
     const index = filters.value.findIndex((f) => f.id === id);
     if (index > -1) {
         filters.value.splice(index, 1);
     }
-    // Also remove from active filters immediately? Or wait for apply?
-    // Pattern implies active filters drive the view, so we need to remove from active too if it was active.
-    // Actually pattern calls removeFilter -> filters.splice -> applyFilters(false).
+    // Also update active filters just in case, though applyFilters handles the main sync
+    // But Bookers Index removes from activeFilters first then filters. 
+    // We will stick to simply removing from `filters` and calling applyFilters logic if needed or just letting apply handle it.
+    // Bookers logic:
+    // const index = activeFilters.value.findIndex... splice...
+    // const fIndex = filters.value.findIndex... splice...
+    // loadItems...
+    // Here we follow the pattern in Bookers Index more closely:
+    const activeIndex = activeFilters.value.findIndex((f) => f.id === id);
+    if (activeIndex > -1) activeFilters.value.splice(activeIndex, 1);
+    
     applyFilters(false);
 };
 
@@ -400,6 +426,10 @@ const activeFiltersText = computed(() => {
         if (column?.type === 'select' && column.items) {
             const selectedItem = column.items.find((i: any) => i.value == f.value); // loose check for string/int
             if (selectedItem) displayValue = selectedItem.text;
+        } else if (column?.type === 'date-range') {
+            const from = f.value || '';
+            const to = f.value_to || '';
+            displayValue = `${from} 〜 ${to}`;
         }
 
         return {
@@ -413,7 +443,7 @@ const activeFiltersText = computed(() => {
 const applyFilters = (shouldCloseDialog = true) => {
     // Sync filters to activeFilters
     activeFilters.value = JSON.parse(
-        JSON.stringify(filters.value.filter((f) => f.column && f.value !== null && f.value !== ""))
+        JSON.stringify(filters.value.filter((f) => f.column && (f.value !== null && f.value !== "" || f.value_to !== null && f.value_to !== "")))
     );
     // Also sync activeFilters back to filters to keep them capable of being edited
     filters.value = JSON.parse(JSON.stringify(activeFilters.value));
@@ -506,21 +536,31 @@ const loadItems = async (options: Options) => {
 
         // フィルタの復元
         const tempFilters: Filter[] = [];
-        urlParams.forEach((value, key) => {
-            // Ignore pagination/sort keys
-            if (['page', 'per_page', 'sort_by', 'sort_order'].includes(key)) return;
+        // urlParams is already defined above in this scope
 
-            const columnDef = filterableColumns.value.find(
-                (c) => c.value === key
-            );
-            if (columnDef) {
-                tempFilters.push({
-                    id: Date.now() + Math.random(),
-                    column: key,
-                    value: value,
-                });
+        filterableColumns.value.forEach((col) => {
+            if (col.type === 'date-range') {
+                const from = urlParams.get(`${col.value}_from`);
+                const to = urlParams.get(`${col.value}_to`);
+                if (from || to) {
+                    tempFilters.push({
+                        id: Date.now() + Math.random(),
+                        column: col.value,
+                        value: from,
+                        value_to: to,
+                    });
+                }
+            } else {
+                if (urlParams.has(col.value)) {
+                    tempFilters.push({
+                        id: Date.now() + Math.random(),
+                        column: col.value,
+                        value: urlParams.get(col.value),
+                    });
+                }
             }
         });
+
         if (tempFilters.length > 0) {
             filters.value = tempFilters;
             activeFilters.value = JSON.parse(JSON.stringify(tempFilters));
@@ -539,14 +579,17 @@ const loadItems = async (options: Options) => {
     if (activeSort.value.column && activeSort.value.order) {
         params.append("sort_by", activeSort.value.column);
         params.append("sort_order", activeSort.value.order);
-    } else {
-        // Default sort (should match backend default or explicit)
-        // Backend defaults to start_at desc if not provided.
     }
 
     // 動的にフィルタ条件をparamsに追加
     activeFilters.value.forEach((filter) => {
-        if (filter.column && filter.value !== null && filter.value !== "") {
+        if (!filter.column) return;
+        
+        const columnDef = filterableColumns.value.find(c => c.value === filter.column);
+        if (columnDef?.type === 'date-range') {
+            if (filter.value) params.append(`${filter.column}_from`, filter.value);
+            if (filter.value_to) params.append(`${filter.column}_to`, filter.value_to);
+        } else if (filter.value !== null && filter.value !== "") {
              params.append(filter.column, filter.value);
         }
     });

@@ -184,10 +184,14 @@ class BookingController extends Controller
 
         // フィルタリング
         if ($request->filled('start_at_from')) {
-            $query->whereDate('start_at', '>=', $request->input('start_at_from'));
+            // 入力された日付(Shop Timezone)の00:00:00をUTCに変換して検索
+            $date = Carbon::parse($request->input('start_at_from'), $shop->timezone)->startOfDay();
+            $query->where('start_at', '>=', $date->setTimezone(config('app.timezone')));
         }
         if ($request->filled('start_at_to')) {
-            $query->whereDate('start_at', '<=', $request->input('start_at_to'));
+             // 入力された日付(Shop Timezone)の23:59:59をUTCに変換して検索
+            $date = Carbon::parse($request->input('start_at_to'), $shop->timezone)->endOfDay();
+            $query->where('start_at', '<=', $date->setTimezone(config('app.timezone')));
         }
         if ($request->filled('booker_number')) {
             // shop_bookersテーブルとjoinして予約者番号でフィルタ

@@ -54,6 +54,29 @@ class TestDataSeeder extends Seeder
         ]);
         $this->command->info("Owner User (ID:{$ownerUser->id}) and Shop (ID:{$shop->id}) Created.");
 
+        // 2-2. 営業時間設定 (月〜金 9:00-18:00)
+        // 0=Sun, 1=Mon, ..., 6=Sat
+        $days = [1, 2, 3, 4, 5];
+        foreach ($days as $day) {
+            $shop->businessHoursRegular()->create([
+                'day_of_week' => $day,
+                'is_open' => true,
+                'start_time' => '09:00:00',
+                'end_time' => '18:00:00',
+            ]);
+        }
+        // 土日は休み
+        $closedDays = [0, 6];
+        foreach ($closedDays as $day) {
+            $shop->businessHoursRegular()->create([
+                'day_of_week' => $day,
+                'is_open' => false,
+                'start_time' => null,
+                'end_time' => null,
+            ]);
+        }
+        $this->command->info("  > Regular Business Hours (Mon-Fri 09:00-18:00) Set.");
+
 
         // 3. 店舗に紐づくデータ (スタッフ, メニュー, オプション)
         if ($shop) {
