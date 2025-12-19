@@ -15,23 +15,20 @@
             <v-col cols="12">
                 <v-card>
                     <v-card-title
-                        :class="{
-                            'd-flex': true,
-                            'flex-column': smAndDown,
-                            'align-start': smAndDown,
-                            'justify-space-between': !smAndDown,
-                            'align-center': !smAndDown,
-                        }"
-                    >
+                                  :class="{
+                                    'd-flex': true,
+                                    'flex-column': smAndDown,
+                                    'align-start': smAndDown,
+                                    'justify-space-between': !smAndDown,
+                                    'align-center': !smAndDown,
+                                }">
                         <span>店舗一覧</span>
                         <v-btn
-                            :disabled="
-                                props.currentShopsCount >= props.maxShops
-                            "
-                            href="/owner/shops/create"
-                            color="primary"
-                            :class="{ 'mt-2': smAndDown }"
-                        >
+                               :disabled="props.currentShopsCount >= props.maxShops
+                                "
+                               href="/owner/shops/create"
+                               color="primary"
+                               :class="{ 'mt-2': smAndDown }">
                             店舗を新規作成する
                         </v-btn>
                     </v-card-title>
@@ -41,10 +38,9 @@
                             <!-- Filter Button -->
                             <v-col cols="auto">
                                 <v-btn
-                                    variant="tonal"
-                                    @click="filterDialog = true"
-                                    append-icon="mdi-filter-variant"
-                                >
+                                       variant="tonal"
+                                       @click="filterDialog = true"
+                                       append-icon="mdi-filter-variant">
                                     絞り込み
                                 </v-btn>
                             </v-col>
@@ -52,10 +48,9 @@
                             <!-- Sort Button -->
                             <v-col cols="auto">
                                 <v-btn
-                                    variant="tonal"
-                                    @click="sortDialog = true"
-                                    prepend-icon="mdi-sort"
-                                >
+                                       variant="tonal"
+                                       @click="sortDialog = true"
+                                       prepend-icon="mdi-sort">
                                     並び替え
                                 </v-btn>
                             </v-col>
@@ -64,20 +59,17 @@
 
                             <!-- Total Items Count -->
                             <v-col cols="auto">
-                                <span class="text-body-2"
-                                    >全 {{ totalItems }} 件中 {{ from }} -
-                                    {{ to }} 件表示</span
-                                >
+                                <span class="text-body-2">全 {{ totalItems }} 件中 {{ from }} -
+                                    {{ to }} 件表示</span>
                             </v-col>
 
                             <!-- Pagination -->
                             <v-col cols="auto">
                                 <v-pagination
-                                    v-model="page"
-                                    :length="totalPages"
-                                    :total-visible="5"
-                                    density="compact"
-                                ></v-pagination>
+                                              v-model="page"
+                                              :length="totalPages"
+                                              :total-visible="5"
+                                              density="compact"></v-pagination>
                             </v-col>
                         </v-row>
 
@@ -85,20 +77,18 @@
                         <v-row dense>
                             <v-col cols="12">
                                 <v-chip
-                                    v-for="filter in activeFiltersText"
-                                    :key="filter.id"
-                                    class="mr-2 mb-2"
-                                    closable
-                                    @click:close="removeFilter(filter.id)"
-                                >
+                                        v-for="filter in activeFiltersText"
+                                        :key="filter.id"
+                                        class="mr-2 mb-2"
+                                        closable
+                                        @click:close="removeFilter(filter.id)">
                                     {{ filter.text }}: {{ filter.value }}
                                 </v-chip>
                                 <v-chip
-                                    v-if="sortChipText"
-                                    class="mr-2 mb-2"
-                                    closable
-                                    @click:close="removeSort"
-                                >
+                                        v-if="sortChipText"
+                                        class="mr-2 mb-2"
+                                        closable
+                                        @click:close="removeSort">
                                     {{ sortChipText }}
                                 </v-chip>
                             </v-col>
@@ -106,44 +96,37 @@
 
                         <!-- Data Table -->
                         <v-data-table-server
-                            v-model:page="page"
-                            v-model:items-per-page="itemsPerPage"
-                            :headers="headers"
-                            :items="serverItems"
-                            :items-length="totalItems"
-                            :loading="loading"
-                            :mobile="smAndDown"
-                            @update:options="loadItems"
-                            hide-default-footer
-                            class="elevation-1 mt-4"
-                        >
+                                             v-model:page="page"
+                                             v-model:items-per-page="itemsPerPage"
+                                             :headers="headers"
+                                             :items="serverItems"
+                                             :items-length="totalItems"
+                                             :loading="loading"
+                                             :mobile="smAndDown"
+                                             @update:options="loadItems"
+                                             hide-default-footer
+                                             class="elevation-1 mt-4">
                             <template
-                                v-slot:item.accepts_online_bookings="{ item }"
-                            >
+                                      v-slot:item.accepts_online_bookings="{ item }">
                                 <v-chip
-                                    :color="
-                                        item.accepts_online_bookings
+                                        :color="item.accepts_online_bookings
                                             ? 'green'
                                             : 'red'
-                                    "
-                                    dark
-                                    small
-                                    >{{
-                                        item.accepts_online_bookings
-                                            ? "受付中"
-                                            : "停止中"
-                                    }}</v-chip
-                                >
+                                            "
+                                        dark
+                                        small>{{
+                                            item.accepts_online_bookings
+                                                ? "受付中"
+                                                : "停止中"
+                                        }}</v-chip>
                             </template>
                             <template v-slot:item.created_at="{ item }">
                                 {{ new Date(item.created_at).toLocaleString() }}
                             </template>
                             <template v-slot:item.actions="{ item }">
                                 <v-btn
-                                    color="primary"
-                                    size="small"
-                                    :href="`/owner/shops/${item.slug}`"
-                                >
+                                       color="primary"
+                                       :href="`/owner/shops/${item.slug}`">
                                     詳細
                                 </v-btn>
                             </template>
@@ -158,52 +141,26 @@
             <v-card>
                 <v-card-title>絞り込み</v-card-title>
                 <v-card-text>
-                    <v-row
-                        v-for="filter in filters"
-                        :key="filter.id"
-                        align="center"
-                    >
+                    <v-row v-for="filter in filters" :key="filter.id" align="center">
                         <v-col cols="4">
-                            <v-select
-                                v-model="filter.column"
-                                :items="filterableColumns"
-                                item-title="text"
-                                item-value="value"
-                                label="対象列"
-                                dense
-                                hide-details
-                            ></v-select>
+                            <v-select v-model="filter.column" :items="filterableColumns" item-title="text"
+                                      item-value="value"
+                                      label="対象列" dense hide-details></v-select>
                         </v-col>
                         <v-col cols="7">
-                            <v-text-field
-                                v-if="getColumnType(filter.column) === 'text'"
-                                v-model="filter.value"
-                                label="値"
-                                dense
-                                hide-details
-                            ></v-text-field>
-                            <v-select
-                                v-if="getColumnType(filter.column) === 'select'"
-                                v-model="filter.value"
-                                :items="getColumnItems(filter.column)"
-                                label="値"
-                                dense
-                                hide-details
-                            ></v-select>
+                            <v-text-field v-if="getColumnType(filter.column) === 'text'" v-model="filter.value"
+                                          label="値" dense
+                                          hide-details></v-text-field>
+                            <v-select v-if="getColumnType(filter.column) === 'select'" v-model="filter.value"
+                                      :items="getColumnItems(filter.column)" label="値" dense hide-details></v-select>
                         </v-col>
                         <v-col cols="1">
-                            <v-btn
-                                icon
-                                size="small"
-                                @click="removeFilter(filter.id)"
-                            >
+                            <v-btn icon size="small" @click="removeFilter(filter.id)">
                                 <v-icon>mdi-close</v-icon>
                             </v-btn>
                         </v-col>
                     </v-row>
-                    <v-btn text @click="addFilter" class="mt-4"
-                        >+ フィルタを追加</v-btn
-                    >
+                    <v-btn text @click="addFilter" class="mt-4">+ フィルタを追加</v-btn>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
@@ -220,29 +177,15 @@
                 <v-card-text>
                     <v-row align="center">
                         <v-col cols="6">
-                            <v-select
-                                v-model="sortBy.column"
-                                :items="sortableColumns"
-                                item-title="text"
-                                item-value="value"
-                                label="対象列"
-                                dense
-                                hide-details
-                            ></v-select>
+                            <v-select v-model="sortBy.column" :items="sortableColumns" item-title="text"
+                                      item-value="value"
+                                      label="対象列" dense hide-details></v-select>
                         </v-col>
                         <v-col cols="6">
-                            <v-select
-                                v-model="sortBy.order"
-                                :items="[
-                                    { text: '昇順', value: 'asc' },
-                                    { text: '降順', value: 'desc' },
-                                ]"
-                                item-title="text"
-                                item-value="value"
-                                label="順序"
-                                dense
-                                hide-details
-                            ></v-select>
+                            <v-select v-model="sortBy.order" :items="[
+                                { text: '昇順', value: 'asc' },
+                                { text: '降順', value: 'desc' },
+                            ]" item-title="text" item-value="value" label="順序" dense hide-details></v-select>
                         </v-col>
                     </v-row>
                 </v-card-text>

@@ -2,30 +2,40 @@
     <v-container>
         <v-row>
             <v-col cols="12">
-                <v-btn :href="shopShowUrl" prepend-icon="mdi-arrow-left">
+                <v-btn
+                       :href="shopShowUrl"
+                       prepend-icon="mdi-arrow-left"
+                       variant="text">
                     店舗詳細へ戻る
                 </v-btn>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="shop" />
             </v-col>
         </v-row>
 
         <v-row>
             <v-col cols="12">
-                <ShopHeader :shop="props.shop" />
-
                 <v-card>
-                    <v-card-title>営業時間一覧</v-card-title>
+                    <v-card-title
+                                  :class="{
+                                    'd-flex': true,
+                                    'flex-column': smAndDown,
+                                    'align-start': smAndDown,
+                                    'justify-space-between': !smAndDown,
+                                    'align-center': !smAndDown,
+                                }">営業時間一覧</v-card-title>
                     <v-card-text>
                         <!-- Section 1: Regular Business Hours -->
                         <div
-                            class="d-flex justify-space-between align-center mt-4"
-                        >
+                             class="d-flex justify-space-between align-center mt-4">
                             <h6 class="text-h6">通常営業時間・定休日</h6>
                             <v-btn
-                                color="primary"
-                                :class="{ 'mt-2': smAndDown }"
-                                :href="regularHoursEditUrl"
-                                >編集する</v-btn
-                            >
+                                   :class="{ 'mt-2': smAndDown }"
+                                   :href="regularHoursEditUrl"
+                                   color="primary">編集する</v-btn>
                         </div>
                         <v-table class="mt-2">
                             <thead>
@@ -38,17 +48,14 @@
                             <tbody>
                                 <tr
                                     v-for="hour in props.businessHours"
-                                    :key="hour.day_of_week"
-                                >
+                                    :key="hour.day_of_week">
                                     <td>{{ dayOfWeek[hour.day_of_week] }}</td>
                                     <td>
                                         <v-chip
-                                            :color="
-                                                hour.is_open ? 'blue' : 'grey'
-                                            "
-                                            dark
-                                            small
-                                        >
+                                                :color="hour.is_open ? 'blue' : 'grey'
+                                                    "
+                                                dark
+                                                small>
                                             {{
                                                 hour.is_open
                                                     ? "営業日"
@@ -69,15 +76,13 @@
 
                         <!-- Section 2: Special Open Days -->
                         <div
-                            class="d-flex justify-space-between align-center mt-8"
-                        >
+                             class="d-flex justify-space-between align-center mt-8">
                             <h6 class="text-h6">特別営業日</h6>
                             <v-btn
-                                :class="{ 'mt-2': smAndDown }"
-                                prepend-icon="mdi-plus"
-                                :href="specialOpenDaysCreateUrl"
-                                >新規登録</v-btn
-                            >
+                                   :class="{ 'mt-2': smAndDown }"
+                                   prepend-icon="mdi-plus"
+                                   :href="specialOpenDaysCreateUrl"
+                                   color="primary">新規登録する</v-btn>
                         </div>
                         <v-table class="mt-2">
                             <thead>
@@ -96,8 +101,7 @@
                                 </tr>
                                 <tr
                                     v-for="day in props.specialOpenDays"
-                                    :key="day.id"
-                                >
+                                    :key="day.id">
                                     <td>
                                         {{ day.date }} ({{
                                             getDayOfWeekString(day.date)
@@ -110,12 +114,8 @@
                                     <td>{{ day.name }}</td>
                                     <td>
                                         <v-btn
-                                            color="primary"
-                                            :href="
-                                                specialOpenDayEditUrl(day.id)
-                                            "
-                                            >編集する</v-btn
-                                        >
+                                               color="primary"
+                                               :href="specialOpenDayEditUrl(day.id)">編集する</v-btn>
                                     </td>
                                 </tr>
                             </tbody>
@@ -123,15 +123,13 @@
 
                         <!-- Section 3: Special Closed Days -->
                         <div
-                            class="d-flex justify-space-between align-center mt-8"
-                        >
+                             class="d-flex justify-space-between align-center mt-8">
                             <h6 class="text-h6">特別休業日</h6>
                             <v-btn
-                                :class="{ 'mt-2': smAndDown }"
-                                prepend-icon="mdi-plus"
-                                :href="specialClosedDaysCreateUrl"
-                                >新規登録</v-btn
-                            >
+                                   :class="{ 'mt-2': smAndDown }"
+                                   prepend-icon="mdi-plus"
+                                   :href="specialClosedDaysCreateUrl"
+                                   color="primary">新規登録する</v-btn>
                         </div>
                         <v-table class="mt-2">
                             <thead>
@@ -149,20 +147,15 @@
                                 </tr>
                                 <tr
                                     v-for="day in props.specialClosedDays"
-                                    :key="day.id"
-                                >
+                                    :key="day.id">
                                     <td>
                                         {{ day.start_at }} - {{ day.end_at }}
                                     </td>
                                     <td>{{ day.name }}</td>
                                     <td>
                                         <v-btn
-                                            color="primary"
-                                            :href="
-                                                specialClosedDayEditUrl(day.id)
-                                            "
-                                            >編集する</v-btn
-                                        >
+                                               color="primary"
+                                               :href="specialClosedDayEditUrl(day.id)">編集する</v-btn>
                                     </td>
                                 </tr>
                             </tbody>

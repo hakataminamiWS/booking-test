@@ -82,4 +82,74 @@
 
 ##### API エンドポイント
 
-    スタッフ登録申し込みフォームに関する API エンドポイントは提供しない。
+### スタッフ管理機能
+
+#### 1. スタッフ一覧画面
+
+##### 機能概要
+自店舗に所属する他のスタッフを確認できる画面です。
+
+##### 画面仕様詳細 (`/shops/{shop}/staff/staffs`)
+オーナー機能のスタッフ一覧 (`/owner/shops/{shop}/staffs`) と同様ですが、以下の点が異なります。
+-   **編集・削除機能**: 自身のプロフィール以外は編集不可。他スタッフのプロフィールは閲覧のみ（または非表示）。
+-   **新規追加**: 不可（オーナー権限）。
+
+##### バックエンド仕様
+-   **Route**: `GET /shops/{shop}/staff/staffs`
+-   **Controller**: `Staff\ShopStaffController@index`
+-   **API**: `GET /api/shops/{shop}/staff/staffs`
+
+#### 2. スタッフプロフィール編集画面
+
+##### 機能概要
+ログイン中のスタッフ自身が、自身のプロフィール情報（写真、ニックネーム、自己紹介など）を編集する画面です。
+
+##### 画面仕様詳細 (`/shops/{shop}/staff/profile/edit`)
+-   **表示項目**:
+    -   アイコン画像 (登録・変更・削除)
+    -   表示名 (ニックネーム) *
+    -   役割 (Role) - *閲覧のみ*
+    -   出勤状況 - *閲覧・変更可*
+    -   自己紹介文
+-   **操作**: 更新ボタンのみ。
+
+##### バックエンド仕様
+-   **Route**: `GET /shops/{shop}/staff/profile/edit`
+-   **Controller**: `Staff\ProfileController@edit`
+-   **Update**: `PUT /shops/{shop}/staff/profile`
+-   **Request**: `UpdateStaffProfileRequest`
+
+---
+
+### シフト管理機能
+
+#### 1. シフト一覧画面
+
+##### 機能概要
+自店舗のスタッフのシフト状況（カレンダー）を確認できる画面です。
+
+##### 画面仕様詳細 (`/shops/{shop}/staff/shifts`)
+オーナー機能のシフト管理画面 (`/owner/shops/{shop}/shifts`) と同様です。
+-   他スタッフのシフトも確認可能（予約割り当てのため）。
+-   自身のシフトのみ編集可能とするか、閲覧専用とするかは要件次第（今回は閲覧専用とし、編集は自身の個別シフト編集画面で行う）。
+
+##### バックエンド仕様
+-   **Route**: `GET /shops/{shop}/staff/shifts`
+-   **Controller**: `Staff\ShiftController@index`
+
+#### 2. シフト編集画面
+
+##### 機能概要
+自身のシフト（出勤可能な曜日・時間帯）を登録・編集する画面です。
+
+##### 画面仕様詳細 (`/shops/{shop}/staff/shifts/edit`)
+-   **UI**: オーナー側でスタッフのシフトを編集する画面 (`/owner/shops/{shop}/staffs/{staff}/shifts`) と同様。
+-   **機能**:
+    -   曜日ごとの基本的な出勤時間の登録
+    -   例外的な出勤/欠勤日の登録（必要であれば）
+
+##### バックエンド仕様
+-   **Route**: `GET /shops/{shop}/staff/shifts/edit`
+-   **Controller**: `Staff\ShiftController@edit`
+-   **Update**: `PUT /shops/{shop}/staff/shifts`
+-   **Request**: `UpdateStaffShiftRequest`

@@ -2,7 +2,11 @@
     <v-container>
         <v-row>
             <v-col cols="12">
-                <v-btn :href="staffsIndexUrl" prepend-icon="mdi-arrow-left">
+                <v-btn
+                    :href="staffsIndexUrl"
+                    prepend-icon="mdi-arrow-left"
+                    variant="text"
+                >
                     スタッフ一覧に戻る
                 </v-btn>
             </v-col>

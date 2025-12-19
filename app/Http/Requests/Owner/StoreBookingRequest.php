@@ -35,8 +35,8 @@ class StoreBookingRequest extends FormRequest
             'assigned_staff_id' => ['nullable', 'exists:shop_staffs,id'],
             'shop_booker_id' => ['nullable', 'exists:shop_bookers,id'],
             'booker_name' => ['required', 'string', 'max:255'],
-            'contact_email' => ['nullable', 'email', 'max:255'],
-            'contact_phone' => ['nullable', 'string', 'max:255'],
+            'contact_email' => ['required', 'email', 'max:255'],
+            'contact_phone' => ['required', 'string', 'max:255'],
             'note_from_booker' => ['nullable', 'string'],
             'shop_memo' => ['nullable', 'string'],
         ];
