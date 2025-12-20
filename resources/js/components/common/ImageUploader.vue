@@ -7,12 +7,11 @@
                     <v-img v-if="previewUrl" :src="previewUrl" cover></v-img>
                     <v-icon v-else size="96">mdi-account-circle</v-icon>
                     <v-overlay
-                        v-model="isHovering"
-                        contained
-                        scrim="#000000"
-                        class="align-center justify-center"
-                        @click="fileInput?.click()"
-                    >
+                               v-model="isHovering"
+                               contained
+                               scrim="#000000"
+                               class="align-center justify-center"
+                               @click="fileInput?.click()">
                         <v-icon size="48">mdi-pencil</v-icon>
                     </v-overlay>
                 </v-avatar>
@@ -23,34 +22,38 @@
                     推奨サイズ: {{ recommendedResolution }}
                 </div>
 
+                <!-- 削除フラグ送信用の隠しフィールド -->
+                <input
+                       v-if="inputName"
+                       type="hidden"
+                       :name="`is_delete_${inputName}`"
+                       :value="isDelete ? '1' : '0'" />
+
                 <v-file-input
-                    ref="fileInput"
-                    :rules="fileRules"
-                    accept="image/jpeg,image/png,image/webp"
-                    label="画像を選択"
-                    prepend-icon="mdi-camera"
-                    hide-details
-                    class="d-none"
-                    @change="onFileChange($event)"
-                ></v-file-input>
+                              ref="fileInput"
+                              :name="inputName"
+                              :rules="fileRules"
+                              accept="image/jpeg,image/png,image/webp"
+                              label="画像を選択"
+                              prepend-icon="mdi-camera"
+                              hide-details
+                              class="d-none"
+                              @change="onFileChange($event)"></v-file-input>
 
                 <v-btn
-                    v-if="previewUrl"
-                    color="error"
-                    variant="outlined"
-                    class="mt-2"
-                    @click="deleteImage"
-                >
+                       v-if="previewUrl"
+                       color="error"
+                       variant="outlined"
+                       class="mt-2"
+                       @click="deleteImage">
                     画像を削除
                 </v-btn>
             </div>
             <v-alert
-                v-if="errorMessage"
-                type="error"
-                class="mt-4"
-                density="compact"
-                >{{ errorMessage }}</v-alert
-            >
+                     v-if="errorMessage"
+                     type="error"
+                     class="mt-4"
+                     density="compact">{{ errorMessage }}</v-alert>
         </v-card-text>
     </v-card>
 </template>
@@ -63,6 +66,7 @@ const props = defineProps<{
     initialUrl: string | null;
     maxSize: number; // MB単位
     recommendedResolution: string;
+    inputName?: string;
 }>();
 
 const emit = defineEmits<{
@@ -73,6 +77,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const previewUrl = ref<string | null>(props.initialUrl);
 const errorMessage = ref<string | null>(null);
 const isHovering = ref(false);
+const isDelete = ref(false);
 
 // ファイルバリデーションルール
 const fileRules = [
@@ -95,6 +100,9 @@ const onFileChange = (event: Event) => {
     errorMessage.value = null;
     const inputElement = event.target as HTMLInputElement;
     const selectedFile = inputElement.files?.[0];
+
+    // ファイル選択されたら削除フラグを下ろす
+    isDelete.value = false;
 
     if (!selectedFile) {
         return;
@@ -123,6 +131,8 @@ const deleteImage = () => {
     if (fileInput.value) {
         fileInput.value.value = '';
     }
+    // 削除フラグを立てる
+    isDelete.value = true;
     // 親コンポーネントにnullを渡す
     emit('update:file', null);
 };
@@ -130,5 +140,9 @@ const deleteImage = () => {
 // initialUrlの変更を監視してpreviewUrlを更新
 watch(() => props.initialUrl, (newUrl) => {
     previewUrl.value = newUrl;
+    // 初期URLがセットされたら削除フラグはリセット
+    if (newUrl) {
+        isDelete.value = false;
+    }
 });
 </script>

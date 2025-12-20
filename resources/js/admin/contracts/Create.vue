@@ -16,10 +16,9 @@
                     </v-card-title>
                     <v-card-text>
                         <v-alert
-                            v-if="props.errors.length > 0"
-                            type="error"
-                            class="mb-4"
-                        >
+                                 v-if="props.errors.length > 0"
+                                 type="error"
+                                 class="mb-4">
                             <ul>
                                 <li v-for="(error, i) in props.errors" :key="i">
                                     {{ error }}
@@ -32,93 +31,80 @@
                                 <v-card-title>申し込み情報</v-card-title>
                             </v-card-item>
                             <v-list-item
-                                :title="`申込 ID: ${application.id}`"
-                            ></v-list-item>
+                                         :title="`申込 ID: ${application.id}`"></v-list-item>
                             <v-list-item
-                                :title="`お客様名称: ${application.customer_name}`"
-                            ></v-list-item>
+                                         :title="`お客様名称: ${application.customer_name}`"></v-list-item>
                             <v-list-item
-                                :title="`メールアドレス: ${application.email}`"
-                            ></v-list-item>
+                                         :title="`メールアドレス: ${application.email}`"></v-list-item>
                             <v-list-item
-                                :title="`申し込みステータス: ${application.status}`"
-                            ></v-list-item>
+                                         :title="`申し込みステータス: ${application.status}`"></v-list-item>
                         </v-card>
 
                         <!-- Contract Form -->
                         <form method="POST" action="/admin/contracts">
                             <input
-                                type="hidden"
-                                name="application_id"
-                                :value="application.id"
-                            />
+                                   type="hidden"
+                                   name="application_id"
+                                   :value="application.id" />
                             <input
-                                type="hidden"
-                                name="user_id"
-                                :value="application.user.id"
-                            />
+                                   type="hidden"
+                                   name="user_id"
+                                   :value="application.user.id" />
                             <input
-                                type="hidden"
-                                name="_token"
-                                :value="csrfToken"
-                            />
+                                   type="hidden"
+                                   name="_token"
+                                   :value="csrfToken" />
 
                             <v-text-field
-                                v-model="form.name"
-                                name="name"
-                                label="契約名"
-                                required
-                                :rules="[rules.required]"
-                            ></v-text-field>
+                                          v-model="form.name"
+                                          name="name"
+                                          label="契約名"
+                                          required
+                                          :rules="[rules.required]"></v-text-field>
 
                             <v-text-field
-                                v-model="form.max_shops"
-                                @update:model-value="
-                                    form.max_shops = formatNumericInput($event)
-                                "
-                                name="max_shops"
-                                label="店舗上限数"
-                                :rules="[rules.required, rules.numeric]"
-                                inputmode="numeric"
-                                required
-                            ></v-text-field>
+                                          v-model="form.max_shops"
+                                          @update:model-value="
+                                            form.max_shops = formatNumericInput($event) as any
+                                            "
+                                          name="max_shops"
+                                          label="店舗上限数"
+                                          :rules="[rules.required, rules.numeric]"
+                                          inputmode="numeric"
+                                          required></v-text-field>
 
                             <v-select
-                                v-model="form.status"
-                                name="status"
-                                :items="['active', 'expired']"
-                                label="契約ステータス"
-                                required
-                                :rules="[rules.required]"
-                            ></v-select>
+                                      v-model="form.status"
+                                      name="status"
+                                      :items="['active', 'expired']"
+                                      label="契約ステータス"
+                                      required
+                                      :rules="[rules.required]"></v-select>
 
                             <v-text-field
-                                v-model="form.start_date"
-                                name="start_date"
-                                label="契約開始日"
-                                type="date"
-                                required
-                                :rules="[rules.required]"
-                            ></v-text-field>
+                                          v-model="form.start_date"
+                                          name="start_date"
+                                          label="契約開始日"
+                                          type="date"
+                                          required
+                                          :rules="[rules.required]"></v-text-field>
 
                             <v-text-field
-                                v-model="form.end_date"
-                                name="end_date"
-                                label="契約終了日"
-                                type="date"
-                                required
-                                :rules="[rules.required]"
-                            ></v-text-field>
+                                          v-model="form.end_date"
+                                          name="end_date"
+                                          label="契約終了日"
+                                          type="date"
+                                          required
+                                          :rules="[rules.required]"></v-text-field>
 
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                    type="submit"
-                                    color="primary"
-                                    :disabled="application.status !== 'pending'"
-                                    @click="validateAndSubmit"
-                                >
-                                    契約を作成する
+                                       type="submit"
+                                       color="primary"
+                                       :disabled="application.status !== 'pending' ||
+                                        !isFormValid
+                                        "> 契約を作成する
                                 </v-btn>
                             </v-card-actions>
                         </form>
@@ -130,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { formatNumericInput } from "@/composables/useNumericInput";
 
 const props = defineProps<{
@@ -165,26 +151,21 @@ const rules = {
         /^(0|[1-9][0-9]*)$/.test(value) || "半角数字で入力してください。",
 };
 
-const validateAndSubmit = (event: Event) => {
-    const fieldsToValidate = {
-        name: form.value.name,
-        max_shops: form.value.max_shops,
-        status: form.value.status,
-        start_date: form.value.start_date,
-        end_date: form.value.end_date,
-    };
+const isFormValid = computed(() => {
+    const nameValid = rules.required(form.value.name) === true;
+    const maxShopsValid =
+        rules.required(form.value.max_shops) === true &&
+        rules.numeric(String(form.value.max_shops)) === true;
+    const statusValid = rules.required(form.value.status) === true;
+    const startDateValid = rules.required(form.value.start_date) === true;
+    const endDateValid = rules.required(form.value.end_date) === true;
 
-    for (const [key, value] of Object.entries(fieldsToValidate)) {
-        if (rules.required(value) !== true) {
-            event.preventDefault();
-            return;
-        }
-        if (key === "max_shops") {
-            if (rules.numeric(String(value)) !== true) {
-                event.preventDefault();
-                return;
-            }
-        }
-    }
-};
+    return (
+        nameValid &&
+        maxShopsValid &&
+        statusValid &&
+        startDateValid &&
+        endDateValid
+    );
+});
 </script>

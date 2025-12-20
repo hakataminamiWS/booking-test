@@ -230,8 +230,8 @@ import { ref, computed } from "vue";
 import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
-import FilterDateRangePicker from "@/owner/shops/components/FilterDateRangePicker.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
+import FilterDateRangePicker from "@/components/common/FilterDateRangePicker.vue";
 
 interface Shop {
     id: number;

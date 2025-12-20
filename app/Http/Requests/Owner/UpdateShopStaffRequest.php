@@ -25,6 +25,8 @@ class UpdateShopStaffRequest extends FormRequest
             'nickname' => ['required', 'string', 'max:255'],
             'small_image' => ['nullable', 'image', 'max:1024'], // 1MB
             'large_image' => ['nullable', 'image', 'max:3072'], // 3MB
+            'is_delete_small_image' => ['nullable', 'boolean'],
+            'is_delete_large_image' => ['nullable', 'boolean'],
         ];
     }
 

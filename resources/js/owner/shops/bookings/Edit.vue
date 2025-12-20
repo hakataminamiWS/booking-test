@@ -4,16 +4,20 @@
         <v-row>
             <v-col cols="12">
                 <v-btn
-                    :href="`/owner/shops/${props.shop.slug}/bookings`"
-                    prepend-icon="mdi-arrow-left"
-                >
+                       :href="`/owner/shops/${props.shop.slug}/bookings`"
+                       prepend-icon="mdi-arrow-left"
+                       variant="text">
                     予約一覧に戻る
                 </v-btn>
             </v-col>
         </v-row>
 
         <!-- Shop Header -->
-        <ShopHeader :shop="props.shop" />
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="shop" />
+            </v-col>
+        </v-row>
 
         <!-- Main Form Card -->
         <v-row>
@@ -22,38 +26,32 @@
                     <v-card-title>予約編集</v-card-title>
                     <v-card-text>
                         <form
-                            :action="`/owner/shops/${props.shop.slug}/bookings/${props.booking.id}`"
-                            method="POST"
-                        >
+                              :action="`/owner/shops/${props.shop.slug}/bookings/${props.booking.id}`"
+                              method="POST">
                             <input
-                                type="hidden"
-                                name="_token"
-                                :value="props.csrfToken"
-                            />
+                                   type="hidden"
+                                   name="_token"
+                                   :value="props.csrfToken" />
                             <input type="hidden" name="_method" value="PUT" />
                             <input
-                                type="hidden"
-                                name="start_at"
-                                :value="form.start_at"
-                            />
+                                   type="hidden"
+                                   name="start_at"
+                                   :value="form.start_at" />
                             <!-- shop_booker_id は編集不可なので hidden で送る必要はないが、もし必要なら含める -->
                             <input
-                                type="hidden"
-                                name="shop_booker_id"
-                                :value="form.shop_booker_id ?? ''"
-                            />
+                                   type="hidden"
+                                   name="shop_booker_id"
+                                   :value="form.shop_booker_id ?? ''" />
 
                             <!-- Validation Errors -->
                             <v-alert
-                                v-if="props.errors.length > 0"
-                                type="error"
-                                class="mb-4"
-                            >
+                                     v-if="props.errors.length > 0"
+                                     type="error"
+                                     class="mb-4">
                                 <ul>
                                     <li
                                         v-for="(error, i) in props.errors"
-                                        :key="i"
-                                    >
+                                        :key="i">
                                         {{ error }}
                                     </li>
                                 </ul>
@@ -64,51 +62,45 @@
                                 予約者 (編集不可)
                             </p>
                             <v-text-field
-                                v-if="!!form.booker_number"
-                                v-model="form.booker_number"
-                                label="会員番号"
-                                readonly
-                                variant="filled"
-                            ></v-text-field>
+                                          v-if="!!form.booker_number"
+                                          v-model="form.booker_number"
+                                          label="会員番号"
+                                          readonly
+                                          variant="filled"></v-text-field>
                             <v-text-field
-                                v-model="form.booker_name"
-                                name="booker_name"
-                                label="予約者名"
-                                readonly
-                                variant="filled"
-                            ></v-text-field>
+                                          v-model="form.booker_name"
+                                          name="booker_name"
+                                          label="予約者名"
+                                          readonly
+                                          variant="filled"></v-text-field>
                             <v-text-field
-                                v-model="form.booker_name_kana"
-                                name="booker_name_kana"
-                                label="予約者のよみがな"
-                                readonly
-                                variant="filled"
-                            ></v-text-field>
+                                          v-model="form.booker_name_kana"
+                                          name="booker_name_kana"
+                                          label="予約者のよみがな"
+                                          readonly
+                                          variant="filled"></v-text-field>
 
                             <!-- Contact Info (Editable) -->
                             <p class="text-subtitle-1 font-weight-bold mt-4">
                                 連絡先 (編集可能)
                             </p>
                             <v-text-field
-                                v-model="form.contact_email"
-                                name="contact_email"
-                                label="連絡先メールアドレス *"
-                                type="email"
-                                required
-                            ></v-text-field>
+                                          v-model="form.contact_email"
+                                          name="contact_email"
+                                          label="連絡先メールアドレス *"
+                                          type="email"
+                                          required></v-text-field>
                             <v-text-field
-                                v-model="form.contact_phone"
-                                name="contact_phone"
-                                label="連絡先電話番号 *"
-                                type="tel"
-                                required
-                            ></v-text-field>
+                                          v-model="form.contact_phone"
+                                          name="contact_phone"
+                                          label="連絡先電話番号 *"
+                                          type="tel"
+                                          required></v-text-field>
                             <v-textarea
-                                v-model="form.shop_memo"
-                                name="shop_memo"
-                                label="店舗側のメモ（予約者には表示されません）"
-                                rows="3"
-                            ></v-textarea>
+                                        v-model="form.shop_memo"
+                                        name="shop_memo"
+                                        label="店舗側のメモ（予約者には表示されません）"
+                                        rows="3"></v-textarea>
                             <v-divider class="my-6"></v-divider>
 
                             <!-- Menu & Options -->
@@ -116,35 +108,32 @@
                                 メニュー・オプション
                             </p>
                             <v-select
-                                v-model="form.menu_id"
-                                name="menu_id"
-                                :items="props.menus"
-                                item-title="name"
-                                item-value="id"
-                                label="メニュー *"
-                                required
-                                class="mb-2"
-                            ></v-select>
+                                      v-model="form.menu_id"
+                                      name="menu_id"
+                                      :items="props.menus"
+                                      item-title="name"
+                                      item-value="id"
+                                      label="メニュー *"
+                                      required
+                                      class="mb-2"></v-select>
                             <v-select
-                                v-model="form.option_ids"
-                                :items="availableOptions"
-                                item-title="name"
-                                item-value="id"
-                                label="オプション"
-                                multiple
-                                chips
-                                closable-chips
-                                :disabled="!form.menu_id"
-                                class="mb-2"
-                            ></v-select>
+                                      v-model="form.option_ids"
+                                      :items="availableOptions"
+                                      item-title="name"
+                                      item-value="id"
+                                      label="オプション"
+                                      multiple
+                                      chips
+                                      closable-chips
+                                      :disabled="!form.menu_id"
+                                      class="mb-2"></v-select>
                             <!-- 配列送信用の隠しフィールド -->
                             <input
-                                v-for="optId in form.option_ids"
-                                :key="optId"
-                                type="hidden"
-                                name="option_ids[]"
-                                :value="optId"
-                            />
+                                   v-for="optId in form.option_ids"
+                                   :key="optId"
+                                   type="hidden"
+                                   name="option_ids[]"
+                                   :value="optId" />
                             <p class="text-subtitle-1">
                                 合計: {{ totalDuration }}分 /
                                 {{ totalPrice.toLocaleString() }}円
@@ -156,31 +145,28 @@
                                 担当スタッフ
                             </p>
                             <v-select
-                                v-model="form.assigned_staff_id"
-                                name="assigned_staff_id"
-                                :items="availableStaffs"
-                                item-title="profile.nickname"
-                                item-value="id"
-                                label="担当スタッフ *"
-                                :disabled="!form.menu_id"
-                                @update:focused="!$event && checkStaffAssignment()"
-                            ></v-select>
+                                      v-model="form.assigned_staff_id"
+                                      name="assigned_staff_id"
+                                      :items="availableStaffs"
+                                      item-title="profile.nickname"
+                                      item-value="id"
+                                      label="担当スタッフ *"
+                                      :disabled="!form.menu_id"
+                                      @update:focused="!$event && checkStaffAssignment()"></v-select>
                             <v-alert
-                                v-if="staffWarning"
-                                type="warning"
-                                density="compact"
-                                variant="tonal"
-                                class="mb-2 mt-2"
-                            >
+                                     v-if="staffWarning"
+                                     type="warning"
+                                     density="compact"
+                                     variant="tonal"
+                                     class="mb-2 mt-2">
                                 {{ staffWarning }}
                             </v-alert>
                             <v-checkbox
-                                v-model="showAllStaffs"
-                                label="メニューに割り当たっていない担当スタッフも表示する"
-                                :disabled="!form.menu_id"
-                                density="compact"
-                                class="mt-n4"
-                            ></v-checkbox>
+                                        v-model="showAllStaffs"
+                                        label="メニューに割り当たっていない担当スタッフも表示する"
+                                        :disabled="!form.menu_id"
+                                        density="compact"
+                                        class="mt-n4"></v-checkbox>
                             <v-divider class="my-6"></v-divider>
 
                             <!-- Date & Time Selection -->
@@ -188,68 +174,58 @@
                                 予約日時
                             </p>
                             <v-text-field
-                                v-model="formattedSelectedDate"
-                                label="予約日付 *"
-                                @click:append-inner="dateDialog = true"
-                                append-inner-icon="mdi-calendar"
-                                readonly
-                            ></v-text-field>
+                                          v-model="formattedSelectedDate"
+                                          label="予約日付 *"
+                                          @click:append-inner="dateDialog = true"
+                                          append-inner-icon="mdi-calendar"
+                                          readonly></v-text-field>
                             <v-checkbox
-                                v-model="allowOffShift"
-                                label="担当スタッフのシフト外も選択可能にする"
-                                density="compact"
-                                class="mt-n4"
-                            ></v-checkbox>
+                                        v-model="allowOffShift"
+                                        label="担当スタッフのシフト外も選択可能にする"
+                                        density="compact"
+                                        class="mt-n4"></v-checkbox>
 
                             <p class="text-caption mt-4">予約時間 *</p>
                             <v-sheet
-                                class="pa-2"
-                                border
-                                rounded
-                                min-height="68"
-                            >
+                                     class="pa-2"
+                                     border
+                                     rounded
+                                     min-height="68">
                                 <!-- ローディング表示 -->
                                 <div
-                                    v-if="isLoading"
-                                    class="d-flex justify-center align-center fill-height"
-                                >
+                                     v-if="isLoading"
+                                     class="d-flex justify-center align-center fill-height">
                                     <v-progress-circular
-                                        indeterminate
-                                        color="primary"
-                                    ></v-progress-circular>
+                                                         indeterminate
+                                                         color="primary"></v-progress-circular>
                                 </div>
 
                                 <!-- タイムチップ表示 (時間ごとにグループ化) -->
                                 <div
-                                    v-else-if="
+                                     v-else-if="
                                         groupedTimeSlots.length > 0
-                                    "
-                                >
+                                    ">
                                     <div
-                                        v-for="group in groupedTimeSlots"
-                                        :key="group.hour"
-                                        class="d-flex align-center py-1"
-                                        style="border-bottom: 1px solid #eee"
-                                    >
+                                         v-for="group in groupedTimeSlots"
+                                         :key="group.hour"
+                                         class="d-flex align-center py-1"
+                                         style="border-bottom: 1px solid #eee">
                                         <div
-                                            class="text-body-2 font-weight-bold mr-4"
-                                            style="width: 40px"
-                                        >
+                                             class="text-body-2 font-weight-bold mr-4"
+                                             style="width: 40px">
                                             {{ group.hour }}時
                                         </div>
                                         <v-chip-group
-                                            v-model="selectedTime"
-                                            column
-                                            mandatory
-                                            active-class="primary"
-                                        >
+                                                      v-model="selectedTime"
+                                                      column
+                                                      mandatory
+                                                      active-class="primary">
                                             <v-chip
-                                                v-for="time in group.slots"
-                                                :key="time"
-                                                :value="time"
-                                                variant="outlined"
-                                                size="small"
-                                            >
+                                                    v-for="time in group.slots"
+                                                    :key="time"
+                                                    :value="time"
+                                                    variant="outlined"
+                                                    size="small">
                                                 {{ time }}
                                             </v-chip>
                                         </v-chip-group>
@@ -258,9 +234,8 @@
 
                                 <!-- 予約枠がない場合の表示 -->
                                 <div
-                                    v-else
-                                    class="d-flex justify-center align-center fill-height text-grey-darken-1"
-                                >
+                                     v-else
+                                     class="d-flex justify-center align-center fill-height text-grey-darken-1">
                                     <p v-if="!form.menu_id">
                                         先にメニューを選択してください
                                     </p>
@@ -275,31 +250,28 @@
                             </v-sheet>
 
                             <v-text-field
-                                v-model="directTimeInput"
-                                label="直接入力（シフト外の入力も可能です）"
-                                placeholder="HH:MM"
-                                append-inner-icon="mdi-clock-outline"
-                                class="mt-4"
-                                style="max-width: 200px"
-                                @click:append-inner="timePickerDialog = true"
-                                @blur="onDirectTimeBlur"
-                            ></v-text-field>
+                                          v-model="directTimeInput"
+                                          label="直接入力（シフト外の入力も可能です）"
+                                          placeholder="HH:MM"
+                                          append-inner-icon="mdi-clock-outline"
+                                          class="mt-4"
+                                          style="max-width: 200px"
+                                          @click:append-inner="timePickerDialog = true"
+                                          @blur="onDirectTimeBlur"></v-text-field>
                             <v-alert
-                                v-if="shiftWarning"
-                                type="warning"
-                                density="compact"
-                                variant="tonal"
-                                class="mb-2"
-                            >
+                                     v-if="shiftWarning"
+                                     type="warning"
+                                     density="compact"
+                                     variant="tonal"
+                                     class="mb-2">
                                 {{ shiftWarning }}
                             </v-alert>
                             <v-alert
-                                v-if="conflictWarning"
-                                type="error"
-                                density="compact"
-                                variant="tonal"
-                                class="mb-2"
-                            >
+                                     v-if="conflictWarning"
+                                     type="error"
+                                     density="compact"
+                                     variant="tonal"
+                                     class="mb-2">
                                 {{ conflictWarning }}
                             </v-alert>
                             <v-divider class="my-6"></v-divider>
@@ -309,27 +281,24 @@
                                 予約時メモ
                             </p>
                             <v-textarea
-                                v-model="form.note_from_booker"
-                                name="note_from_booker"
-                                label="予約に関するメモ"
-                                rows="3"
-                            ></v-textarea>
+                                        v-model="form.note_from_booker"
+                                        name="note_from_booker"
+                                        label="予約に関するメモ"
+                                        rows="3"></v-textarea>
 
                             <!-- Actions -->
                             <v-card-actions>
                                 <v-btn
-                                    color="error"
-                                    @click="deleteDialog = true"
-                                >
+                                       color="error"
+                                       @click="deleteDialog = true">
                                     予約を削除する
                                 </v-btn>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                    type="submit"
-                                    color="primary"
-                                    :disabled="!isFormValid"
-                                    @click="validateAndSubmit"
-                                >
+                                       type="submit"
+                                       color="primary"
+                                       :disabled="!isFormValid"
+                                       @click="validateAndSubmit">
                                     更新する
                                 </v-btn>
                             </v-card-actions>
@@ -342,27 +311,25 @@
         <!-- Date Selection Dialog -->
         <v-dialog v-model="dateDialog" max-width="320px">
             <v-date-picker
-                v-model="selectedDateValue"
-                @update:model-value="updateDateFromPicker"
-                @update:year="onPickerYearChange"
-                @update:month="onPickerMonthChange"
-                :allowed-dates="allowedDates"
-                show-adjacent-months
-            >
+                           v-model="selectedDateValue"
+                           @update:model-value="updateDateFromPicker"
+                           @update:year="onPickerYearChange"
+                           @update:month="onPickerMonthChange"
+                           :allowed-dates="allowedDates"
+                           show-adjacent-months>
                 <template v-slot:day="{ item, props: dayProps }">
                     <v-btn
-                        v-bind="dayProps"
-                        :style="getDayStyle(item)"
-                        class="d-flex justify-center align-center"
-                        style="position: relative;"
-                        variant="text" 
-                        size="small"
-                        rounded="circle"
-                    >
-                         {{ getDayNumber(item) }}
-                         <div
-                            v-if="isWorkingDay(item) && allowOffShift"
-                            style="
+                           v-bind="dayProps"
+                           :style="getDayStyle(item)"
+                           class="d-flex justify-center align-center"
+                           style="position: relative;"
+                           variant="text"
+                           size="small"
+                           rounded="circle">
+                        {{ getDayNumber(item) }}
+                        <div
+                             v-if="isWorkingDay(item) && allowOffShift"
+                             style="
                                 position: absolute;
                                 bottom: 2px;
                                 left: 50%;
@@ -371,8 +338,7 @@
                                 height: 4px;
                                 border-radius: 50%;
                                 background-color: #1976D2;
-                            "
-                         ></div>
+                            "></div>
                     </v-btn>
                 </template>
             </v-date-picker>
@@ -381,17 +347,10 @@
         <!-- Time Picker Dialog -->
         <v-dialog v-model="timePickerDialog" width="auto">
             <v-card>
-                <v-time-picker
-                    v-model="directTimeInput"
-                    format="24hr"
-                ></v-time-picker>
+                <v-time-picker v-model="directTimeInput" format="24hr"></v-time-picker>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn
-                        color="primary"
-                        variant="text"
-                        @click="timePickerDialog = false"
-                    >
+                    <v-btn color="primary" variant="text" @click="timePickerDialog = false">
                         完了
                     </v-btn>
                 </v-card-actions>
@@ -409,23 +368,12 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn
-                        color="blue-darken-1"
-                        variant="text"
-                        @click="deleteDialog = false"
-                    >
+                    <v-btn color="blue-darken-1" variant="text" @click="deleteDialog = false">
                         キャンセル
                     </v-btn>
-                    <form
-                        :action="`/owner/shops/${props.shop.slug}/bookings/${props.booking.id}`"
-                        method="POST"
-                        style="display: inline"
-                    >
-                        <input
-                            type="hidden"
-                            name="_token"
-                            :value="props.csrfToken"
-                        />
+                    <form :action="`/owner/shops/${props.shop.slug}/bookings/${props.booking.id}`" method="POST"
+                          style="display: inline">
+                        <input type="hidden" name="_token" :value="props.csrfToken" />
                         <input type="hidden" name="_method" value="DELETE" />
                         <v-btn color="error" variant="text" type="submit">
                             削除する
@@ -441,7 +389,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 import { formatInTimeZone } from "date-fns-tz";
 
 // --- Type Definitions ---
@@ -518,7 +466,7 @@ interface Booking {
     note_from_booker: string;
     shop_memo: string;
     timezone?: string;
-    
+
     // Relations
     booking_options?: BookingOption[];
     booker?: ShopBooker;
@@ -577,11 +525,11 @@ console.log('form.value:', form.value);
 const shopTimezone = props.booking.timezone || 'Asia/Tokyo';
 
 // Extract date and time components in shop timezone using formatInTimeZone
-const initialDateStr = form.value.start_at 
+const initialDateStr = form.value.start_at
     ? formatInTimeZone(form.value.start_at, shopTimezone, 'yyyy-MM-dd')
     : formatInTimeZone(new Date(), shopTimezone, 'yyyy-MM-dd');
-    
-const initialTime = form.value.start_at 
+
+const initialTime = form.value.start_at
     ? formatInTimeZone(form.value.start_at, shopTimezone, 'HH:mm')
     : null;
 
@@ -591,7 +539,7 @@ const initialDate = new Date(initialDateStr + 'T00:00:00');
 // Initialize Refs
 const selectedTime = ref<string | null>(initialTime);
 const directTimeInput = ref<string | null>(initialTime);
-const assignedStaffs = ref<Staff[]>([]); 
+const assignedStaffs = ref<Staff[]>([]);
 const showAllStaffs = ref(false);
 const allowOffShift = ref(false);
 const staffWarning = ref<string | null>(null);
@@ -775,7 +723,7 @@ const fetchWorkingDays = async (year: number, month: number) => {
         return;
     }
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
-    
+
     try {
         const response = await axios.get(
             `/owner/api/shops/${props.shop.slug}/staffs/${form.value.assigned_staff_id}/working-days`,
@@ -811,8 +759,8 @@ const getDateString = (dateInput: unknown): string | null => {
     } else if (dateInput && typeof dateInput === 'object') {
         const val = (dateInput as any).value || (dateInput as any).date;
         if (val) {
-           if (val instanceof Date) d = val;
-           else d = new Date(val);
+            if (val instanceof Date) d = val;
+            else d = new Date(val);
         } else {
             return null;
         }
@@ -950,7 +898,7 @@ watch([selectedDateValue, selectedTime], ([newDate, newTime]) => {
         } else if (directTimeInput.value && /^\d{2}:\d{2}$/.test(directTimeInput.value)) {
             form.value.start_at = `${formattedSelectedDate.value} ${directTimeInput.value}:00`;
         } else {
-             form.value.start_at = "";
+            form.value.start_at = "";
         }
     } else {
         form.value.start_at = "";
@@ -1005,7 +953,7 @@ onMounted(async () => {
     // Initial fetch of staffs for the preset menu
     if (form.value.menu_id) {
         await fetchAssignedStaffs();
-        
+
         // After fetching staffs, check if the currently assigned staff is in the list
         // Only enable 'Show All' if menu requires staff assignment AND assigned staff is not in list
         const currentMenu = props.menus.find(m => m.id === form.value.menu_id);
@@ -1016,7 +964,7 @@ onMounted(async () => {
             }
         }
     }
-    
+
     // Handle validation errors: overwrite with oldInput if present
     if (props.oldInput && !Array.isArray(props.oldInput) && Object.keys(props.oldInput).length > 0) {
         if (props.oldInput.menu_id) form.value.menu_id = Number(props.oldInput.menu_id);
@@ -1025,7 +973,7 @@ onMounted(async () => {
         if (props.oldInput.contact_phone) form.value.contact_phone = props.oldInput.contact_phone;
         if (props.oldInput.shop_memo) form.value.shop_memo = props.oldInput.shop_memo;
         if (props.oldInput.note_from_booker) form.value.note_from_booker = props.oldInput.note_from_booker;
-        
+
         if (props.oldInput.start_at) {
             const d = new Date(props.oldInput.start_at);
             selectedDateValue.value = d;
@@ -1033,7 +981,7 @@ onMounted(async () => {
             selectedTime.value = time;
             directTimeInput.value = time;
         }
-        
+
         if (props.oldInput.option_ids) {
             form.value.option_ids = (props.oldInput.option_ids as any[]).map(Number);
         }

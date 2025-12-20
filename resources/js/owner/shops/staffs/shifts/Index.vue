@@ -3,10 +3,9 @@
         <v-row>
             <v-col cols="12">
                 <v-btn
-                    :href="staffsIndexUrl"
-                    prepend-icon="mdi-arrow-left"
-                    variant="text"
-                >
+                       :href="staffsIndexUrl"
+                       prepend-icon="mdi-arrow-left"
+                       variant="text">
                     スタッフ一覧に戻る
                 </v-btn>
             </v-col>
@@ -14,20 +13,21 @@
 
         <v-row>
             <v-col cols="12">
-                <ShopHeader :shop="props.shop" />
+                <ShopHeader :shop="shop" />
+            </v-col>
+        </v-row>
 
-                <v-card class="mt-4">
+        <v-row>
+            <v-col cols="12">
+                <v-card>
                     <v-card-title
-                        class="d-flex align-center"
-                        :class="
-                            mobile ? 'flex-column' : 'justify-space-between'
-                        "
-                    >
+                                  class="d-flex align-center"
+                                  :class="mobile ? 'flex-column' : 'justify-space-between'
+                                    ">
                         <span>シフト一覧</span>
                         <div
-                            class="d-flex align-center"
-                            :class="{ 'mt-2': mobile }"
-                        >
+                             class="d-flex align-center"
+                             :class="{ 'mt-2': mobile }">
                             <v-btn :href="prevMonthUrl" icon variant="text">
                                 <v-icon>mdi-chevron-left</v-icon>
                             </v-btn>
@@ -47,8 +47,7 @@
                                     <th
                                         v-for="staff in staffs"
                                         :key="staff.id"
-                                        class="text-center"
-                                    >
+                                        class="text-center">
                                         {{ staff.profile?.nickname || "N/A" }}
                                     </th>
                                 </tr>
@@ -56,38 +55,33 @@
                             <tbody>
                                 <tr
                                     v-for="item in weeksWithShiftStatus"
-                                    :key="item.week.start"
-                                >
+                                    :key="item.week.start">
                                     <td>
                                         {{ formatWeekRange(item.week) }}
                                     </td>
                                     <td
                                         v-for="staff in staffs"
                                         :key="staff.id"
-                                        class="text-center pa-0"
-                                    >
+                                        class="text-center pa-0">
                                         <a
-                                            :href="
-                                                getShiftEditUrl(
-                                                    staff.id,
-                                                    format(
-                                                        parseISO(
-                                                            item.week.start
-                                                        ),
-                                                        'yyyy-MM-dd'
-                                                    )
-                                                )
+                                           :href="getShiftEditUrl(
+                                            staff.id,
+                                            format(
+                                                parseISO(
+                                                    item.week.start
+                                                ),
+                                                'yyyy-MM-dd'
+                                            )
+                                        )
                                             "
-                                            class="d-block pa-4 text-decoration-none"
-                                        >
+                                           class="d-block pa-4 text-decoration-none">
                                             <span
-                                                :class="`text-${getStatusColor(
+                                                  :class="`text-${getStatusColor(
                                                     item.statuses[staff.id]
-                                                )}`"
-                                            >
+                                                )}`">
                                                 {{
                                                     item.statuses[staff.id] ===
-                                                    "entered"
+                                                        "entered"
                                                         ? "入力済み"
                                                         : "未入力"
                                                 }}
@@ -110,7 +104,7 @@ import { useDisplay } from "vuetify";
 import { format, parseISO, addMonths, subMonths } from "date-fns";
 import { ja } from "date-fns/locale";
 import { formatInTimeZone } from "date-fns-tz";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 
 // --- Type Definitions ---
 interface Shop {
@@ -205,15 +199,19 @@ const getStatusColor = (status: "entered" | "not_entered") => {
 a {
     color: inherit;
 }
+
 .text-green {
     color: green;
 }
+
 .text-red {
     color: red;
 }
+
 td a {
     transition: background-color 0.2s ease-in-out;
 }
+
 td a:hover {
     background-color: #f5f5f5;
 }

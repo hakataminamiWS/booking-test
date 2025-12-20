@@ -11,23 +11,25 @@
         <v-row>
             <v-col cols="12">
                 <ShopHeader :shop="props.shop" />
+            </v-col>
+        </v-row>
 
+        <v-row>
+            <v-col cols="12">
                 <v-card>
                     <v-card-title
-                        :class="{
-                            'd-flex': true,
-                            'flex-column': smAndDown,
-                            'align-start': smAndDown,
-                            'justify-space-between': !smAndDown,
-                            'align-center': !smAndDown,
-                        }"
-                    >
+                                  :class="{
+                                    'd-flex': true,
+                                    'flex-column': smAndDown,
+                                    'align-start': smAndDown,
+                                    'justify-space-between': !smAndDown,
+                                    'align-center': !smAndDown,
+                                }">
                         <span>店舗詳細</span>
                         <v-btn
-                            color="primary"
-                            :class="{ 'mt-2': smAndDown }"
-                            :href="`/owner/shops/${props.shop.slug}/edit`"
-                        >
+                               color="primary"
+                               :class="{ 'mt-2': smAndDown }"
+                               :href="`/owner/shops/${props.shop.slug}/edit`">
                             店舗詳細を編集する
                         </v-btn>
                     </v-card-title>
@@ -55,7 +57,7 @@
                                         {{
                                             props.shop
                                                 .booking_confirmation_type ===
-                                            "automatic"
+                                                "automatic"
                                                 ? "自動承認"
                                                 : "手動承認"
                                         }}
@@ -65,14 +67,12 @@
                                     <td>オンライン予約受付</td>
                                     <td>
                                         <v-chip
-                                            :color="
-                                                props.shop
+                                                :color="props.shop
                                                     .accepts_online_bookings
                                                     ? 'green'
                                                     : 'red'
-                                            "
-                                            size="small"
-                                        >
+                                                    "
+                                                size="small">
                                             {{
                                                 props.shop
                                                     .accepts_online_bookings
@@ -136,7 +136,7 @@
 
 <script setup lang="ts">
 import { useDisplay } from "vuetify";
-import ShopHeader from "./components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 
 interface Shop {
     id: number;

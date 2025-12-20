@@ -11,24 +11,26 @@
         <v-row>
             <v-col cols="12">
                 <ShopHeader :shop="props.shop" />
+            </v-col>
+        </v-row>
 
+        <v-row>
+            <v-col cols="12">
                 <v-card>
                     <v-card-title>予約枠用スタッフ登録</v-card-title>
                     <v-card-text>
                         <form id="form" :action="formActionUrl" method="POST">
                             <input
-                                type="hidden"
-                                name="_token"
-                                :value="props.csrfToken"
-                            />
+                                   type="hidden"
+                                   name="_token"
+                                   :value="props.csrfToken" />
 
                             <v-text-field
-                                v-model="form.nickname"
-                                name="nickname"
-                                label="ニックネーム *"
-                                required
-                                :error-messages="nicknameErrors"
-                            ></v-text-field>
+                                          v-model="form.nickname"
+                                          name="nickname"
+                                          label="ニックネーム *"
+                                          required
+                                          :error-messages="nicknameErrors"></v-text-field>
                         </form>
                     </v-card-text>
 
@@ -46,7 +48,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 
 interface Shop {
     name: string;

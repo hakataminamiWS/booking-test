@@ -52,6 +52,14 @@ class ShopStaffController extends Controller
         $staff->load('profile');
         $profile = $staff->profile;
 
+        // 画像削除処理 (スモール)
+        if ($request->boolean('is_delete_small_image')) {
+            if ($profile && $profile->small_image_url) {
+                Storage::disk('public')->delete($profile->small_image_url);
+            }
+            $profileData['small_image_url'] = null;
+        }
+
         if ($request->hasFile('small_image')) {
             // 古い画像を削除
             if ($profile && $profile->small_image_url) {
@@ -66,6 +74,14 @@ class ShopStaffController extends Controller
             $path = 'staff_profiles/small/' . $fileName;
             Storage::disk('public')->put($path, (string) $image);
             $profileData['small_image_url'] = $path; // URLではなくパスを保存
+        }
+
+        // 画像削除処理 (ラージ)
+        if ($request->boolean('is_delete_large_image')) {
+            if ($profile && $profile->large_image_url) {
+                Storage::disk('public')->delete($profile->large_image_url);
+            }
+            $profileData['large_image_url'] = null;
         }
 
         if ($request->hasFile('large_image')) {

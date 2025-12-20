@@ -267,7 +267,7 @@ import { ref, computed } from "vue";
 import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 import { formatNumericInput } from "@/composables/useNumericInput";
 
 const props = defineProps<{

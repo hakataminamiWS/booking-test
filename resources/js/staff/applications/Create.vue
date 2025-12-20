@@ -1,7 +1,13 @@
 <template>
     <v-container>
-        <v-row justify="center">
-            <v-col cols="12" md="8">
+        <v-row>
+            <v-col cols="12">
+                <ShopHeader :shop="shop" />
+            </v-col>
+        </v-row>
+
+        <v-row>
+            <v-col cols="12">
                 <v-card>
                     <v-card-title>スタッフ登録申し込み</v-card-title>
                     <v-card-subtitle>「{{ props.shop.name }}」へのスタッフ登録を申し込みます。</v-card-subtitle>
@@ -17,11 +23,10 @@
                             </v-alert>
 
                             <v-text-field
-                                v-model="form.name"
-                                name="name"
-                                label="表示名 *"
-                                required
-                            ></v-text-field>
+                                          v-model="form.name"
+                                          name="name"
+                                          label="表示名 *"
+                                          required></v-text-field>
 
                             <v-btn type="submit" color="primary">
                                 申し込みを送信する
@@ -36,6 +41,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import ShopHeader from "@/components/common/ShopHeader.vue";
 
 const props = defineProps<{
     shop: {

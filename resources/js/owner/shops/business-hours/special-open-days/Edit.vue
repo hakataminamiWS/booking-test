@@ -3,9 +3,9 @@
         <v-row>
             <v-col cols="12">
                 <v-btn
-                    :href="businessHoursIndexUrl"
-                    prepend-icon="mdi-arrow-left"
-                >
+                       :href="businessHoursIndexUrl"
+                       prepend-icon="mdi-arrow-left"
+                       variant="text">
                     営業時間一覧へ戻る
                 </v-btn>
             </v-col>
@@ -13,92 +13,86 @@
 
         <v-row>
             <v-col cols="12">
-                <ShopHeader :shop="props.shop" />
+                <ShopHeader :shop="shop" />
+            </v-col>
+        </v-row>
 
+        <v-row>
+            <v-col cols="12">
                 <v-card>
                     <v-card-title>特別営業日編集</v-card-title>
                     <v-card-text>
                         <form :action="formAction" method="POST">
                             <input
-                                type="hidden"
-                                name="_token"
-                                :value="props.csrfToken"
-                            />
+                                   type="hidden"
+                                   name="_token"
+                                   :value="props.csrfToken" />
                             <input type="hidden" name="_method" value="PUT" />
 
                             <v-alert
-                                v-if="props.errors.length > 0"
-                                type="error"
-                                class="mb-4"
-                            >
+                                     v-if="props.errors.length > 0"
+                                     type="error"
+                                     class="mb-4">
                                 <ul>
                                     <li
                                         v-for="(error, i) in props.errors"
-                                        :key="i"
-                                    >
+                                        :key="i">
                                         {{ error }}
                                     </li>
                                 </ul>
                             </v-alert>
 
                             <v-text-field
-                                v-model="form.date"
-                                name="date"
-                                label="日付 *"
-                                type="text"
-                                placeholder="YYYY-MM-DD"
-                                required
-                                :rules="dateRule"
-                                validate-on="lazy invalid-input"
-                                append-inner-icon="mdi-calendar"
-                                @click:append-inner="openDateDialog"
-                            ></v-text-field>
+                                          v-model="form.date"
+                                          name="date"
+                                          label="日付 *"
+                                          type="text"
+                                          placeholder="YYYY-MM-DD"
+                                          required
+                                          :rules="dateRule"
+                                          validate-on="lazy invalid-input"
+                                          append-inner-icon="mdi-calendar"
+                                          @click:append-inner="openDateDialog"></v-text-field>
 
                             <v-dialog v-model="dateDialog" width="auto">
                                 <v-date-picker
-                                    v-model="dateForPicker"
-                                    @update:modelValue="updateDateFromPicker"
-                                    title="日付"
-                                ></v-date-picker>
+                                               v-model="dateForPicker"
+                                               @update:modelValue="updateDateFromPicker"
+                                               title="日付"></v-date-picker>
                             </v-dialog>
 
                             <v-text-field
-                                v-model="form.start_time"
-                                name="start_time"
-                                label="開始時刻 *"
-                                type="time"
-                                required
-                                append-inner-icon="mdi-clock-outline"
-                                @click:append-inner="openDialog('start_time')"
-                            ></v-text-field>
+                                          v-model="form.start_time"
+                                          name="start_time"
+                                          label="開始時刻 *"
+                                          type="time"
+                                          required
+                                          append-inner-icon="mdi-clock-outline"
+                                          @click:append-inner="openDialog('start_time')"></v-text-field>
 
                             <v-text-field
-                                v-model="form.end_time"
-                                name="end_time"
-                                label="終了時刻 *"
-                                type="time"
-                                required
-                                :error-messages="form.endTimeError"
-                                append-inner-icon="mdi-clock-outline"
-                                @click:append-inner="openDialog('end_time')"
-                            ></v-text-field>
+                                          v-model="form.end_time"
+                                          name="end_time"
+                                          label="終了時刻 *"
+                                          type="time"
+                                          required
+                                          :error-messages="form.endTimeError"
+                                          append-inner-icon="mdi-clock-outline"
+                                          @click:append-inner="openDialog('end_time')"></v-text-field>
 
                             <v-text-field
-                                v-model="form.name"
-                                name="name"
-                                label="営業日名"
-                                hint="（例：「祝日特別営業」）"
-                                persistent-hint
-                            ></v-text-field>
+                                          v-model="form.name"
+                                          name="name"
+                                          label="営業日名"
+                                          hint="（例：「祝日特別営業」）"
+                                          persistent-hint></v-text-field>
 
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                    type="submit"
-                                    color="primary"
-                                    @click="validateForm"
-                                    >更新する</v-btn
-                                >
+                                       type="submit"
+                                       color="primary"
+                                       @click="validateForm">更新する</v-btn>
                             </v-card-actions>
                         </form>
                     </v-card-text>
@@ -107,23 +101,20 @@
                 <v-dialog v-model="dialog" width="auto">
                     <v-card>
                         <v-time-picker
-                            v-model="currentTime"
-                            format="24hr"
-                        ></v-time-picker>
+                                       v-model="currentTime"
+                                       format="24hr"></v-time-picker>
                         <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn
-                                color="blue-darken-1"
-                                variant="text"
-                                @click="closeDialog"
-                            >
+                                   color="blue-darken-1"
+                                   variant="text"
+                                   @click="closeDialog">
                                 キャンセル
                             </v-btn>
                             <v-btn
-                                color="blue-darken-1"
-                                variant="text"
-                                @click="saveTime"
-                            >
+                                   color="blue-darken-1"
+                                   variant="text"
+                                   @click="saveTime">
                                 OK
                             </v-btn>
                         </v-card-actions>
@@ -136,7 +127,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 
 const props = defineProps({
     shop: Object,

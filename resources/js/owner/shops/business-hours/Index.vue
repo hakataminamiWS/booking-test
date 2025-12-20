@@ -10,6 +10,7 @@
                 </v-btn>
             </v-col>
         </v-row>
+
         <v-row>
             <v-col cols="12">
                 <ShopHeader :shop="shop" />
@@ -170,7 +171,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDisplay } from "vuetify";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 
 const props = defineProps({
     shop: Object,

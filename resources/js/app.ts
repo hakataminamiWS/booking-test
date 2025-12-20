@@ -134,6 +134,33 @@ const pages = {
     "staff/applications/Complete": defineAsyncComponent(
         () => import("@/staff/applications/Complete.vue")
     ),
+    "staff/profile/Edit": defineAsyncComponent(
+        () => import("@/staff/staffs/ProfileEdit.vue")
+    ),
+    "staff/shifts/Edit": defineAsyncComponent(
+        () => import("@/staff/shifts/Edit.vue")
+    ),
+    "staff/bookings/Index": defineAsyncComponent(
+        () => import("@/staff/bookings/Index.vue")
+    ),
+    "staff/bookings/Create": defineAsyncComponent(
+        () => import("@/staff/bookings/Create.vue")
+    ),
+    "staff/bookings/Edit": defineAsyncComponent(
+        () => import("@/staff/bookings/Edit.vue")
+    ),
+    "staff/bookers/Index": defineAsyncComponent(
+        () => import("@/staff/bookers/Index.vue")
+    ),
+    "staff/bookers/Create": defineAsyncComponent(
+        () => import("@/staff/bookers/Create.vue")
+    ),
+    "staff/bookers/Edit": defineAsyncComponent(
+        () => import("@/staff/bookers/Edit.vue")
+    ),
+    "staff/staffs/Index": defineAsyncComponent(
+        () => import("@/staff/staffs/Index.vue")
+    ),
 };
 
 const vuetify = createVuetify({

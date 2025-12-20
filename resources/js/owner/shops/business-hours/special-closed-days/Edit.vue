@@ -3,9 +3,9 @@
         <v-row>
             <v-col cols="12">
                 <v-btn
-                    :href="businessHoursIndexUrl"
-                    prepend-icon="mdi-arrow-left"
-                >
+                       :href="businessHoursIndexUrl"
+                       prepend-icon="mdi-arrow-left"
+                       variant="text">
                     営業時間一覧へ戻る
                 </v-btn>
             </v-col>
@@ -13,95 +13,89 @@
 
         <v-row>
             <v-col cols="12">
-                <ShopHeader :shop="props.shop" />
+                <ShopHeader :shop="shop" />
+            </v-col>
+        </v-row>
 
+        <v-row>
+            <v-col cols="12">
                 <v-card>
                     <v-card-title>特別休業日編集</v-card-title>
                     <v-card-text>
                         <form :action="formAction" method="POST">
                             <input
-                                type="hidden"
-                                name="_token"
-                                :value="props.csrfToken"
-                            />
+                                   type="hidden"
+                                   name="_token"
+                                   :value="props.csrfToken" />
                             <input type="hidden" name="_method" value="PUT" />
 
                             <v-alert
-                                v-if="props.errors.length > 0"
-                                type="error"
-                                class="mb-4"
-                            >
+                                     v-if="props.errors.length > 0"
+                                     type="error"
+                                     class="mb-4">
                                 <ul>
                                     <li
                                         v-for="(error, i) in props.errors"
-                                        :key="i"
-                                    >
+                                        :key="i">
                                         {{ error }}
                                     </li>
                                 </ul>
                             </v-alert>
 
                             <v-text-field
-                                v-model="form.start_at"
-                                name="start_at"
-                                label="開始日 *"
-                                type="text"
-                                placeholder="YYYY-MM-DD"
-                                required
-                                :rules="dateRule"
-                                validate-on="lazy invalid-input"
-                                append-inner-icon="mdi-calendar"
-                                @click:append-inner="openStartDateDialog"
-                            ></v-text-field>
+                                          v-model="form.start_at"
+                                          name="start_at"
+                                          label="開始日 *"
+                                          type="text"
+                                          placeholder="YYYY-MM-DD"
+                                          required
+                                          :rules="dateRule"
+                                          validate-on="lazy invalid-input"
+                                          append-inner-icon="mdi-calendar"
+                                          @click:append-inner="openStartDateDialog"></v-text-field>
 
                             <v-dialog v-model="startDateDialog" width="auto">
                                 <v-date-picker
-                                    v-model="startDateForPicker"
-                                    @update:modelValue="
-                                        updateStartDateFromPicker
-                                    "
-                                    title="開始日"
-                                ></v-date-picker>
+                                               v-model="startDateForPicker"
+                                               @update:modelValue="
+                                                updateStartDateFromPicker
+                                            "
+                                               title="開始日"></v-date-picker>
                             </v-dialog>
 
                             <v-text-field
-                                v-model="form.end_at"
-                                name="end_at"
-                                label="終了日 *"
-                                type="text"
-                                placeholder="YYYY-MM-DD"
-                                required
-                                :rules="dateRule"
-                                validate-on="lazy invalid-input"
-                                :error-messages="form.endDateError"
-                                append-inner-icon="mdi-calendar"
-                                @click:append-inner="openEndDateDialog"
-                            ></v-text-field>
+                                          v-model="form.end_at"
+                                          name="end_at"
+                                          label="終了日 *"
+                                          type="text"
+                                          placeholder="YYYY-MM-DD"
+                                          required
+                                          :rules="dateRule"
+                                          validate-on="lazy invalid-input"
+                                          :error-messages="form.endDateError"
+                                          append-inner-icon="mdi-calendar"
+                                          @click:append-inner="openEndDateDialog"></v-text-field>
 
                             <v-dialog v-model="endDateDialog" width="auto">
                                 <v-date-picker
-                                    v-model="endDateForPicker"
-                                    @update:modelValue="updateEndDateFromPicker"
-                                    title="終了日"
-                                ></v-date-picker>
+                                               v-model="endDateForPicker"
+                                               @update:modelValue="updateEndDateFromPicker"
+                                               title="終了日"></v-date-picker>
                             </v-dialog>
 
                             <v-text-field
-                                v-model="form.name"
-                                name="name"
-                                label="休業日名"
-                                hint="（例：「夏季休業」）"
-                                persistent-hint
-                            ></v-text-field>
+                                          v-model="form.name"
+                                          name="name"
+                                          label="休業日名"
+                                          hint="（例：「夏季休業」）"
+                                          persistent-hint></v-text-field>
 
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                    type="submit"
-                                    color="primary"
-                                    @click="validateForm"
-                                    >更新する</v-btn
-                                >
+                                       type="submit"
+                                       color="primary"
+                                       @click="validateForm">更新する</v-btn>
                             </v-card-actions>
                         </form>
                     </v-card-text>
@@ -113,7 +107,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/owner/shops/components/ShopHeader.vue";
+import ShopHeader from "@/components/common/ShopHeader.vue";
 
 const props = defineProps({
     shop: Object,

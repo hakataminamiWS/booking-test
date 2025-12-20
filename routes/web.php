@@ -41,15 +41,11 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // --- Owner Routes ---
+    // --- Owner Application Routes ---
     Route::get('/contract-applications/create', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'create'])->name('contract.application.create');
     Route::post('/contract-applications', [\App\Http\Controllers\Owner\ContractApplicationController::class, 'store'])->name('contract.application.store');
 
-    // --- Staff Application Routes ---
-    Route::get('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'create'])->name('staff.application.create');
-    Route::post('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'store'])->name('staff.application.store');
-    Route::get('/staff/apply/complete', [App\Http\Controllers\Staff\ApplicationController::class, 'complete'])->name('staff.application.complete');
-
+    // --- Owner Routes ---
     Route::prefix('owner')->name('owner.')->middleware('owner')->group(function () {
         // Web
         Route::get('/shops', [App\Http\Controllers\Owner\ShopsController::class, 'index'])->name('shops.index');
@@ -137,14 +133,41 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // --- Staff Routes ---
-    Route::prefix('shops/{shop}/staff')->name('staff.')->group(function () { // TODO: Add middleware('staff') later
-        // Web
+    // --- Staff Application Routes ---
+    Route::get('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'create'])->name('staff.application.create');
+    Route::post('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'store'])->name('staff.application.store');
+    Route::get('/staff/apply/complete', [App\Http\Controllers\Staff\ApplicationController::class, 'complete'])->name('staff.application.complete');
 
-        // API (Placeholder)
-        // Route::prefix('api')->name('api.')->group(function () {
-        //     // Future staff APIs go here
-        // });
+    // --- Staff Routes ---
+    Route::prefix('shops/{shop:slug}/staff')->name('staff.')->group(function () { // TODO: Add middleware('staff') later
+        // Web
+        Route::get('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'edit'])->name('staffs.edit');
+        Route::put('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'update'])->name('staffs.update');
+        Route::get('/shifts', [App\Http\Controllers\Staff\ShiftController::class, 'edit'])->name('shifts.edit');
+        Route::put('/shifts', [App\Http\Controllers\Staff\ShiftController::class, 'update'])->name('shifts.update');
+        Route::get('/bookings', [App\Http\Controllers\Staff\BookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/create', [App\Http\Controllers\Staff\BookingController::class, 'create'])->name('bookings.create');
+        Route::post('/bookings', [App\Http\Controllers\Staff\BookingController::class, 'store'])->name('bookings.store');
+        Route::get('/bookings/{booking}/edit', [App\Http\Controllers\Staff\BookingController::class, 'edit'])->name('bookings.edit');
+        Route::put('/bookings/{booking}', [App\Http\Controllers\Staff\BookingController::class, 'update'])->name('bookings.update');
+        Route::delete('/bookings/{booking}', [App\Http\Controllers\Staff\BookingController::class, 'destroy'])->name('bookings.destroy');
+        Route::get('/bookers', [App\Http\Controllers\Staff\ShopBookerController::class, 'index'])->name('bookers.index');
+        Route::get('/bookers/create', [App\Http\Controllers\Staff\ShopBookerController::class, 'create'])->name('bookers.create');
+        Route::post('/bookers', [App\Http\Controllers\Staff\ShopBookerController::class, 'store'])->name('bookers.store');
+        Route::get('/bookers/{booker}/edit', [App\Http\Controllers\Staff\ShopBookerController::class, 'edit'])->name('bookers.edit');
+        Route::put('/bookers/{booker}', [App\Http\Controllers\Staff\ShopBookerController::class, 'update'])->name('bookers.update');
+        Route::get('/staffs', [App\Http\Controllers\Staff\ShopStaffController::class, 'index'])->name('staffs.index');
+
+        // Staff API
+        Route::prefix('api')->name('api.')->group(function () {
+            Route::get('/bookings', [App\Http\Controllers\Api\Staff\BookingController::class, 'index'])->name('bookings.index');
+            Route::get('/bookings/validate-staff', [App\Http\Controllers\Api\Staff\BookingController::class, 'validateStaff'])->name('bookings.validate-staff');
+            Route::get('/bookings/validate-shift', [App\Http\Controllers\Api\Staff\BookingController::class, 'validateShift'])->name('bookings.validate-shift');
+            Route::get('/bookings/validate-conflict', [App\Http\Controllers\Api\Staff\BookingController::class, 'validateConflict'])->name('bookings.validate-conflict');
+            Route::get('/staffs/{staff}/working-days', [App\Http\Controllers\Api\Staff\BookingController::class, 'getWorkingDays'])->name('staffs.working-days');
+            Route::get('/bookers', [App\Http\Controllers\Api\Staff\ShopBookerController::class, 'index'])->name('bookers.index');
+            Route::get('/staffs', [App\Http\Controllers\Api\Staff\ShopStaffController::class, 'index'])->name('staffs.index');
+        });
     });
 });
 
