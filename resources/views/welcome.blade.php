@@ -53,6 +53,8 @@
                 <li><a href="{{ route('debug.login-as', ['user' => 4]) }}">スタッフとしてログイン (テスト スタッフ2, ID: 4)</a></li>
                 <li><a href="{{ route('staff.application.create', ['shop' => 'test-shop']) }}">スタッフ登録申し込み画面 (Slug:
                         test-shop)</a></li>
+                <li><a href="{{ route('staff.shifts.index', ['shop' => 'test-shop']) }}">スタッフシフト一覧画面 (Slug:
+                        test-shop)</a></li>
                 <li><a href="{{ route('staff.shifts.edit', ['shop' => 'test-shop']) }}">スタッフシフト編集画面 (Slug:
                         test-shop)</a></li>
                 <li><a href="{{ route('staff.bookings.index', ['shop' => 'test-shop']) }}">スタッフ予約一覧画面 (Slug:

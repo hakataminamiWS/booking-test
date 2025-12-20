@@ -18,6 +18,65 @@ use Illuminate\Support\Facades\DB;
 class ShiftController extends Controller
 {
     /**
+     * Display a listing of shifts for all staff members.
+     */
+    public function index(Request $request, Shop $shop)
+    {
+        $staff = $this->getAuthenticatedStaff($shop);
+        $currentStaffId = $staff->id;
+
+        $month = $request->input('month', today()->format('Y-m'));
+        $targetMonth = Carbon::createFromFormat('Y-m', $month, $shop->timezone)->startOfMonth();
+
+        $startOfMonth = $targetMonth->copy()->startOfMonth()->startOfWeek(Carbon::SUNDAY);
+        $endOfMonth = $targetMonth->copy()->endOfMonth()->endOfWeek(Carbon::SATURDAY);
+
+        $weekHeaders = [];
+        $currentDate = $startOfMonth->copy();
+        while ($currentDate <= $endOfMonth) {
+            $weekHeaders[] = [
+                'start' => $currentDate->copy(),
+                'end' => $currentDate->copy()->endOfWeek(Carbon::SATURDAY),
+            ];
+            $currentDate->addWeek();
+        }
+
+        $allStaffs = $shop->staffs()->with('profile')->get();
+
+        $schedules = ShopStaffSchedule::whereIn('shop_staff_id', $allStaffs->pluck('id'))
+            ->whereBetween('workable_start_at', [
+                $startOfMonth->copy()->utc(),
+                $endOfMonth->copy()->endOfDay()->utc(),
+            ])
+            ->get();
+
+        $weeksWithShiftStatus = collect($weekHeaders)->map(function ($week) use ($allStaffs, $schedules, $shop) {
+            $statuses = $allStaffs->mapWithKeys(function ($s) use ($week, $schedules, $shop) {
+                $hasSchedule = $schedules
+                    ->where('shop_staff_id', $s->id)
+                    ->some(function ($schedule) use ($week, $shop) {
+                        $scheduleStart = Carbon::parse($schedule->workable_start_at)->setTimezone($shop->timezone);
+                        return $scheduleStart->between($week['start'], $week['end']);
+                    });
+                return [$s->id => $hasSchedule ? 'entered' : 'not_entered'];
+            });
+
+            return [
+                'week' => $week,
+                'statuses' => $statuses,
+            ];
+        });
+
+        return view('staff.shifts.index', compact(
+            'shop',
+            'targetMonth',
+            'allStaffs',
+            'weeksWithShiftStatus',
+            'currentStaffId'
+        ));
+    }
+
+    /**
      * Display the shift edit form for the authenticated staff.
      */
     public function edit(Request $request, Shop $shop)

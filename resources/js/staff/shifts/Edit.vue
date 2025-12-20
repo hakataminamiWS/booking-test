@@ -3,10 +3,10 @@
         <v-row>
             <v-col cols="12">
                 <v-btn
-                       :href="`/shops/${shop.slug}/staff`"
+                       :href="`/shops/${shop.slug}/staff/shifts`"
                        prepend-icon="mdi-arrow-left"
                        variant="text">
-                    店舗詳細へ戻る
+                    シフト一覧へ戻る
                 </v-btn>
             </v-col>
         </v-row>
@@ -219,7 +219,7 @@ const { mobile } = useDisplay();
 // --- Form and URL Computations --- //
 
 const formAction = computed(
-    () => `/shops/${props.shop.slug}/staff/shifts`
+    () => `/shops/${props.shop.slug}/staff/shifts/edit`
 );
 
 const targetDate = parseISO(props.date);

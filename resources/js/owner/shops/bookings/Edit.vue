@@ -323,7 +323,7 @@
                            :style="getDayStyle(item)"
                            class="d-flex justify-center align-center"
                            style="position: relative;"
-                           variant="text"
+                           :variant="isToday(item) && !isSelected(item) ? 'outlined' : 'text'"
                            size="small"
                            rounded="circle">
                         {{ getDayNumber(item) }}
@@ -750,8 +750,24 @@ const isWorkingDay = (date: unknown): boolean => {
     return workingDays.value.includes(dateString);
 };
 
+const isToday = (dateInput: unknown): boolean => {
+    const dateString = getDateString(dateInput);
+    if (!dateString) return false;
+    const now = new Date();
+    const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return dateString === todayString;
+};
+
+const isSelected = (dateInput: unknown): boolean => {
+    const dateString = getDateString(dateInput);
+    if (!dateString) return false;
+    return dateString === formattedSelectedDate.value;
+};
+
+// Helper: 統一的な日付文字列取得 (YYYY-MM-DD)
 const getDateString = (dateInput: unknown): string | null => {
     let d: Date | null = null;
+
     if (dateInput instanceof Date) {
         d = dateInput;
     } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
@@ -765,7 +781,9 @@ const getDateString = (dateInput: unknown): string | null => {
             return null;
         }
     }
+
     if (!d || isNaN(d.getTime())) return null;
+
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');

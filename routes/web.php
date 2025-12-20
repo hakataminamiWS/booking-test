@@ -143,8 +143,10 @@ Route::middleware('auth')->group(function () {
         // Web
         Route::get('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'edit'])->name('staffs.edit');
         Route::put('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'update'])->name('staffs.update');
-        Route::get('/shifts', [App\Http\Controllers\Staff\ShiftController::class, 'edit'])->name('shifts.edit');
-        Route::put('/shifts', [App\Http\Controllers\Staff\ShiftController::class, 'update'])->name('shifts.update');
+        // Shifts
+        Route::get('/shifts', [App\Http\Controllers\Staff\ShiftController::class, 'index'])->name('shifts.index');
+        Route::get('/shifts/edit', [App\Http\Controllers\Staff\ShiftController::class, 'edit'])->name('shifts.edit');
+        Route::put('/shifts/edit', [App\Http\Controllers\Staff\ShiftController::class, 'update'])->name('shifts.update');
         Route::get('/bookings', [App\Http\Controllers\Staff\BookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create', [App\Http\Controllers\Staff\BookingController::class, 'create'])->name('bookings.create');
         Route::post('/bookings', [App\Http\Controllers\Staff\BookingController::class, 'store'])->name('bookings.store');
@@ -167,6 +169,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/staffs/{staff}/working-days', [App\Http\Controllers\Api\Staff\BookingController::class, 'getWorkingDays'])->name('staffs.working-days');
             Route::get('/bookers', [App\Http\Controllers\Api\Staff\ShopBookerController::class, 'index'])->name('bookers.index');
             Route::get('/staffs', [App\Http\Controllers\Api\Staff\ShopStaffController::class, 'index'])->name('staffs.index');
+            Route::get('/menus/{menu}/staffs', [App\Http\Controllers\Api\Staff\ShopMenuController::class, 'staffs'])->name('menus.staffs');
+            Route::get('/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Staff\TimeSlotController::class, 'index'])->name('staffs.timeslots');
         });
     });
 });

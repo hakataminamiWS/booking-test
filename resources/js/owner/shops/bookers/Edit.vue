@@ -192,7 +192,7 @@ const formData = ref({
 const rules = {
     required: (value: any) => !!value || "必須項目です。",
     email: (value: string) => /.+@.+\..+/.test(value) || "有効なメールアドレスを入力してください。",
-    maxLength: (length: number) => (value: string) => (value && value.length <= length) || `${length}文字以内で入力してください。`,
+    maxLength: (length: number) => (value: string) => !value || value.length <= length || `${length}文字以内で入力してください。`,
     numeric: (value: string) => /^[0-9]*$/.test(value) || "半角数字で入力してください。",
 };
 

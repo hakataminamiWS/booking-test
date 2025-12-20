@@ -277,7 +277,7 @@
                            :style="getDayStyle(item)"
                            class="d-flex justify-center align-center"
                            style="position: relative;"
-                           variant="text"
+                           :variant="isToday(item) && !isSelected(item) ? 'outlined' : 'text'"
                            size="small"
                            rounded="circle">
                         <!-- 日付の数字 (Vuetifyのデフォルト表示を維持しつつ、ドットを追加したいが完全置換になるため数字も描画) -->
@@ -652,6 +652,20 @@ const isWorkingDay = (date: unknown): boolean => {
     const dateString = getDateString(date);
     if (!dateString) return false;
     return workingDays.value.includes(dateString);
+};
+
+const isToday = (dateInput: unknown): boolean => {
+    const dateString = getDateString(dateInput);
+    if (!dateString) return false;
+    const now = new Date();
+    const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return dateString === todayString;
+};
+
+const isSelected = (dateInput: unknown): boolean => {
+    const dateString = getDateString(dateInput);
+    if (!dateString) return false;
+    return dateString === formattedSelectedDate.value;
 };
 
 // Helper: 統一的な日付文字列取得 (YYYY-MM-DD)

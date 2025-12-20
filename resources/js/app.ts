@@ -137,6 +137,9 @@ const pages = {
     "staff/profile/Edit": defineAsyncComponent(
         () => import("@/staff/staffs/ProfileEdit.vue")
     ),
+    "staff/shifts/Index": defineAsyncComponent(
+        () => import("@/staff/shifts/Index.vue")
+    ),
     "staff/shifts/Edit": defineAsyncComponent(
         () => import("@/staff/shifts/Edit.vue")
     ),
