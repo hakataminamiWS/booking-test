@@ -154,7 +154,8 @@
                                         </div>
                                         <v-chip-group v-model="selectedTime" column mandatory active-class="primary">
                                             <v-chip v-for="time in group.slots" :key="time" :value="time"
-                                                    variant="outlined" size="small">
+                                                    variant="outlined" size="default" class="px-3">
+                                                <v-icon v-if="selectedTime === time" start size="small">mdi-check</v-icon>
                                                 {{ time }}
                                             </v-chip>
                                         </v-chip-group>
@@ -176,8 +177,9 @@
                                 </div>
                             </v-sheet>
 
-                            <v-text-field v-model="directTimeInput" label="直接入力（シフト外の入力も可能です）" placeholder="HH:MM"
-                                          append-inner-icon="mdi-clock-outline" class="mt-4" style="max-width: 200px"
+                            <v-text-field v-model="directTimeInput" label="予約時間（直接入力可）" placeholder="HH:MM"
+                                          persistent-hint :hint="calculatedEndHint"
+                                          append-inner-icon="mdi-clock-outline" class="mt-4" style="max-width: 250px"
                                           @click:append-inner="timePickerDialog = true"
                                           @blur="onDirectTimeBlur"></v-text-field>
                             <v-alert v-if="shiftWarning" type="warning" density="compact" variant="tonal" class="mb-2">
@@ -520,6 +522,7 @@ const fetchAssignedStaffs = async () => {
 watch(
     [
         () => form.value.menu_id,
+        () => form.value.option_ids,
         () => form.value.assigned_staff_id,
         () => formattedSelectedDate.value,
     ],
@@ -588,6 +591,18 @@ const totalDuration = computed(() => {
         total += opt.additional_duration;
     });
     return total;
+});
+
+const calculatedEndHint = computed(() => {
+    const time = directTimeInput.value || selectedTime.value;
+    if (!time || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(time)) return "HH:MM 形式で入力してください";
+
+    const [hours, minutes] = time.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes + totalDuration.value, 0);
+    const endStr = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+
+    return `終了予定: ${endStr} (${totalDuration.value}分)`;
 });
 
 // --- Dialog State ---
@@ -719,7 +734,7 @@ const onPickerYearChange = (year: number) => {
     fetchWorkingDays(pickerYear.value, pickerMonth.value);
 };
 const onPickerMonthChange = (month: number) => {
-    pickerMonth.value = month;
+    pickerMonth.value = month + 1;
     fetchWorkingDays(pickerYear.value, pickerMonth.value);
 };
 

@@ -173,6 +173,42 @@ Route::middleware('auth')->group(function () {
             Route::get('/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Staff\TimeSlotController::class, 'index'])->name('staffs.timeslots');
         });
     });
+
+    // --- Booker Routes ---
+    Route::prefix('booker')->name('booker.')->group(function () {
+        // Web
+        Route::get('/shops', [App\Http\Controllers\Booker\ShopsController::class, 'index'])->name('shops.index');
+
+        // API
+        Route::prefix('api')->name('api.')->group(function () {
+            Route::get('/shops', [App\Http\Controllers\Api\Booker\ShopsController::class, 'index'])->name('shops.index');
+        });
+    });
+
+    // --- Booker Shop-specific Routes ---
+    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->group(function () {
+        // Profile
+        Route::get('/profile/edit', [App\Http\Controllers\Booker\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'update'])->name('profile.update');
+
+        // Bookings
+        Route::get('/bookings', [App\Http\Controllers\Booker\BookingController::class, 'index'])->name('bookings.index');
+        Route::get('/bookings/create', [App\Http\Controllers\Booker\BookingController::class, 'create'])->name('bookings.create');
+        Route::post('/bookings', [App\Http\Controllers\Booker\BookingController::class, 'store'])->name('bookings.store');
+        Route::get('/bookings/{booking}', [App\Http\Controllers\Booker\BookingController::class, 'show'])->name('bookings.show');
+        Route::delete('/bookings/{booking}', [App\Http\Controllers\Booker\BookingController::class, 'destroy'])->name('bookings.destroy');
+
+        // API
+        Route::prefix('api')->name('api.')->group(function () {
+            Route::get('/bookings', [App\Http\Controllers\Api\Booker\BookingController::class, 'index'])->name('bookings.index');
+            Route::get('/menus/{menu}/staffs', [App\Http\Controllers\Api\Booker\ShopMenuController::class, 'staffs'])->name('menus.staffs');
+            Route::get('/bookings/validate-staff', [App\Http\Controllers\Api\Booker\BookingController::class, 'validateStaff'])->name('bookings.validate-staff');
+            Route::get('/bookings/validate-shift', [App\Http\Controllers\Api\Booker\BookingController::class, 'validateShift'])->name('bookings.validate-shift');
+            Route::get('/bookings/validate-conflict', [App\Http\Controllers\Api\Booker\BookingController::class, 'validateConflict'])->name('bookings.validate-conflict');
+            Route::get('/available-slots', [App\Http\Controllers\Api\Booker\AvailableSlotController::class, 'index'])->name('available-slots.index');
+            Route::get('/staffs/{staff}/working-days', [App\Http\Controllers\Api\Booker\WorkingDayController::class, 'index'])->name('staffs.working-days');
+        });
+    });
 });
 
 // ==============================================================================

@@ -62,4 +62,12 @@ class User extends Authenticatable
     {
         return $this->hasOne(Admin::class);
     }
+
+    /**
+     * Get the shop bookers associated with the user.
+     */
+    public function shopBookers(): HasMany
+    {
+        return $this->hasMany(ShopBooker::class);
+    }
 }

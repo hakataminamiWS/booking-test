@@ -164,6 +164,23 @@ const pages = {
     "staff/staffs/Index": defineAsyncComponent(
         () => import("@/staff/staffs/Index.vue")
     ),
+
+    // Booker
+    "booker/shops/Index": defineAsyncComponent(
+        () => import("@/booker/shops/Index.vue")
+    ),
+    "booker/profile/Edit": defineAsyncComponent(
+        () => import("@/booker/profile/Edit.vue")
+    ),
+    "booker/bookings/Index": defineAsyncComponent(
+        () => import("@/booker/bookings/Index.vue")
+    ),
+    "booker/bookings/Create": defineAsyncComponent(
+        () => import("@/booker/bookings/Create.vue")
+    ),
+    "booker/bookings/Show": defineAsyncComponent(
+        () => import("@/booker/bookings/Show.vue")
+    ),
 };
 
 const vuetify = createVuetify({

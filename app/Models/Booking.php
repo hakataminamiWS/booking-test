@@ -57,4 +57,9 @@ class Booking extends Model
     {
         return $this->hasMany(BookingOption::class);
     }
+
+    public function menu(): BelongsTo
+    {
+        return $this->belongsTo(ShopMenu::class, 'menu_id');
+    }
 }

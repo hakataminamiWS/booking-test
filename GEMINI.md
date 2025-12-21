@@ -95,7 +95,7 @@
 
 #### 予約 (Booking) 管理
 
--   [ ] 予約ステータス管理 (pending/confirmed/canceled)
+-   [ ] 予約ステータス管理 (pending/confirmed/cancelled)
 -   [ ] 予約者情報 (name, email, tel) を bookings に保持
 -   [ ] オーナー・スタッフ用予約一覧 (フィルタ/ソート)
 

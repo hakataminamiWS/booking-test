@@ -141,10 +141,7 @@ class BookingController extends Controller
         $yearMonth = $request->input('year_month');
         $startOfMonth = Carbon::parse($yearMonth . '-01')->startOfDay();
         $endOfMonth = $startOfMonth->copy()->endOfMonth()->endOfDay();
-
-        // タイムゾーン考慮 (UTCで保存されている前提で、JSTの00:00〜23:59を探す)
-        // ここでは簡易的にAsia/Tokyo固定とするが、本来はShopのtimezoneを使うべき
-        $timezone = 'Asia/Tokyo'; 
+        $timezone = $shop->timezone; 
         
         // Eloquentで検索する際はUTCに変換された範囲で探す必要がある
         // ただし、workable_start_at はUTC。

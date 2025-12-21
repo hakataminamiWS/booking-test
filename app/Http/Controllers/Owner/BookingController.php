@@ -86,7 +86,6 @@ class BookingController extends Controller
         }
 
         // Parse start_at using shop's timezone and convert to UTC for storage
-        // Example: Input "2025-12-14 18:00" (Asia/Tokyo) -> "2025-12-14 09:00:00" (UTC)
         $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone(config('app.timezone'));
         
         // Calculate end_at based on duration

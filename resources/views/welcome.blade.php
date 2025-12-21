@@ -3,11 +3,6 @@
 @section('content')
     @if (app()->environment(['local', 'staging']))
         <div style="padding: 10px; background-color: #f0f0f0;">
-            <h3>デバッグ用リンク</h3>
-            <ul>
-                <li><a href="{{ route('debug.login-as', ['user' => 5]) }}">予約者としてログイン (ID: 5)</a></li>
-                <li><a href="{{ route('debug.login-as', ['user' => 6]) }}">予約者としてログイン (ID: 6)</a></li>
-            </ul>
             <h3>管理者</h3>
             <ul>
                 <li><a href="{{ route('debug.login-as', ['user' => 1]) }}">管理者としてログイン (ID: 1)</a></li>
@@ -53,16 +48,21 @@
                 <li><a href="{{ route('debug.login-as', ['user' => 4]) }}">スタッフとしてログイン (テスト スタッフ2, ID: 4)</a></li>
                 <li><a href="{{ route('staff.application.create', ['shop' => 'test-shop']) }}">スタッフ登録申し込み画面 (Slug:
                         test-shop)</a></li>
-                <li><a href="{{ route('staff.shifts.index', ['shop' => 'test-shop']) }}">スタッフシフト一覧画面 (Slug:
-                        test-shop)</a></li>
-                <li><a href="{{ route('staff.shifts.edit', ['shop' => 'test-shop']) }}">スタッフシフト編集画面 (Slug:
-                        test-shop)</a></li>
-                <li><a href="{{ route('staff.bookings.index', ['shop' => 'test-shop']) }}">スタッフ予約一覧画面 (Slug:
-                        test-shop)</a></li>
-                <li><a href="{{ route('staff.bookers.index', ['shop' => 'test-shop']) }}">スタッフ予約者一覧画面 (Slug:
-                        test-shop)</a></li>
                 <li><a href="{{ route('staff.staffs.index', ['shop' => 'test-shop']) }}">スタッフ一覧画面 (Slug:
                         test-shop)</a></li>
+                <li><a href="{{ route('staff.shifts.index', ['shop' => 'test-shop']) }}">シフト一覧画面 (Slug:
+                        test-shop)</a></li>
+                <li><a href="{{ route('staff.bookings.index', ['shop' => 'test-shop']) }}">予約一覧画面 (Slug:
+                        test-shop)</a></li>
+                <li><a href="{{ route('staff.bookers.index', ['shop' => 'test-shop']) }}">予約者一覧画面 (Slug:
+                        test-shop)</a></li>
+            </ul>
+
+            <h3>会員 (Booker)</h3>
+            <ul>
+                <li><a href="{{ route('debug.login-as', ['user' => 5]) }}">予約者としてログイン (ID: 5)</a></li>
+                <li><a href="{{ route('debug.login-as', ['user' => 6]) }}">予約者としてログイン (ID: 6)</a></li>
+                <li><a href="{{ route('booker.shops.index') }}">登録店舗一覧画面</a></li>
             </ul>
         </div>
     @endif

@@ -27,7 +27,7 @@ class UpdateShopRequest extends FormRequest
             'time_slot_interval' => ['required', 'integer'],
             'booking_confirmation_type' => ['required', 'string'],
             'accepts_online_bookings' => ['required', 'boolean'],
-            'timezone' => ['sometimes', 'string', 'in:Asia/Tokyo'],
+            'timezone' => ['sometimes', 'string', 'timezone'],
             'cancellation_deadline_minutes' => ['required', 'integer', 'min:0'],
             'booking_deadline_minutes' => ['required', 'integer', 'min:0'],
         ];

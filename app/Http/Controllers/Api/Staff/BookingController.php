@@ -134,7 +134,7 @@ class BookingController extends Controller
         $startOfMonth = Carbon::parse($yearMonth . '-01')->startOfDay();
         $endOfMonth = $startOfMonth->copy()->endOfMonth()->endOfDay();
 
-        $timezone = 'Asia/Tokyo'; 
+        $timezone = $shop->timezone; 
         
         $startUtc = $startOfMonth->copy()->setTimezone('UTC');
         $endUtc = $endOfMonth->copy()->setTimezone('UTC');
