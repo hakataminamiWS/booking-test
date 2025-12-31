@@ -99,7 +99,8 @@ class BookingController extends Controller
             'option_ids' => ['nullable', 'array'],
         ]);
 
-        $date = Carbon::parse($request->input('start_at'));
+        $timezone = $shop->timezone;
+        $date = Carbon::parse($request->input('start_at'), $timezone);
         $startAt = $date->copy();
         
         $menu = ShopMenu::findOrFail($request->input('menu_id'));
@@ -111,12 +112,24 @@ class BookingController extends Controller
         $staff = ShopStaff::findOrFail($request->input('assigned_staff_id'));
         
         // 既存予約取得
+        // UTCでの対象期間
+        $searchStartUtc = $startAt->copy()->startOfDay()->setTimezone(config('app.timezone'));
+        $searchEndUtc = $startAt->copy()->endOfDay()->setTimezone(config('app.timezone'));
+        $timezone = $shop->timezone;
+
         $existingBookings = $staff->bookings()
-            ->whereDate('start_at', $startAt->toDateString())
+            ->where(function ($query) use ($searchStartUtc, $searchEndUtc) {
+                $query->where('start_at', '<', $searchEndUtc)
+                      ->where('end_at', '>', $searchStartUtc);
+            })
+            // 自分自身を除外（更新時）
+            ->when($request->input('exclude_booking_id'), function ($query, $excludeId) {
+                $query->where('id', '!=', $excludeId);
+            })
             ->get()
             ->map(fn($booking) => (object)[
-                'start' => Carbon::parse($booking->start_at)->format('H:i'), // H:i only works if date matches
-                'end' => Carbon::parse($booking->end_at)->format('H:i')
+                'start' => Carbon::parse($booking->start_at)->setTimezone($timezone)->format('H:i'),
+                'end' => Carbon::parse($booking->end_at)->setTimezone($timezone)->format('H:i')
             ])
             ->all();
         

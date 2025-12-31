@@ -82,4 +82,37 @@ class ShopBookerController extends Controller
 
         return response()->json($bookers);
     }
+    public function history(Shop $shop, ShopBooker $booker): JsonResponse
+    {
+        $this->getAuthenticatedStaff($shop);
+
+        if ($booker->shop_id !== $shop->id) {
+            abort(404);
+        }
+
+        // Get CRM data
+        $crm = $booker->crm;
+
+        // Get recent 3 bookings
+        $recentBookings = $booker->bookings()
+            ->orderBy('start_at', 'desc')
+            ->limit(3)
+            ->get(['id', 'start_at', 'menu_name', 'assigned_staff_name', 'status']);
+
+        return response()->json([
+            'booking_count' => $crm?->booking_count ?? 0,
+            'last_booking_at' => $crm?->last_booking_at?->format('Y-m-d H:i'),
+            'note_from_booker' => $booker->note_from_booker,
+            'shop_memo' => $crm?->shop_memo,
+            'recent_bookings' => $recentBookings->map(function ($booking) {
+                return [
+                    'id' => $booking->id,
+                    'start_at' => $booking->start_at->format('Y-m-d H:i'),
+                    'menu_name' => $booking->menu_name,
+                    'staff_name' => $booking->assigned_staff_name,
+                    'status' => $booking->status,
+                ];
+            }),
+        ]);
+    }
 }

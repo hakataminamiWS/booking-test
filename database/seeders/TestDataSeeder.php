@@ -126,7 +126,7 @@ class TestDataSeeder extends Seeder
         $bookerUser1 = User::factory()->create(['id' => 5]);
         $booker = $shop->bookers()->create([
             'user_id' => $bookerUser1->id,
-            'number' => 1,
+            'user_id' => $bookerUser1->id,
             'name' => 'テスト1予約者',
             'contact_email' => 'booker-5@example.com',
             'contact_phone' => '09012345678',
@@ -139,7 +139,7 @@ class TestDataSeeder extends Seeder
         $bookerUser2 = User::factory()->create(['id' => 6]);
         $booker = $shop->bookers()->create([
             'user_id' => $bookerUser2->id,
-            'number' => 2,
+            'user_id' => $bookerUser2->id,
             'name' => 'テスト2予約者',
             'contact_email' => 'booker-6@example.com',
             'contact_phone' => '08098765432',

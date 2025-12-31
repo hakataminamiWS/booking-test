@@ -302,7 +302,7 @@ interface Filter {
 
 const filterableColumns = ref([
     { text: "予約開始日", value: "start_at", type: "date-range" },
-    { text: "予約者番号", value: "booker_number", type: "number" },
+    { text: "予約者番号", value: "booker_number", type: "text" },
     { text: "顧客名", value: "booker_name", type: "text" },
     { text: "メニュー", value: "menu_id", type: "select", items: props.menus.map(m => ({ text: m.name, value: m.id })) },
     { text: "担当スタッフ", value: "assigned_staff_id", type: "select", items: props.staffs.map(s => ({ text: s.name, value: s.id })) },

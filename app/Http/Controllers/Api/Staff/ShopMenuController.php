@@ -7,6 +7,7 @@ use App\Models\Shop;
 use App\Models\ShopMenu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ShopMenuController extends Controller
 {
@@ -33,6 +34,9 @@ class ShopMenuController extends Controller
                 'id' => $staff->id,
                 'profile' => [
                     'nickname' => $staff->profile->nickname ?? '',
+                    'small_image_url' => $staff->profile->small_image_url 
+                        ? Storage::disk('public')->url($staff->profile->small_image_url) 
+                        : null,
                 ],
             ];
         });

@@ -50,7 +50,21 @@ class BookingController extends Controller
 
         // フォームの選択肢として使用するデータを取得
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
-        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get();
+        // スタッフ画像のパスをURLに変換
+        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
+            $imageUrl = null;
+            if ($staff->profile && $staff->profile->small_image_url) {
+                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->small_image_url);
+            }
+            
+            // Vueコンポーネントが期待する形式に変換（APIと同様の構造）
+            $staffData = $staff->toArray();
+            $staffData['profile'] = [
+                'nickname' => $staff->profile->nickname ?? '',
+                'small_image_url' => $imageUrl,
+            ];
+            return $staffData;
+        });
         $bookers = $shop->bookers()->with('crm')->get();
         
         // 未来の予約のみを取得して渡す
@@ -202,7 +216,24 @@ class BookingController extends Controller
 
         // フォームの選択肢として使用するデータを取得
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
-        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get();
+        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
+            $imageUrl = null;
+            if ($staff->profile && $staff->profile->small_image_url) {
+                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->small_image_url);
+            }
+            
+            // Vueコンポーネントが期待する形式に変換（APIと同様の構造）
+            // 元のStaffモデルの属性も維持しつつ、profileを確実にオブジェクトにする
+            $staffData = $staff->toArray();
+            $staffData['profile'] = [
+                'nickname' => $staff->profile->nickname ?? '',
+                'small_image_url' => $imageUrl,
+            ];
+            
+            // 配列からオブジェクト(stdClass)にキャストして返す、またはVueに渡す際に配列として渡されるため配列のままでよいが
+            // eloquent collection map は通常モデルを返すが、ここでは配列に変形して返す
+            return $staffData;
+        });
         $bookers = $shop->bookers()->with('crm')->get();
         
         // 他の予約情報をカレンダー表示用に取得

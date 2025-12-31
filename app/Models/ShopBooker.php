@@ -35,9 +35,12 @@ class ShopBooker extends Model
 
         static::creating(function ($shopBooker) {
             if (empty($shopBooker->number)) {
-                // 同じshop_id内での最大値+1を設定
-                $maxNumber = static::where('shop_id', $shopBooker->shop_id)->max('number') ?? 0;
-                $shopBooker->number = $maxNumber + 1;
+                $sqids = new \Sqids\Sqids(minLength: 6);
+                // microtime(true) returns float like 1697701234.5678
+                // Multiply by 1000 to get milliseconds: 1697701234567.8
+                // Cast to int: 1697701234567
+                $timestamp = (int) (microtime(true) * 1000);
+                $shopBooker->number = $sqids->encode([$timestamp]);
             }
         });
     }
@@ -56,5 +59,13 @@ class ShopBooker extends Model
     public function crm(): HasOne
     {
         return $this->hasOne(ShopBookerCrm::class);
+    }
+
+    /**
+     * Get the bookings for the booker.
+     */
+    public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Booking::class, 'shop_booker_id');
     }
 }

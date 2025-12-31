@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('shop_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->integer('number');
+            $table->string('number');
             $table->string('name');
             $table->string('contact_email');
             $table->string('contact_phone');

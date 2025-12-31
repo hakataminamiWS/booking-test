@@ -27,7 +27,7 @@ class IndexBookingsRequest extends FormRequest
         return [
             'start_at_from' => ['nullable', 'date_format:Y-m-d'],
             'start_at_to' => ['nullable', 'date_format:Y-m-d'],
-            'booker_number' => ['nullable', 'integer'],
+            'booker_number' => ['nullable', 'string'],
             'booker_name' => ['nullable', 'string', 'max:255'],
             'menu_id' => ['nullable', 'integer'],
             'assigned_staff_id' => ['nullable', 'integer'],

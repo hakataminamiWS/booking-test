@@ -39,10 +39,7 @@ class ShopBookerController extends Controller
         $validated = $request->validated();
 
         DB::transaction(function () use ($shop, $validated) {
-            $maxNumber = $shop->bookers()->max('number') ?? 0;
-
             $bookerData = [
-                'number' => $maxNumber + 1,
                 'name' => $validated['name'],
                 'contact_email' => $validated['contact_email'],
                 'contact_phone' => $validated['contact_phone'],

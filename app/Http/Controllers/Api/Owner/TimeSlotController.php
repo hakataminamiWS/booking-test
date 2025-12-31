@@ -55,12 +55,17 @@ class TimeSlotController extends Controller
             ->all();
 
         // その日の既存予約を取得
+        // UTCでの一日の範囲と重なる予約を取得する
+        // (start_at < endOfDayUtc) AND (end_at > startOfDayUtc)
         $existingBookings = $staff->bookings()
-            ->whereDate('start_at', $date)
+            ->where(function ($query) use ($startOfDayUtc, $endOfDayUtc) {
+                $query->where('start_at', '<', $endOfDayUtc)
+                      ->where('end_at', '>', $startOfDayUtc);
+            })
             ->get()
             ->map(fn($booking) => (object)[
-                'start' => Carbon::parse($booking->start_at)->format('H:i'),
-                'end' => Carbon::parse($booking->end_at)->format('H:i')
+                'start' => Carbon::parse($booking->start_at)->setTimezone($userTimezone)->format('H:i'),
+                'end' => Carbon::parse($booking->end_at)->setTimezone($userTimezone)->format('H:i')
             ])
             ->all();
 

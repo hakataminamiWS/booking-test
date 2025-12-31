@@ -124,12 +124,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/shops/{shop:slug}/menus/{menu}/staffs', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'staffs'])->name('api.shops.menus.staffs');
             Route::get('/shops/{shop:slug}/options', [App\Http\Controllers\Api\Owner\ShopOptionController::class, 'index'])->name('api.shops.options.index');
             Route::get('/shops/{shop:slug}/bookers', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'index'])->name('api.shops.bookers.index');
+            Route::get('/shops/{shop:slug}/bookers/{booker}/history', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'history'])->name('api.shops.bookers.history');
             Route::get('/shops/{shop:slug}/bookings/validate-staff', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateStaff'])->name('api.shops.bookings.validate-staff');
             Route::get('/shops/{shop:slug}/bookings/validate-shift', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateShift'])->name('api.shops.bookings.validate-shift');
             Route::get('/shops/{shop:slug}/bookings/validate-conflict', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateConflict'])->name('api.shops.bookings.validate-conflict');
             Route::get('/shops/{shop:slug}/staffs/{staff}/working-days', [App\Http\Controllers\Api\Owner\BookingController::class, 'getWorkingDays'])->name('api.shops.staffs.working-days');
             Route::get('/shops/{shop:slug}/bookings', [App\Http\Controllers\Api\Owner\BookingController::class, 'index'])->name('api.shops.bookings.index');
             Route::get('/shops/{shop:slug}/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Owner\TimeSlotController::class, 'index'])->name('staffs.timeslots');
+            Route::get('/shops/{shop:slug}/staffs/{staff}/schedule', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'getSchedule'])->name('api.shops.staffs.schedule');
         });
     });
 
@@ -168,6 +170,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/bookings/validate-conflict', [App\Http\Controllers\Api\Staff\BookingController::class, 'validateConflict'])->name('bookings.validate-conflict');
             Route::get('/staffs/{staff}/working-days', [App\Http\Controllers\Api\Staff\BookingController::class, 'getWorkingDays'])->name('staffs.working-days');
             Route::get('/bookers', [App\Http\Controllers\Api\Staff\ShopBookerController::class, 'index'])->name('bookers.index');
+            Route::get('/bookers/{booker}/history', [App\Http\Controllers\Api\Staff\ShopBookerController::class, 'history'])->name('bookers.history');
             Route::get('/staffs', [App\Http\Controllers\Api\Staff\ShopStaffController::class, 'index'])->name('staffs.index');
             Route::get('/menus/{menu}/staffs', [App\Http\Controllers\Api\Staff\ShopMenuController::class, 'staffs'])->name('menus.staffs');
             Route::get('/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Staff\TimeSlotController::class, 'index'])->name('staffs.timeslots');

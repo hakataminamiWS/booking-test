@@ -45,4 +45,58 @@ class ShopStaffController extends Controller
 
         return response()->json($staffs);
     }
+
+    public function getSchedule(\Illuminate\Http\Request $request, Shop $shop, \App\Models\ShopStaff $staff): JsonResponse
+    {
+        $request->validate([
+            'date' => ['required', 'date'],
+        ]);
+
+        $timezone = $shop->timezone;
+        $date = \Carbon\Carbon::parse($request->input('date'), $timezone);
+        
+        // Find individual schedule for the date
+        // Note: workable_start_at is in UTC.
+        // We need to find a schedule that overlaps or is contained within the target date (in shop timezone)
+        // For simplicity as requested, we look for schedules that start within the target day (shop timezone).
+        
+        $startOfDay = $date->copy()->startOfDay()->setTimezone('UTC');
+        $endOfDay = $date->copy()->endOfDay()->setTimezone('UTC');
+
+        $schedule = $staff->schedules()
+            ->whereBetween('workable_start_at', [$startOfDay, $endOfDay])
+            ->first();
+
+        $scheduleData = null;
+        if ($schedule) {
+            $scheduleData = [
+                'start' => $schedule->workable_start_at->setTimezone($timezone)->format('H:i'),
+                'end' => $schedule->workable_end_at->setTimezone($timezone)->format('H:i'),
+            ];
+        }
+
+        // Get bookings for the staff on that date
+        // Bookings start_at is stored in DB (usually UTC or configured app timezone, but assumed consistent with Model access)
+        // We filter by date in Shop Timezone
+        $bookings = $staff->bookings()
+            ->whereBetween('start_at', [$date->copy()->startOfDay()->setTimezone(config('app.timezone')), $date->copy()->endOfDay()->setTimezone(config('app.timezone'))])
+            ->with('booker') // Load booker info
+            ->get()
+            ->map(function ($booking) use ($timezone) {
+                $start = \Carbon\Carbon::parse($booking->start_at)->setTimezone($timezone);
+                $end = \Carbon\Carbon::parse($booking->end_at)->setTimezone($timezone);
+                return [
+                    'id' => $booking->id,
+                    'start' => $start->format('H:i'),
+                    'end' => $end->format('H:i'),
+                    'booker_name' => $booking->booker_name,
+                    'booker_number' => $booking->booker?->number, // Optional
+                ];
+            });
+
+        return response()->json([
+            'schedule' => $scheduleData,
+            'bookings' => $bookings,
+        ]);
+    }
 }

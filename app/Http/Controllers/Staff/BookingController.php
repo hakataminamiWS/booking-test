@@ -46,7 +46,19 @@ class BookingController extends Controller
         $shop->load(['businessHoursRegular', 'shopSpecialOpenDays', 'shopSpecialClosedDays']);
 
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
-        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get();
+        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
+            $imageUrl = null;
+            if ($staff->profile && $staff->profile->small_image_url) {
+                $imageUrl = Storage::disk('public')->url($staff->profile->small_image_url);
+            }
+            
+            $staffData = $staff->toArray();
+            $staffData['profile'] = [
+                'nickname' => $staff->profile->nickname ?? '',
+                'small_image_url' => $imageUrl,
+            ];
+            return $staffData;
+        });
         $bookers = $shop->bookers()->with('crm')->get();
         
         $bookings = $shop->bookings()
@@ -165,7 +177,19 @@ class BookingController extends Controller
         $booking->load(['bookingOptions', 'booker.crm']);
 
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
-        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get();
+        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
+            $imageUrl = null;
+            if ($staff->profile && $staff->profile->small_image_url) {
+                $imageUrl = Storage::disk('public')->url($staff->profile->small_image_url);
+            }
+            
+            $staffData = $staff->toArray();
+            $staffData['profile'] = [
+                'nickname' => $staff->profile->nickname ?? '',
+                'small_image_url' => $imageUrl,
+            ];
+            return $staffData;
+        });
         $bookers = $shop->bookers()->with('crm')->get();
         
         $otherBookings = $shop->bookings()

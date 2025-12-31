@@ -62,10 +62,10 @@
                                           :rules="[rules.required]"></v-text-field>
 
                             <v-textarea
-                                          v-model="form.note_from_booker"
-                                          name="note_from_booker"
-                                          label="店舗へのメモ"
-                                          rows="3"></v-textarea>
+                                        v-model="form.note_from_booker"
+                                        name="note_from_booker"
+                                        label="店舗へのメモ"
+                                        rows="3"></v-textarea>
 
                             <v-text-field
                                           v-model="form.contact_email"
@@ -107,7 +107,7 @@ interface Shop {
 
 interface ShopBooker {
     id: number;
-    number: number;
+    number: string;
     name: string;
     contact_email: string | null;
     contact_phone: string | null;

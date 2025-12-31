@@ -279,7 +279,7 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 | `id`               | `bigint`       | `PK`, `AI`                                       | 予約者識別子 ID                                          |
 | `shop_id`          | `bigint`       | `FK (shops.id)`, `onDelete: CASCADE`             | 店舗 ID                                                  |
 | `user_id`          | `bigint`       | `FK (users.id)`, `Nullable`, `onDelete: CASCADE` | ユーザー ID。Google や LINE でのログインに生成されたもの |
-| `number`           | `integer`      |                                                  | 会員番号。予約者が予約を見るときの path としても利用     |
+| `number`           | `string`       |                                                  | 会員番号 (Sqids generated)。予約者が予約を見るときの path としても利用     |
 | `name`             | `varchar(255)` |                                                  | 表示される予約者の名前、予約者側で設定・変更するもの     |
 | `contact_email`    | `varchar(255)` |                                                  | 予約者の連絡先メールアドレス                             |
 | `contact_phone`    | `varchar(255)` |                                                  | 予約者の連絡先電話番号                                   |

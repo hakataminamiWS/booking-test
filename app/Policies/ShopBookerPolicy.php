@@ -17,6 +17,14 @@ class ShopBookerPolicy
     }
 
     /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, ShopBooker $booker, Shop $shop): bool
+    {
+        return $user->id === $shop->owner_user_id && $booker->shop_id === $shop->id;
+    }
+
+    /**
      * Determine whether the user can create models.
      */
     public function create(User $user, Shop $shop): bool

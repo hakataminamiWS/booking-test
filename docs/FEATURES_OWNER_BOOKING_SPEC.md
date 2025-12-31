@@ -118,6 +118,17 @@
     -   予約者、予約者名、予約者のよみがな、連絡先メールアドレス、連絡先電話番号、予約者からのメモなどを入力・選択します。
     -   既存予約者を選択した場合、会員番号を表示し、名前・よみがなは編集不可とします。
 
+-   予約者履歴表示セクション
+    -   既存予約者を選択した場合に表示されます。
+    -   以下の情報を表示します：
+        | 表示項目           | データソース                           | 備考               |
+        |:-------------------|:---------------------------------------|:-------------------|
+        | 予約回数           | `shop_bookers_crm.booking_count`       | 累計予約数         |
+        | 最終予約日時       | `shop_bookers_crm.last_booking_at`     | 前回来店日         |
+        | 予約者からのメモ   | `shop_bookers.note_from_booker`        | 予約者が設定       |
+        | 店舗側の予約者メモ | `shop_bookers_crm.shop_memo`           | 店舗が設定         |
+        | 直近の予約履歴     | `bookings` テーブル                    | 最大3件           |
+
 -   メニュー・オプション選択セクション
     -   メニューの選択、オプションの追加を行います。
     -   合計時間 / 料金を表示します。
@@ -161,6 +172,28 @@
 -   **処理内容**:
     -   `BookingPolicy@create` で認可チェックを行います。
     -   フォームの選択肢データを取得し `props` として渡します。
+
+###### 予約者履歴取得 API
+
+-   **ルート**: `GET /owner/api/shops/{shop}/bookers/{booker}/history`
+-   **コントローラ**: `Api\\Owner\\ShopBookerController@history`
+-   **レスポンス**:
+    | フィールド         | 型        | 説明               |
+    |:-------------------|:----------|:-------------------|
+    | `booking_count`    | integer   | 累計予約回数       |
+    | `last_booking_at`  | string    | 最終予約日時       |
+    | `note_from_booker` | string    | 予約者からのメモ   |
+    | `shop_memo`        | string    | 店舗側の予約者メモ |
+    | `recent_bookings`  | array     | 直近3件の予約履歴  |
+
+    `recent_bookings` の各要素:
+    | フィールド    | 型      | 説明           |
+    |:--------------|:--------|:---------------|
+    | `id`          | integer | 予約ID         |
+    | `start_at`    | string  | 予約日時       |
+    | `menu_name`   | string  | メニュー名     |
+    | `staff_name`  | string  | 担当スタッフ名 |
+    | `status`      | string  | ステータス     |
 
 ---
 
