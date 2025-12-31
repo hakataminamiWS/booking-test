@@ -642,7 +642,7 @@ const props = defineProps<Props>();
 // --- フォーム状態 ---
 const form = ref({
     start_at: props.booking.start_at,
-    menu_id: Number(props.booking.menu_id),
+    menu_id: Number(props.booking.menu_id) as number | null,
     option_ids: props.booking.booking_options ? props.booking.booking_options.map(bo => Number(bo.option_id)) : [] as number[],
     assigned_staff_id: Number(props.booking.assigned_staff_id) as number | null,
     shop_booker_id: Number(props.booking.shop_booker_id) as number | null,
@@ -1125,7 +1125,7 @@ const fetchBookerHistory = async () => {
 
 
 
-// 8. selectedTime (Chip) が変化したときの処理
+// 7. selectedTime (Chip) が変化したときの処理
 watch(
     selectedTime,
     (newVal) => {
@@ -1136,7 +1136,7 @@ watch(
     }
 );
 
-// 9. directTimeInput が変化したときの処理
+// 8. directTimeInput が変化したときの処理
 watch(
     directTimeInput,
     (newVal) => {
@@ -1147,7 +1147,7 @@ watch(
     }
 );
 
-// 10. 予約日時（form.start_at）の構築とバリデーション
+// 9. 予約日時（form.start_at）の構築とバリデーション
 watch(
     [() => formattedSelectedDate.value, selectedTime, directTimeInput],
     async ([newDate, chipTime, inputTime]) => {
@@ -1292,15 +1292,18 @@ onMounted(async () => {
         // この時、以前選んでいたスタッフがリストになくても、IDがセットされていれば form.value.assigned_staff_id に値が入っている
         // checkAutoEnable = true で呼ぶことで、リストになければ「全スタッフ表示」をONにする
         await fetchAssignedStaffs(true);
-        // カレンダー用に営業日も取得する必要がある
+    }
+
+    if (form.value.assigned_staff_id) {
         fetchWorkingDays(pickerYear.value, pickerMonth.value);
     }
-    // Fetch initial slots and schedule
-    // These are triggered by the watch, BUT we might need to manually trigger them if the watch handles changes only
-    // Actually the watch on formattedSelectedDate.value (computed) might not fire if it doesn't change from init?
-    // Let's trigger explicitly.
-    fetchTimeSlots();
-    fetchDailyScheduleAndBookings();
+
+    // バリデーション実行
+    await Promise.all([
+        fetchTimeSlots(),
+        fetchDailyScheduleAndBookings(),
+    ]);
+
     checkShiftAndConflict();
     checkStaffAssignment();
 });

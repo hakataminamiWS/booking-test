@@ -416,7 +416,7 @@
                                                     <div>
                                                         <div class="text-caption text-medium-emphasis">最終予約日時</div>
                                                         <div class="text-body-1">{{ bookerHistory.last_booking_at || '－'
-                                                        }}</div>
+                                                            }}</div>
                                                     </div>
                                                 </div>
 
@@ -609,7 +609,7 @@ interface Staff {
     };
     schedules: StaffSchedule[];
 }
-interface Booker {
+interface ShopBooker {
     id: number;
     name: string;
     contact_email: string;
@@ -629,7 +629,7 @@ interface Props {
     shop: Shop;
     menus: Menu[];
     staffs: Staff[];
-    bookers: Booker[];
+    bookers: ShopBooker[];
     bookings: Booking[];
     errors: string[];
     oldInput: { [key: string]: any } | null;
@@ -1004,7 +1004,7 @@ const onPickerMonthChange = (month: number) => {
     fetchWorkingDays(pickerYear.value, pickerMonth.value);
 };
 
-const filteredBookers = computed((): Booker[] => {
+const filteredBookers = computed((): ShopBooker[] => {
     if (!bookerSearchQuery.value) return props.bookers;
     const query = bookerSearchQuery.value.toLowerCase();
     return props.bookers.filter(
@@ -1142,7 +1142,7 @@ watch(
     () => form.value.shop_booker_id,
     fetchBookerHistory
 );
-// 8. selectedTime (Chip) が変化したときの処理
+// 7. selectedTime (Chip) が変化したときの処理
 watch(
     selectedTime,
     (newVal) => {
@@ -1153,7 +1153,7 @@ watch(
     }
 );
 
-// 9. directTimeInput が変化したときの処理
+// 8. directTimeInput が変化したときの処理
 watch(
     directTimeInput,
     (newVal) => {
@@ -1164,7 +1164,7 @@ watch(
     }
 );
 
-// 10. 予約日時（form.start_at）の構築とバリデーション
+// 9. 予約日時（form.start_at）の構築とバリデーション
 watch(
     [() => formattedSelectedDate.value, selectedTime, directTimeInput],
     async ([newDate, chipTime, inputTime]) => {
@@ -1319,27 +1319,31 @@ onMounted(async () => {
     // 新規登録時は不要
 
     // フォームエラー(oldInput) の適用
-    if (props.oldInput) {
-        form.value.menu_id = props.oldInput.menu_id
-            ? Number(props.oldInput.menu_id)
+    // 配列の場合は中身があるかチェック（LaravelのgetOldInputは空配列を返すため）
+    const hasOldInput = props.oldInput && Object.keys(props.oldInput).length > 0;
+    if (hasOldInput) {
+        const old = props.oldInput as { [key: string]: any }; // 型アサーション
+        form.value.menu_id = old.menu_id
+            ? Number(old.menu_id)
             : null;
-        form.value.option_ids = (props.oldInput.option_ids ?? []).map(Number);
-        form.value.assigned_staff_id = props.oldInput.assigned_staff_id
-            ? Number(props.oldInput.assigned_staff_id)
+        form.value.option_ids = (old.option_ids ?? []).map(Number);
+        form.value.assigned_staff_id = old.assigned_staff_id
+            ? Number(old.assigned_staff_id)
             : null;
-        form.value.shop_booker_id = props.oldInput.shop_booker_id
-            ? Number(props.oldInput.shop_booker_id)
+        form.value.shop_booker_id = old.shop_booker_id
+            ? Number(old.shop_booker_id)
             : null;
-        form.value.booker_name = props.oldInput.booker_name ?? "";
-        form.value.booker_name_kana = props.oldInput.booker_name_kana ?? "";
-        form.value.contact_email = props.oldInput.contact_email ?? "";
-        form.value.contact_phone = props.oldInput.contact_phone ?? "";
-        form.value.shop_memo = props.oldInput.shop_memo ?? "";
-        form.value.note_from_booker = props.oldInput.note_from_booker ?? "";
+        form.value.booker_name = old.booker_name ?? "";
+        form.value.booker_name_kana = old.booker_name_kana ?? "";
+        form.value.contact_email = old.contact_email ?? "";
+        form.value.contact_phone = old.contact_phone ?? "";
+        form.value.shop_memo = old.shop_memo ?? "";
+        form.value.note_from_booker = old.note_from_booker ?? "";
 
-        if (props.oldInput.start_at) {
-            const d = new Date(props.oldInput.start_at);
+        if (old.start_at) {
+            const d = new Date(old.start_at);
             setDate(d);
+            // 時間の復元
             const time =
                 (`0` + d.getHours()).slice(-2) +
                 ":" +
