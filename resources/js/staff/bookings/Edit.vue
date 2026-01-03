@@ -2,7 +2,7 @@
     <v-app>
         <v-main>
             <v-container fluid class="container-width-1200">
-                <!-- Navigation -->
+                <!-- ナビゲーション -->
                 <v-row>
                     <v-col cols="12">
                         <v-btn
@@ -14,17 +14,18 @@
                     </v-col>
                 </v-row>
 
-                <!-- Shop Header -->
+                <!-- ショップヘッダー -->
                 <v-row>
                     <v-col cols="12">
                         <ShopHeader :shop="shop" />
                     </v-col>
                 </v-row>
 
-                <!-- Main Form Card -->
+                <!-- メインフォームカード -->
                 <v-row>
                     <v-col cols="12">
                         <form
+                              id="booking-edit-form"
                               :action="`/shops/${props.shop.slug}/staff/bookings/${props.booking.id}`"
                               method="POST">
                             <input
@@ -41,7 +42,7 @@
                                    name="shop_booker_id"
                                    :value="form.shop_booker_id ?? ''" />
 
-                            <!-- Validation Errors -->
+                            <!-- バリデーションエラー -->
                             <v-alert
                                      v-if="props.errors.length > 0"
                                      type="error"
@@ -56,7 +57,7 @@
                             </v-alert>
 
                             <v-row>
-                                <!-- Menu/Options & Staff -->
+                                <!-- メニュー・オプション・スタッフ -->
                                 <v-col cols="12" md="8">
                                     <v-card variant="text">
                                         <v-card-text class="pa-0">
@@ -137,7 +138,6 @@
                                                                         class="mt-n4">
                                                             </v-checkbox>
                                                         </v-card-text>
-
                                                     </v-card>
 
                                                 </v-col>
@@ -158,7 +158,7 @@
                                     </v-card>
                                 </v-col>
 
-                                <!-- Memo -->
+                                <!-- メモ -->
                                 <v-col cols="12" md="4">
                                     <v-card variant="text">
                                         <v-card-title class="px-0">
@@ -172,7 +172,7 @@
                                     </v-card>
                                 </v-col>
 
-                                <!-- Booking Date -->
+                                <!-- 予約日時 -->
                                 <v-col cols="12" md="8">
                                     <v-card variant="text">
                                         <v-card-title class="px-0">予約日時</v-card-title>
@@ -198,12 +198,12 @@
                                                         </v-card-title>
                                                         <v-card-text class="px-0">
                                                             <v-date-picker v-model="selectedDateValue" hide-header
-                                                                           @update:model-value="updateDateFromPicker"
+                                                                           min-width="304"
                                                                            @update:year="onPickerYearChange"
                                                                            @update:month="onPickerMonthChange"
                                                                            :allowed-dates="allowedDates"
                                                                            show-adjacent-months>
-                                                                <!-- Custom Day Slot for Dots -->
+                                                                <!-- カレンダーの日付スロット -->
                                                                 <template v-slot:day="{ item, props: dayProps }">
                                                                     <v-btn
                                                                            v-bind="dayProps"
@@ -285,7 +285,7 @@
                                                 {{ shiftWarning }}
                                             </v-alert>
 
-                                            <v-alert v-if="conflictWarning" type="error" density="compact"
+                                            <v-alert v-if="conflictWarning" type="warning" density="compact"
                                                      variant="tonal" class="mb-2">
                                                 {{ conflictWarning }}
                                             </v-alert>
@@ -297,7 +297,7 @@
                                     </v-card>
                                 </v-col>
 
-                                <!-- Staff Schedule -->
+                                <!-- スタッフスケジュール -->
                                 <v-col cols="12" md="4">
                                     <v-card variant="text">
                                         <v-card-title class="px-0">
@@ -343,13 +343,15 @@
 
                                                 <v-card-text class="px-0" v-if="dailyBookings.length > 0">
                                                     <v-chip v-for="booking in dailyBookings" :key="booking.id"
-                                                            class="mb-1 mr-1" color="secondary"
-                                                            variant="flat"
-                                                            :href="`/shops/${props.shop.slug}/bookings/${booking.id}/edit`"
+                                                            class="mb-1 mr-1"
+                                                            :variant="booking.id === props.booking.id ? 'text' : 'tonal'"
+                                                            :href="booking.id === props.booking.id ? undefined : `/shops/${props.shop.slug}/staff/bookings/${booking.id}/edit`"
                                                             target="_blank">
                                                         {{ booking.start }} - {{ booking.end }} {{
                                                             booking.booker_name
                                                         }}
+                                                        <span v-if="booking.id === props.booking.id"
+                                                              class="ml-1">(編集中)</span>
                                                     </v-chip>
                                                 </v-card-text>
 
@@ -362,7 +364,7 @@
 
                                 </v-col>
 
-                                <!-- Booker Selection (Fixed) -->
+                                <!-- 予約者選択 -->
                                 <v-col cols="12" md="6">
 
                                     <v-card variant="text">
@@ -399,7 +401,7 @@
                                     </v-card>
                                 </v-col>
 
-                                <!-- Booker History -->
+                                <!-- 予約者履歴 -->
                                 <v-col cols="12" md="6" v-if="form.shop_booker_id">
                                     <v-card variant="text">
                                         <v-card-title class="px-0">
@@ -470,23 +472,24 @@
                                     </v-card>
                                 </v-col>
                             </v-row>
-
-                            <!-- Actions -->
-                            <v-card-actions class="px-0 pt-4">
-                                <v-btn color="error" @click="deleteDialog = true">
-                                    予約を削除する
-                                </v-btn>
-                                <v-spacer></v-spacer>
-                                <v-btn type="submit" color="primary" variant="flat" size="large"
-                                       :disabled="!isFormValid" @click="submitForm">
-                                    更新する
-                                </v-btn>
-                            </v-card-actions>
+                            <!-- アクション -->
+                            <v-row>
+                                <v-col cols="12">
+                                    <v-card-actions class="px-0">
+                                        <v-btn color="error" variant="text" @click="deleteDialog = true">
+                                            この予約を削除する
+                                        </v-btn>
+                                    </v-card-actions>
+                                </v-col>
+                            </v-row>
                         </form>
                     </v-col>
                 </v-row>
 
-                <!-- Time Picker Dialog -->
+                <!-- 予約者選択ダイアログ -->
+                <!-- 編集画面では予約者変更不可 -->
+
+                <!-- 時間選択ダイアログ -->
                 <v-dialog v-model="timePickerDialog" width="auto">
                     <v-card>
                         <v-time-picker v-model="directTimeInput" format="24hr"></v-time-picker>
@@ -499,7 +502,7 @@
                     </v-card>
                 </v-dialog>
 
-                <!-- Delete Confirmation Dialog -->
+                <!-- 削除確認ダイアログ -->
                 <v-dialog v-model="deleteDialog" max-width="500px">
                     <v-card>
                         <v-card-title class="text-h5">
@@ -527,6 +530,11 @@
                 </v-dialog>
             </v-container>
         </v-main>
+
+        <BookingStickyFooter :menu-name="selectedMenu?.name" :staff-name="selectedStaffName"
+                             :date-time="displayDateTime"
+                             :total-price="totalPrice" submit-label="更新する" :disabled="!isFormValid"
+                             @submit="submitForm" />
     </v-app>
 </template>
 
@@ -534,9 +542,10 @@
 import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
 import ShopHeader from "@/components/common/ShopHeader.vue";
+import BookingStickyFooter from "@/components/common/BookingStickyFooter.vue";
 import { formatInTimeZone } from "date-fns-tz";
 
-// --- Type Definitions ---
+// --- 型定義 ---
 interface BusinessHour {
     weekday: number;
     start_time: string;
@@ -630,16 +639,18 @@ interface Props {
     csrfToken: string;
 }
 
-// --- Props ---
+// --- プロパティ ---
 const props = defineProps<Props>();
 
-// --- Form State ---
+// --- フォーム状態 ---
 const form = ref({
-    start_at: props.booking.start_at,
-    menu_id: Number(props.booking.menu_id),
+    start_at: props.booking.start_at
+        ? formatInTimeZone(props.booking.start_at, props.shop.timezone || 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:00')
+        : "",
+    menu_id: Number(props.booking.menu_id) as number | null,
     option_ids: props.booking.booking_options ? props.booking.booking_options.map(bo => Number(bo.option_id)) : [] as number[],
     assigned_staff_id: Number(props.booking.assigned_staff_id) as number | null,
-    shop_booker_id: Number(props.booking.shop_booker_id),
+    shop_booker_id: Number(props.booking.shop_booker_id) as number | null,
     booker_number: props.booking.booker?.number ?? null,
     booker_name: props.booking.booker_name,
     booker_name_kana: props.booking.booker?.crm?.name_kana ?? "",
@@ -649,15 +660,18 @@ const form = ref({
     note_from_booker: props.booking.note_from_booker,
 });
 
-const shopTimezone = props.shop.timezone || 'Asia/Tokyo';
+// --- タイムゾーン ---
+const shopTimezone = computed(() => props.shop.timezone || 'Asia/Tokyo');
 
 // ショップのタイムゾーンを使用して日付と時間のコンポーネントを抽出
+// デフォルトは既存の予約の開始日時
+// form.start_at が存在する場合（初期化時など）、それをパースする。
 const initialDateStr = form.value.start_at
-    ? formatInTimeZone(form.value.start_at, shopTimezone, 'yyyy-MM-dd')
-    : formatInTimeZone(new Date(), shopTimezone, 'yyyy-MM-dd');
+    ? formatInTimeZone(form.value.start_at, shopTimezone.value, 'yyyy-MM-dd')
+    : formatInTimeZone(new Date(), shopTimezone.value, 'yyyy-MM-dd');
 
 const initialTime = form.value.start_at
-    ? formatInTimeZone(form.value.start_at, shopTimezone, 'HH:mm')
+    ? formatInTimeZone(form.value.start_at, shopTimezone.value, 'HH:mm')
     : null;
 
 const selectedTime = ref<string | null>(initialTime);
@@ -672,28 +686,12 @@ if (currentStaff) {
 }
 
 const showAllStaffs = ref(false);
-const showAllStaffsModel = computed({
-    get: () => showAllStaffs.value,
-    set: (value) => {
-        if (!value) {
-            if (form.value.assigned_staff_id && assignedStaffs.value.length > 0) {
-                const inList = assignedStaffs.value.some(s => s.id === form.value.assigned_staff_id);
-                if (!inList) {
-                    form.value.assigned_staff_id = null;
-                }
-            } else if (form.value.assigned_staff_id && assignedStaffs.value.length === 0) {
-                form.value.assigned_staff_id = null;
-            }
-        }
-        showAllStaffs.value = value;
-    }
-});
 const allowOffShift = ref(false);
 const staffWarning = ref<string | null>(null);
 const shiftWarning = ref<string | null>(null);
 const conflictWarning = ref<string | null>(null);
 
-// --- Booker History State ---
+// --- 予約者履歴状態 ---
 interface BookerHistoryBooking {
     id: number;
     start_at: string;
@@ -711,13 +709,14 @@ interface BookerHistory {
 const bookerHistory = ref<BookerHistory | null>(null);
 const bookerHistoryLoading = ref(false);
 
-// --- カレンダーの状態 ---
+// --- カレンダー状態 ---
 const workingDays = ref<string[]>([]); // YYYY-MM-DD 文字列
+// 初期の予約日から pickerYear/Month を初期化
 const initialDateObj = new Date(initialDateStr + 'T00:00:00');
 const pickerYear = ref(initialDateObj.getFullYear());
 const pickerMonth = ref(initialDateObj.getMonth() + 1);
 
-// --- Schedule & Bookings State ---
+// --- スケジュール＆予約状態 ---
 interface DailyBooking {
     id: number;
     start: string;
@@ -731,7 +730,7 @@ interface DailySchedule {
 const dailySchedule = ref<DailySchedule | null>(null);
 const dailyBookings = ref<DailyBooking[]>([]);
 
-// --- Time Slot State & Logic ---
+// --- 時間枠の状態とロジック ---
 const timeSlots = ref<string[]>([]);
 const groupedTimeSlots = computed(() => {
     const groups: { [key: string]: string[] } = {};
@@ -817,7 +816,7 @@ const fetchDailyScheduleAndBookings = async () => {
         dailySchedule.value = response.data.schedule;
         dailyBookings.value = response.data.bookings;
     } catch (error) {
-        console.error("Failed to fetch schedule/bookings:", error);
+        console.error("スケジュール/予約の取得に失敗しました:", error);
         dailySchedule.value = null;
         dailyBookings.value = [];
     }
@@ -834,7 +833,10 @@ const fetchAssignedStaffs = async (checkAutoEnable = false) => {
 
         const newStaffs = response.data.staffs;
         if (checkAutoEnable && form.value.assigned_staff_id && !newStaffs.some((s: Staff) => s.id === form.value.assigned_staff_id)) {
-            showAllStaffs.value = true;
+            // 割り当て必須メニューの場合のみ、リストにないスタッフが選ばれていたら「全表示」をONにする
+            if (selectedMenu.value?.requires_staff_assignment) {
+                showAllStaffs.value = true;
+            }
         }
         assignedStaffs.value = newStaffs;
     } catch (error) {
@@ -843,112 +845,7 @@ const fetchAssignedStaffs = async (checkAutoEnable = false) => {
     }
 };
 
-watch(
-    () => form.value.assigned_staff_id,
-    async () => {
-        await checkStaffAssignment();
-    }
-);
-
-
-
-
-
-watch(
-    [
-        () => form.value.menu_id,
-        () => form.value.option_ids,
-        () => form.value.assigned_staff_id,
-        () => formattedSelectedDate.value,
-    ],
-    async () => {
-        await Promise.all([fetchTimeSlots(), fetchDailyScheduleAndBookings()]);
-        checkShiftAndConflict();
-    }
-);
-
-watch([() => form.value.menu_id, showAllStaffs], () => {
-    if (form.value.menu_id) {
-        fetchAssignedStaffs();
-    } else {
-        assignedStaffs.value = [];
-    }
-});
-
-// --- Booker History Fetcher ---
-const fetchBookerHistory = async () => {
-    if (!form.value.shop_booker_id) {
-        bookerHistory.value = null;
-        return;
-    }
-    bookerHistoryLoading.value = true;
-    try {
-        const response = await axios.get(
-            `/shops/${props.shop.slug}/staff/api/bookers/${form.value.shop_booker_id}/history`
-        );
-        bookerHistory.value = response.data;
-    } catch (error) {
-        console.error("Failed to fetch booker history:", error);
-        bookerHistory.value = null;
-    } finally {
-        bookerHistoryLoading.value = false;
-    }
-};
-
-// マウント時に履歴を取得
-onMounted(async () => {
-    if (form.value.shop_booker_id) {
-        fetchBookerHistory();
-    }
-    if (form.value.menu_id) {
-        await fetchAssignedStaffs(true);
-        fetchWorkingDays(pickerYear.value, pickerMonth.value);
-    }
-    fetchTimeSlots();
-    fetchDailyScheduleAndBookings();
-    checkShiftAndConflict();
-    checkStaffAssignment();
-});
-
-
-// --- タイムゾーンと入力の同期ロジック ---
-
-// チップの選択で直接入力を更新
-watch(selectedTime, (newVal) => {
-    if (newVal) {
-        directTimeInput.value = newVal;
-    }
-});
-
-// 直接入力が一致しない場合、チップの選択をクリア
-watch(directTimeInput, (newVal) => {
-    if (!newVal) {
-        selectedTime.value = null;
-        return;
-    }
-    // 入力がチップグループのスロットと一致するか確認
-    const isAvailableSlot = timeSlots.value.includes(newVal);
-    if (isAvailableSlot) {
-        selectedTime.value = newVal;
-    } else {
-        selectedTime.value = null;
-    }
-});
-
-// Update form.start_at
-watch(
-    [() => formattedSelectedDate.value, directTimeInput],
-    ([date, time]) => {
-        if (date && time && /^([01]\d|2[0-3]):([0-5]\d)$/.test(time)) {
-            form.value.start_at = `${date} ${time}`;
-        } else {
-            form.value.start_at = "";
-        }
-        checkShiftAndConflict();
-    }
-);
-
-// --- Computed Properties for Calculation ---
+// --- 計算用算出プロパティ ---
 const selectedMenu = computed((): Menu | undefined =>
     props.menus.find((m) => m.id === form.value.menu_id)
 );
@@ -988,95 +885,27 @@ const totalDuration = computed(() => {
     return total;
 });
 
-const displayDateTime = computed(() => {
-    if (!formattedSelectedDate.value || !directTimeInput.value) return "";
-    return `${formattedSelectedDate.value} ${directTimeInput.value}`;
+// --- フッター表示ロジック ---
+const selectedStaffName = computed(() => {
+    if (!form.value.assigned_staff_id) return undefined;
+    const staff = availableStaffs.value.find(s => s.id === form.value.assigned_staff_id);
+    return staff?.profile.nickname;
 });
 
-const calculatedEndHint = computed(() => {
-    const time = directTimeInput.value;
-    if (!time || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(time)) return "HH:MM 形式で入力してください";
+const displayDateTime = computed(() => {
+    const effectiveTime = selectedTime.value || directTimeInput.value;
+    if (!formattedSelectedDate.value || !effectiveTime || !selectedDateValue.value) return undefined;
 
-    const [hours, minutes] = time.split(":").map(Number);
+    // 曜日を取得
+    const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][selectedDateValue.value.getDay()];
+
+    // 終了時間を計算
+    const [hours, minutes] = effectiveTime.split(":").map(Number);
     const date = new Date();
     date.setHours(hours, minutes + totalDuration.value, 0);
     const endStr = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-
-    return `終了予定: ${endStr} (${totalDuration.value}分)`;
+    return `${formattedSelectedDate.value}(${dayOfWeek}) ${effectiveTime}~${endStr} (${totalDuration.value}分)`;
 });
-
-// --- Validation Logic (Client-side) ---
-const checkShiftAndConflict = async () => {
-    shiftWarning.value = null;
-    conflictWarning.value = null;
-
-    if (!form.value.assigned_staff_id || !form.value.start_at) return;
-
-    // 1. Shift Check
-    if (!allowOffShift.value) {
-        try {
-            const response = await axios.get(
-                `/shops/${props.shop.slug}/staff/api/bookings/validate-shift`,
-                {
-                    params: {
-                        assigned_staff_id: form.value.assigned_staff_id,
-                        start_at: form.value.start_at,
-                        menu_id: form.value.menu_id,
-                        option_ids: form.value.option_ids,
-                    },
-                }
-            );
-            if (!response.data.valid) {
-                shiftWarning.value = "選択された時間は担当スタッフのシフト外です。";
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    // 2. Conflict Check
-    try {
-        const response = await axios.get(
-            `/shops/${props.shop.slug}/staff/api/bookings/validate-conflict`,
-            {
-                params: {
-                    assigned_staff_id: form.value.assigned_staff_id,
-                    start_at: form.value.start_at,
-                    menu_id: form.value.menu_id,
-                    option_ids: form.value.option_ids,
-                    exclude_booking_id: props.booking.id, // 自分自身を除外
-                },
-            }
-        );
-        if (!response.data.valid) {
-            conflictWarning.value = "担当スタッフの他の予約と重複しています。";
-        }
-    } catch (error) {
-        console.error(error);
-    }
-};
-
-const checkStaffAssignment = async () => {
-    staffWarning.value = null;
-    if (!showAllStaffs.value || !form.value.menu_id || !form.value.assigned_staff_id) return;
-
-    try {
-        const response = await axios.get(
-            `/staff/api/shops/${props.shop.slug}/bookings/validate-staff`,
-            {
-                params: {
-                    menu_id: form.value.menu_id,
-                    assigned_staff_id: form.value.assigned_staff_id,
-                },
-            }
-        );
-        if (!response.data.valid) {
-            staffWarning.value = "※このスタッフはメニューに割り当たっていません";
-        }
-    } catch (error) {
-        console.error(error);
-    }
-};
 
 const isFormValid = computed(() => {
     return (
@@ -1085,22 +914,20 @@ const isFormValid = computed(() => {
         !!form.value.booker_name &&
         !!form.value.contact_email &&
         !!form.value.contact_phone &&
-        !!form.value.start_at &&
-        !conflictWarning.value
+        !!form.value.start_at
     );
 });
 
 const submitForm = () => {
-    const formElement = document.querySelector("form");
+    const formElement = document.getElementById("booking-edit-form") as HTMLFormElement;
     if (formElement) formElement.submit();
 };
 
-
-// --- Dialog State ---
+// --- ダイアログ状態 ---
 const timePickerDialog = ref(false);
 const deleteDialog = ref(false);
 
-// --- Calendar Logic ---
+// --- カレンダーロジック ---
 const fetchWorkingDays = async (year: number, month: number) => {
     if (!form.value.assigned_staff_id) {
         workingDays.value = [];
@@ -1118,7 +945,7 @@ const fetchWorkingDays = async (year: number, month: number) => {
         );
         workingDays.value = response.data;
     } catch (error) {
-        console.error("Shift data fetch failed:", error);
+        console.error("シフトデータの取得に失敗しました:", error);
     }
 };
 
@@ -1145,13 +972,14 @@ const isToday = (dateInput: unknown): boolean => {
 
 const isSelected = (dateInput: unknown): boolean => {
     const dateString = getDateString(dateInput);
-    if (!dateString) return false;
+    if (!dateString || !formattedSelectedDate.value) return false;
     return dateString === formattedSelectedDate.value;
 };
 
 // Helper: 統一的な日付文字列取得 (YYYY-MM-DD)
 const getDateString = (dateInput: unknown): string | null => {
     let d: Date | null = null;
+
     if (dateInput instanceof Date) {
         d = dateInput;
     } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
@@ -1165,13 +993,16 @@ const getDateString = (dateInput: unknown): string | null => {
             return null;
         }
     }
+
     if (!d || isNaN(d.getTime())) return null;
+
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
 
+// Helper: 日付の数字を取得
 const getDayNumber = (dateInput: unknown): string => {
     const dateString = getDateString(dateInput);
     if (!dateString) return "";
@@ -1182,13 +1013,7 @@ const getDayStyle = (date: unknown) => {
     return {};
 };
 
-// Picker navigation handlers
-const updateDateFromPicker = (newDate: any) => {
-    if (newDate instanceof Date) {
-        setDate(newDate);
-    }
-};
-
+// ピッカーナビゲーションハンドラ
 const onPickerYearChange = (year: number) => {
     pickerYear.value = year;
     fetchWorkingDays(pickerYear.value, pickerMonth.value);
@@ -1198,19 +1023,302 @@ const onPickerMonthChange = (month: number) => {
     fetchWorkingDays(pickerYear.value, pickerMonth.value);
 };
 
-// Watchers for calendar data
-watch(() => form.value.assigned_staff_id, (newVal) => {
-    if (newVal) {
-        fetchWorkingDays(pickerYear.value, pickerMonth.value);
-    } else {
-        workingDays.value = [];
+
+// ========================================
+// --- Watchers ---
+// ========================================
+
+// 1. 予約可能な時間枠の取得
+watch(
+    [
+        () => form.value.menu_id,
+        () => form.value.option_ids,
+        () => form.value.assigned_staff_id,
+        () => formattedSelectedDate.value,
+    ],
+    fetchTimeSlots
+);
+
+// 2. 担当スタッフのシフト・予約状況の取得
+watch(
+    [
+        () => form.value.assigned_staff_id,
+        () => formattedSelectedDate.value,
+    ],
+    fetchDailyScheduleAndBookings
+);
+
+// 3. メニュー変更時の処理（オプション・時間リセット + 担当スタッフの制御）
+watch(
+    () => form.value.menu_id,
+    () => {
+        // オプション・日時のリセット
+        form.value.option_ids = [];
+        selectedTime.value = null;
+        directTimeInput.value = null;
+        selectedDateValue.value = null;
+
+        // 担当スタッフの制御
+        // 選択済みの担当スタッフをクリア
+        form.value.assigned_staff_id = null;
+
+        // スタッフ割り当てが必須の場合はAPIから取得
+        if (selectedMenu.value) {
+            if (selectedMenu.value.requires_staff_assignment) {
+                fetchAssignedStaffs();
+            }
+        } else {
+            // メニューが未選択の場合はスタッフリストをクリア
+            assignedStaffs.value = [];
+        }
+
     }
+);
+
+// 4. 担当スタッフ変更時の処理（勤務日取得 + 割り当てバリデーション）
+watch(
+    () => form.value.assigned_staff_id,
+    async (newStaffId) => {
+        // 勤務日の取得（カレンダー用）
+        if (newStaffId) {
+            fetchWorkingDays(pickerYear.value, pickerMonth.value);
+        } else {
+            workingDays.value = [];
+        }
+
+        // スタッフ割り当てバリデーション
+        await checkStaffAssignment();
+    }
+);
+
+// 5. 「メニューに割り当たっていない担当スタッフも表示する」チェックボックスがOFF時の処理
+watch(
+    showAllStaffs,
+    (newVal) => {
+        // OFFになった場合、選択中のスタッフがリストにない場合は初期化
+        if (!newVal && form.value.assigned_staff_id) {
+            const isStaffInList = availableStaffs.value.some(
+                (s) => s.id === form.value.assigned_staff_id
+            );
+            if (!isStaffInList) {
+                form.value.assigned_staff_id = null;
+            }
+        }
+        // チェックが変わったらバリデーションも再実行
+        checkStaffAssignment();
+    }
+);
+
+// 6. 予約者選択時のフォーム反映 + 履歴取得
+const fetchBookerHistory = async () => {
+    const bookerId = form.value.shop_booker_id;
+    if (!bookerId) {
+        bookerHistory.value = null;
+        return;
+    }
+    // 予約者履歴を取得
+    bookerHistoryLoading.value = true;
+    try {
+        const response = await axios.get(
+            `/shops/${props.shop.slug}/staff/api/bookers/${bookerId}/history`
+        );
+        bookerHistory.value = response.data;
+    } catch (error) {
+        bookerHistory.value = null;
+    } finally {
+        bookerHistoryLoading.value = false;
+    }
+};
+
+
+
+
+// 7. selectedTime (Chip) が変化したときの処理
+watch(
+    selectedTime,
+    (newVal) => {
+        // Chip が選択されたら、直接入力をクリア（無限ループ防止: 値がある場合のみ）
+        if (newVal && directTimeInput.value) {
+            directTimeInput.value = null;
+        }
+    }
+);
+
+// 8. directTimeInput が変化したときの処理
+watch(
+    directTimeInput,
+    (newVal) => {
+        // 直接入力が設定されたら、Chip の選択を解除（無限ループ防止: 値がある場合のみ）
+        if (newVal && selectedTime.value) {
+            selectedTime.value = null;
+        }
+    }
+);
+
+// 9. 予約日時（form.start_at）の構築とバリデーション
+watch(
+    [() => formattedSelectedDate.value, selectedTime, directTimeInput],
+    async ([newDate, chipTime, inputTime]) => {
+        // 有効な時間を取得（Chip または 直接入力）
+        const effectiveTime = chipTime || inputTime;
+
+        // start_at の構築 & 警告チェック
+        if (newDate && effectiveTime && /^([01]\d|2[0-3]):([0-5]\d)$/.test(effectiveTime)) {
+            const newStartAt = `${newDate} ${effectiveTime}:00`;
+            if (form.value.start_at !== newStartAt) {
+                form.value.start_at = newStartAt;
+            }
+        } else {
+            form.value.start_at = "";
+        }
+        await checkShiftAndConflict();
+    }
+);
+
+
+
+
+// --- バリデーション関数 ---
+const checkShiftAndConflict = async () => {
+    shiftWarning.value = null;
+    conflictWarning.value = null;
+
+    if (!form.value.assigned_staff_id || !form.value.start_at) return;
+
+    // 1. シフトチェック（直接入力時のみ実行 - TimeChip選択はシフト内のみなので不要）
+    if (directTimeInput.value) {
+        try {
+            const response = await axios.get(
+                `/shops/${props.shop.slug}/staff/api/bookings/validate-shift`,
+                {
+                    params: {
+                        assigned_staff_id: form.value.assigned_staff_id,
+                        start_at: form.value.start_at,
+                        menu_id: form.value.menu_id,
+                        option_ids: form.value.option_ids,
+                    },
+                }
+            );
+            if (!response.data.valid) {
+                shiftWarning.value = "※この日時は担当スタッフのシフト外です";
+            }
+        } catch (error) {
+            console.error("シフトのバリデーションに失敗しました:", error);
+        }
+    }
+
+    // 2. 競合チェック
+    try {
+        const response = await axios.get(
+            `/shops/${props.shop.slug}/staff/api/bookings/validate-conflict`,
+            {
+                params: {
+                    assigned_staff_id: form.value.assigned_staff_id,
+                    start_at: form.value.start_at,
+                    menu_id: form.value.menu_id,
+                    option_ids: form.value.option_ids,
+                    exclude_booking_id: props.booking.id, // 自分自身を除外
+                },
+            }
+        );
+        if (!response.data.valid) {
+            conflictWarning.value = "※この時間帯には既に別の予約が入っています";
+        }
+    } catch (error) {
+        console.error("競合のバリデーションに失敗しました:", error);
+    }
+};
+
+const checkStaffAssignment = async () => {
+    staffWarning.value = null;
+    if (!showAllStaffs.value || !form.value.menu_id || !form.value.assigned_staff_id) return;
+    if (selectedMenu.value && !selectedMenu.value.requires_staff_assignment) return;
+
+    try {
+        const response = await axios.get(
+            `/shops/${props.shop.slug}/staff/api/bookings/validate-staff`,
+            {
+                params: {
+                    menu_id: form.value.menu_id,
+                    assigned_staff_id: form.value.assigned_staff_id,
+                },
+            }
+        );
+        if (!response.data.valid) {
+            staffWarning.value = "※このスタッフはメニューに割り当たっていません";
+        }
+    } catch (error) {
+        console.error("スタッフのバリデーションに失敗しました:", error);
+    }
+};
+
+
+// --- ライフサイクルフック ---
+onMounted(async () => {
+    // 予約者の履歴を取得
+    if (form.value.shop_booker_id) {
+        fetchBookerHistory();
+    }
+    // フォームエラー(oldInput) の適用
+    // 配列の場合は中身があるかチェック（LaravelのgetOldInputは空配列を返すため）
+    const hasOldInput = props.oldInput && Object.keys(props.oldInput).length > 0;
+    if (hasOldInput) {
+        const old = props.oldInput as { [key: string]: any }; // 型アサーション
+        form.value.menu_id = old.menu_id
+            ? Number(old.menu_id)
+            : null;
+        form.value.option_ids = (old.option_ids ?? []).map(Number);
+        form.value.assigned_staff_id = old.assigned_staff_id
+            ? Number(old.assigned_staff_id)
+            : null;
+        form.value.shop_booker_id = old.shop_booker_id
+            ? Number(old.shop_booker_id)
+            : null;
+        form.value.booker_name = old.booker_name ?? "";
+        form.value.booker_name_kana = old.booker_name_kana ?? "";
+        form.value.contact_email = old.contact_email ?? "";
+        form.value.contact_phone = old.contact_phone ?? "";
+        form.value.shop_memo = old.shop_memo ?? "";
+        form.value.note_from_booker = old.note_from_booker ?? "";
+
+        if (old.start_at) {
+            const d = new Date(old.start_at);
+            setDate(d);
+            // 時間の復元
+            const time =
+                (`0` + d.getHours()).slice(-2) +
+                ":" +
+                (`0` + d.getMinutes()).slice(-2);
+            selectedTime.value = time;
+            directTimeInput.value = time;
+        }
+    }
+
+    // データフェッチ
+    if (form.value.menu_id) {
+        // oldInputがある場合、スタッフ割り当てバリデーションのためにリストを取得
+        // この時、以前選んでいたスタッフがリストになくても、IDがセットされていれば form.value.assigned_staff_id に値が入っている
+        // checkAutoEnable = true で呼ぶことで、リストになければ「全スタッフ表示」をONにする
+        await fetchAssignedStaffs(true);
+    }
+
+    if (form.value.assigned_staff_id) {
+        fetchWorkingDays(pickerYear.value, pickerMonth.value);
+    }
+
+    // バリデーション実行
+    await Promise.all([
+        fetchTimeSlots(),
+        fetchDailyScheduleAndBookings(),
+    ]);
+
+    checkShiftAndConflict();
+    checkStaffAssignment();
 });
 </script>
 
 <style scoped>
 .container-width-1200 {
     max-width: 1200px;
-    margin: 0 auto;
 }
 </style>

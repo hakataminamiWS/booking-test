@@ -181,6 +181,12 @@ const pages = {
     "booker/bookings/Show": defineAsyncComponent(
         () => import("@/booker/bookings/Show.vue")
     ),
+    "guest/bookings/Create": defineAsyncComponent(
+        () => import("@/guest/bookings/Create.vue")
+    ),
+    "guest/bookings/Complete": defineAsyncComponent(
+        () => import("@/guest/bookings/Complete.vue")
+    ),
 };
 
 const vuetify = createVuetify({

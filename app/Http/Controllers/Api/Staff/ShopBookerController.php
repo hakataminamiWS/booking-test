@@ -92,6 +92,7 @@ class ShopBookerController extends Controller
 
         // Get CRM data
         $crm = $booker->crm;
+        $timezone = $shop->timezone;
 
         // Get recent 3 bookings
         $recentBookings = $booker->bookings()
@@ -101,13 +102,13 @@ class ShopBookerController extends Controller
 
         return response()->json([
             'booking_count' => $crm?->booking_count ?? 0,
-            'last_booking_at' => $crm?->last_booking_at?->format('Y-m-d H:i'),
+            'last_booking_at' => $crm?->last_booking_at?->setTimezone($timezone)->format('Y-m-d H:i'),
             'note_from_booker' => $booker->note_from_booker,
             'shop_memo' => $crm?->shop_memo,
-            'recent_bookings' => $recentBookings->map(function ($booking) {
+            'recent_bookings' => $recentBookings->map(function ($booking) use ($timezone) {
                 return [
                     'id' => $booking->id,
-                    'start_at' => $booking->start_at->format('Y-m-d H:i'),
+                    'start_at' => $booking->start_at->setTimezone($timezone)->format('Y-m-d H:i'),
                     'menu_name' => $booking->menu_name,
                     'staff_name' => $booking->assigned_staff_name,
                     'status' => $booking->status,

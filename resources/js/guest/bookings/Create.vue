@@ -2,30 +2,20 @@
     <v-app>
         <v-main>
             <v-container class="container-width-600 px-4">
-                <!-- ナビゲーション -->
-                <v-row no-gutters>
-                    <v-col cols="12">
-                        <v-btn :href="`/shops/${props.shop.slug}/booker/bookings`" prepend-icon="mdi-arrow-left"
-                               variant="text" class="px-0">
-                            予約履歴に戻る
-                        </v-btn>
-                    </v-col>
-                </v-row>
-
                 <!-- 店舗ヘッダー -->
-                <v-row>
+                <v-row class="mt-4">
                     <v-col cols="12">
                         <ShopHeader :shop="shop" />
                     </v-col>
                 </v-row>
 
                 <!-- メインフォーム -->
-                <form id="booking-create-form" :action="`/shops/${props.shop.slug}/booker/bookings`" method="POST">
+                <form id="booking-create-form" :action="`/shops/${props.shop.slug}/guest/bookings`" method="POST">
                     <input type="hidden" name="_token" :value="props.csrfToken" />
                     <input type="hidden" name="start_at" :value="form.start_at" />
 
                     <!-- バリデーションエラー -->
-                    <v-alert v-if="props.errors.length > 0" type="error">
+                    <v-alert v-if="props.errors.length > 0" type="error" class="mb-4">
                         <ul>
                             <li v-for="(error, i) in props.errors" :key="i">
                                 {{ error }}
@@ -205,33 +195,30 @@
                             </v-card>
                         </v-col>
 
-                        <!-- 予約者情報 (読み取り専用) -->
+                        <!-- お客様情報 (入力用) -->
                         <v-col cols="12">
                             <v-card variant="text">
                                 <v-card-title class="px-0">
-                                    予約者情報
-                                    <span class="text-caption text-grey ml-2">※変更不可</span>
+                                    お客様情報
                                 </v-card-title>
                                 <v-card-text class="px-0">
-                                    <v-alert type="info" density="compact" variant="tonal" class="mb-4">
-                                        ご登録情報はマイページから変更可能です。
-                                    </v-alert>
-
-                                    <v-text-field v-model="form.booker_name" name="booker_name" label="お名前 *" readonly
-                                                  required variant="filled"
+                                    <v-text-field v-model="form.booker_name" name="booker_name" label="お名前 *" required
+                                                  variant="filled"
+                                                  :rules="[rules.required, rules.maxLength(255)]" placeholder="例：山田 太郎"
                                                   density="compact"></v-text-field>
 
                                     <v-text-field v-model="form.contact_email" name="contact_email" label="メールアドレス *"
-                                                  type="email" readonly
-                                                  required variant="filled" density="compact"></v-text-field>
+                                                  type="email" required
+                                                  variant="filled" density="compact" placeholder="例：taro@example.com"
+                                                  :rules="[rules.required, rules.email]" class="mt-2"></v-text-field>
 
                                     <v-text-field v-model="form.contact_phone" name="contact_phone" label="電話番号 *"
-                                                  type="tel" readonly required
-                                                  variant="filled" density="compact"></v-text-field>
+                                                  type="tel" variant="filled"
+                                                  required :rules="[rules.required, rules.maxLength(20)]"
+                                                  density="compact" placeholder="例：090-1234-5678"
+                                                  class="mt-2"></v-text-field>
 
-                                    <v-textarea v-if="form.shop_memo" v-model="form.shop_memo" label="登録済みの備考" readonly
-                                                variant="filled"
-                                                density="compact" rows="2" auto-grow hide-details></v-textarea>
+                                    <p class="text-caption text-grey mt-2">※メールアドレスと電話番号の両方が必須です。</p>
                                 </v-card-text>
                             </v-card>
                         </v-col>
@@ -247,9 +234,9 @@
 
                             <v-card-text>
                                 <v-card variant="text" class="px-0 mb-4">
-                                    <v-card-text class="pa-0 text-subtitle-2 text-grey-darken-1">
+                                    <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">
                                         予約日時
-                                    </v-card-text>
+                                    </v-card-title>
                                     <v-card-text class="pa-0 text-body-1">
                                         {{ displayDateTime }} ({{ totalDuration }}分)
                                     </v-card-text>
@@ -290,6 +277,17 @@
                                     </v-card-title>
                                     <v-card-text class="pa-0 text-body-1">
                                         {{ form.note_from_booker }}
+                                    </v-card-text>
+                                </v-card>
+
+                                <v-card variant="text" class="px-0 mb-4">
+                                    <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">
+                                        お客様情報
+                                    </v-card-title>
+                                    <v-card-text class="pa-0 text-body-1">
+                                        <div>{{ form.booker_name }}</div>
+                                        <div v-if="form.contact_email">{{ form.contact_email }}</div>
+                                        <div v-if="form.contact_phone">{{ form.contact_phone }}</div>
                                     </v-card-text>
                                 </v-card>
 
@@ -401,15 +399,6 @@ interface Staff {
     };
     schedules: StaffSchedule[];
 }
-interface ShopBooker {
-    id: number;
-    name: string;
-    contact_email: string;
-    contact_phone: string;
-    crm?: {
-        shop_memo: string | null;
-    };
-}
 interface Booking {
     id: number;
     start_at: string;
@@ -420,7 +409,6 @@ interface Props {
     shop: Shop;
     menus: Menu[];
     staffs: Staff[];
-    booker: ShopBooker; // Logged-in booker
     bookings: Booking[];
     errors: string[];
     oldInput: { [key: string]: any } | null;
@@ -436,11 +424,10 @@ const form = ref({
     menu_id: null as number | null,
     option_ids: [] as number[],
     assigned_staff_id: null as number | null,
-    booker_name: props.booker?.name ?? "",
-    contact_email: props.booker?.contact_email ?? "",
-    contact_phone: props.booker?.contact_phone ?? "",
-    shop_memo: props.booker?.crm?.shop_memo ?? "",
     note_from_booker: "",
+    booker_name: "",
+    contact_email: "",
+    contact_phone: "",
 });
 const selectedTime = ref<string | null>(null);
 const assignedStaffs = ref<Staff[]>([]);
@@ -502,8 +489,9 @@ const fetchTimeSlots = async () => {
     }
 
     try {
+        // Guest Prefix API
         const response = await axios.get(
-            `/shops/${props.shop.slug}/booker/api/available-slots`,
+            `/shops/${props.shop.slug}/guest/api/available-slots`,
             {
                 params: {
                     date: formattedSelectedDate.value,
@@ -526,7 +514,7 @@ const fetchAssignedStaffs = async () => {
         return;
     }
     try {
-        const url = `/shops/${props.shop.slug}/booker/api/menus/${form.value.menu_id}/staffs`;
+        const url = `/shops/${props.shop.slug}/guest/api/menus/${form.value.menu_id}/staffs`;
         const response = await axios.get(url);
         assignedStaffs.value = response.data.staffs;
     } catch (error) {
@@ -545,7 +533,7 @@ const fetchWorkingDays = async (year: number, month: number) => {
 
     try {
         const response = await axios.get(
-            `/shops/${props.shop.slug}/booker/api/staffs/${form.value.assigned_staff_id}/working-days`,
+            `/shops/${props.shop.slug}/guest/api/staffs/${form.value.assigned_staff_id}/working-days`,
             {
                 params: { year_month: yearMonth, menu_id: form.value.menu_id }
             }
@@ -569,7 +557,7 @@ const checkShiftAndConflict = async () => {
             start_at: form.value.start_at,
             option_ids: form.value.option_ids,
         };
-        const baseUrl = `/shops/${props.shop.slug}/booker/api/bookings`;
+        const baseUrl = `/shops/${props.shop.slug}/guest/api/bookings`; // Needs update to guest
 
         const [shiftRes, conflictRes, deadlineRes] = await Promise.all([
             axios.get(`${baseUrl}/validate-shift`, { params }),
@@ -599,7 +587,7 @@ const checkStaffAssignment = async () => {
 
     try {
         const response = await axios.get(
-            `/shops/${props.shop.slug}/booker/api/bookings/validate-staff`,
+            `/shops/${props.shop.slug}/guest/api/bookings/validate-staff`,
             {
                 params: {
                     menu_id: form.value.menu_id,
@@ -681,7 +669,28 @@ const displayDateTime = computed(() => {
     return `${formattedSelectedDate.value} ${selectedTime.value}~${endStr}`;
 });
 
+const rules = {
+    required: (value: any) => !!value || "必須項目です。",
+    email: (value: string) => /.+@.+\..+/.test(value) || "有効なメールアドレスを入力してください。",
+    maxLength: (length: number) => (value: string) => !value || value.length <= length || `${length}文字以内で入力してください。`,
+};
+
 const isFormValid = computed(() => {
+    // Required fields check
+    const requiredValid =
+        rules.required(form.value.booker_name) === true &&
+        rules.required(form.value.contact_email) === true &&
+        rules.required(form.value.contact_phone) === true;
+
+    if (!requiredValid) return false;
+
+    // Rules check
+    const nameValid = rules.maxLength(255)(form.value.booker_name) === true;
+    const emailValid = rules.email(form.value.contact_email) === true;
+    const phoneValid = rules.maxLength(20)(form.value.contact_phone) === true;
+
+    if (!(nameValid && emailValid && phoneValid)) return false;
+
     return (
         !!form.value.menu_id &&
         !!form.value.assigned_staff_id &&
@@ -739,6 +748,9 @@ onMounted(async () => {
         form.value.option_ids = (old.option_ids ?? []).map(Number);
         form.value.assigned_staff_id = old.assigned_staff_id ? Number(old.assigned_staff_id) : null;
         form.value.note_from_booker = old.note_from_booker ?? "";
+        form.value.booker_name = old.booker_name ?? "";
+        form.value.contact_email = old.contact_email ?? "";
+        form.value.contact_phone = old.contact_phone ?? "";
 
         if (old.start_at) {
             const d = new Date(old.start_at);

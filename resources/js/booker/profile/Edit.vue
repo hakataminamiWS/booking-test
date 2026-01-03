@@ -59,7 +59,7 @@
                                           name="name"
                                           label="お名前 *"
                                           required
-                                          :rules="[rules.required]"></v-text-field>
+                                          :rules="[rules.required, rules.maxLength(255)]"></v-text-field>
 
                             <v-textarea
                                         v-model="form.note_from_booker"
@@ -72,13 +72,13 @@
                                           name="contact_email"
                                           label="連絡先メールアドレス *"
                                           type="email"
-                                          :rules="[rules.required]"></v-text-field>
+                                          :rules="[rules.required, rules.email]"></v-text-field>
 
                             <v-text-field
                                           v-model="form.contact_phone"
                                           name="contact_phone"
                                           label="連絡先電話番号 *"
-                                          :rules="[rules.required]"></v-text-field>
+                                          :rules="[rules.required, rules.maxLength(20)]"></v-text-field>
 
                             <p class="text-caption text-grey">※メールアドレスと電話番号の両方が必須です。</p>
                         </form>
@@ -144,14 +144,25 @@ onMounted(() => {
 });
 
 const rules = {
-    required: (value: any) => !!(value || value === 0) || "必須項目です。",
+    required: (value: any) => !!value || "必須項目です。",
+    email: (value: string) => /.+@.+\..+/.test(value) || "有効なメールアドレスを入力してください。",
+    maxLength: (length: number) => (value: string) => !value || value.length <= length || `${length}文字以内で入力してください。`,
 };
 
 const isFormValid = computed(() => {
-    return (
+    // Required fields check
+    const requiredValid =
         rules.required(form.value.name) === true &&
         rules.required(form.value.contact_email) === true &&
-        rules.required(form.value.contact_phone) === true
-    );
+        rules.required(form.value.contact_phone) === true;
+
+    if (!requiredValid) return false;
+
+    // Rules check
+    const nameValid = rules.maxLength(255)(form.value.name) === true;
+    const emailValid = rules.email(form.value.contact_email) === true;
+    const phoneValid = rules.maxLength(20)(form.value.contact_phone) === true;
+
+    return nameValid && emailValid && phoneValid;
 });
 </script>

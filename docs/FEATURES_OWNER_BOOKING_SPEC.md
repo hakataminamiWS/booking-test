@@ -44,6 +44,7 @@
 | :--------------- | :------------------------------------------------ | :---------------- | :----- | :------------- |
 | 予約日時         | `bookings.start_at` (予約開始日時)                | 可 (日付範囲)     | 可     |                |
 | 予約者番号       | `shop_bookers.number`                             | 可 (数値入力)     | 可     |                |
+| 会員種別         | `shop_bookers.user_id` の有無で判定               | 可 (セレクト)     | 可     |                |
 | 顧客名           | `bookings.booker_name`                            | 可 (テキスト入力) | 可     |                |
 | メニュー         | `bookings.menu_name`                              | 可 (セレクト)     | 不可   |                |
 | 担当スタッフ     | `bookings.assigned_staff_name`                    | 可 (セレクト)     | 不可   |                |
@@ -72,12 +73,13 @@
 -   **クエリパラメータ**:
     -   `start_at_from` / `start_at_to` (string: YYYY-MM-DD): 予約開始日時による範囲検索。
     -   `booker_number` (integer): 予約者番号による完全一致検索。
+    -   `is_guest` (boolean): 会員種別による検索。`true` でゲスト、`false` でログインユーザー。
     -   `booker_name` (string): 顧客名による部分一致検索。
     -   `menu_id` (integer): メニュー ID による完全一致検索。
     -   `assigned_staff_id` (integer): 担当スタッフ ID による完全一致検索。
     -   `status` (string): ステータスによる検索 (`pending`, `confirmed`, `cancelled`)。
     -   `booking_channel` (string): 予約経路による検索 (`web`, `manual`など)。
-    -   `sort_by` (string): ソート対象カラム。許可される値は `start_at`, `booker_number`, `booker_name`, `status`, `total_price`, `booking_channel`。
+    -   `sort_by` (string): ソート対象カラム。許可される値は `start_at`, `booker_number`, `is_guest`, `booker_name`, `status`, `total_price`, `booking_channel`。
     -   `sort_order` (string): ソート方向 (`asc` or `desc`)。
     -   `page` (integer): ページ番号。
     -   `per_page` (integer): 1 ページあたりの表示件数。

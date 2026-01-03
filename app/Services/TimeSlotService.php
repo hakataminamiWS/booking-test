@@ -145,4 +145,56 @@ class TimeSlotService
         }
         return false;
     }
+
+    /**
+     * 指定された日付の有効な予約を取得する（生のコレクション）
+     *
+     * @param \App\Models\ShopStaff $staff
+     * @param DateTimeInterface $date
+     * @param string $timezone
+     * @param int|null $excludeBookingId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getActiveBookingsForDate($staff, DateTimeInterface $date, string $timezone, ?int $excludeBookingId = null)
+    {
+        $startOfDayInUserTz = Carbon::instance($date)->timezone($timezone)->startOfDay();
+        $endOfDayInUserTz = Carbon::instance($date)->timezone($timezone)->endOfDay();
+
+        $startOfDayUtc = $startOfDayInUserTz->copy()->setTimezone('UTC');
+        $endOfDayUtc = $endOfDayInUserTz->copy()->setTimezone('UTC');
+
+        // UTCでの一日の範囲と重なる予約を取得する
+        // (start_at < endOfDayUtc) AND (end_at > startOfDayUtc)
+        // かつ、キャンセルされていない予約
+        return $staff->bookings()
+            ->where(function ($query) use ($startOfDayUtc, $endOfDayUtc) {
+                $query->where('start_at', '<', $endOfDayUtc)
+                      ->where('end_at', '>', $startOfDayUtc);
+            })
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->when($excludeBookingId, function ($query, $id) {
+                $query->where('id', '!=', $id);
+            })
+            ->orderBy('start_at', 'asc')
+            ->get();
+    }
+
+    /**
+     * 指定された日付の有効な予約を取得し、タイムスロット計算用に整形して返す
+     *
+     * @param \App\Models\ShopStaff $staff
+     * @param DateTimeInterface $date
+     * @param string $timezone
+     * @param int|null $excludeBookingId
+     * @return array
+     */
+    public function getFormattedBookings($staff, DateTimeInterface $date, string $timezone, ?int $excludeBookingId = null): array
+    {
+        return $this->getActiveBookingsForDate($staff, $date, $timezone, $excludeBookingId)
+            ->map(fn($booking) => (object)[
+                'start' => Carbon::parse($booking->start_at)->setTimezone($timezone)->format('H:i'),
+                'end' => Carbon::parse($booking->end_at)->setTimezone($timezone)->format('H:i')
+            ])
+            ->all();
+    }
 }

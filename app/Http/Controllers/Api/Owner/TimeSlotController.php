@@ -42,8 +42,8 @@ class TimeSlotController extends Controller
         $endOfDayInUserTz = $date->copy()->endOfDay();
 
         // UTCに変換して検索範囲を設定
-        $startOfDayUtc = $startOfDayInUserTz->copy()->setTimezone(config('app.timezone'));
-        $endOfDayUtc = $endOfDayInUserTz->copy()->setTimezone(config('app.timezone'));
+        $startOfDayUtc = $startOfDayInUserTz->copy()->setTimezone('UTC');
+        $endOfDayUtc = $endOfDayInUserTz->copy()->setTimezone('UTC');
 
         $shifts = $staff->schedules()
             ->whereBetween('workable_start_at', [$startOfDayUtc, $endOfDayUtc])
@@ -55,19 +55,7 @@ class TimeSlotController extends Controller
             ->all();
 
         // その日の既存予約を取得
-        // UTCでの一日の範囲と重なる予約を取得する
-        // (start_at < endOfDayUtc) AND (end_at > startOfDayUtc)
-        $existingBookings = $staff->bookings()
-            ->where(function ($query) use ($startOfDayUtc, $endOfDayUtc) {
-                $query->where('start_at', '<', $endOfDayUtc)
-                      ->where('end_at', '>', $startOfDayUtc);
-            })
-            ->get()
-            ->map(fn($booking) => (object)[
-                'start' => Carbon::parse($booking->start_at)->setTimezone($userTimezone)->format('H:i'),
-                'end' => Carbon::parse($booking->end_at)->setTimezone($userTimezone)->format('H:i')
-            ])
-            ->all();
+        $existingBookings = $timeSlotService->getFormattedBookings($staff, $date, $userTimezone);
 
         // メニューとオプションから合計所要時間を計算
         $menu = ShopMenu::findOrFail($validated['menu_id']);

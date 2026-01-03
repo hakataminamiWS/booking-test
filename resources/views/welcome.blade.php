@@ -64,6 +64,11 @@
                 <li><a href="{{ route('debug.login-as', ['user' => 6]) }}">予約者としてログイン (ID: 6)</a></li>
                 <li><a href="{{ route('booker.shops.index') }}">登録店舗一覧画面</a></li>
             </ul>
+
+            <h3>ゲスト (会員登録なし)</h3>
+            <ul>
+                <li><a href="{{ route('guest.bookings.create', ['shop' => 'test-shop']) }}">ゲスト予約画面 (Slug: test-shop)</a></li>
+            </ul>
         </div>
     @endif
 @endsection

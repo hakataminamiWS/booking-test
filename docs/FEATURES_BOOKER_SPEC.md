@@ -263,12 +263,11 @@
 
 | ラベル             | UI               | `name`属性       | 備考                                 |
 | :----------------- | :--------------- | :--------------- | :----------------------------------- |
-| **予約日時**       | 日時入力         | `start_at`       | 必須。空き時間選択 UI を使用。       |
 | **メニュー**       | セレクトボックス | `menu_id`        | 必須。                               |
 | **オプション**     | チェックボックス | `option_ids[]`   | 任意。複数選択可。                   |
-| **担当スタッフ**   | セレクトボックス | `staff_id`       | 任意。指名予約の場合。               |
-| **性別希望**       | ラジオボタン     | `preferred_gender` | 任意。                               |
-| **備考**           | テキストエリア   | `notes`          | 任意。                               |
+| **担当スタッフ**   | セレクトボックス | `assigned_staff_id` | 必須。指名予約の場合。               |
+| **予約日時**       | 日時入力         | `start_at`       | 必須。空き時間選択 UI を使用。       |
+| **予約メモ**       | テキストエリア   | `note_from_booker` | 任意。店舗への連絡事項。           |
 
 #### バックエンド仕様
 
@@ -293,20 +292,24 @@
 -   **バックエンド (`StoreBookingRequest`)**:
     -   **認可**: `authorize`メソッド内で`BookingPolicy@create`を呼び出します。
     -   **ルール**:
-        -   `start_at`: `required`, `date`, `after:now`
         -   `menu_id`: `required`, `exists:shop_menus,id`
         -   `option_ids`: `nullable`, `array`
         -   `option_ids.*`: `exists:shop_options,id`
-        -   `staff_id`: `nullable`, `exists:shop_staffs,id`
-        -   `preferred_gender`: `nullable`, `in:male,female,any`
-        -   `notes`: `nullable`, `string`, `max:1000`
+        -   `assigned_staff_id`: `required`, `exists:shop_staffs,id`
+        -   `start_at`: `required`, `date`, `after:now`
+        -   `note_from_booker`: `nullable`, `string`, `max:1000`
+
+    -   整合性チェック:
+        -   選択されたスタッフがそのメニューを担当可能か確認します。
+        -   予約時間がスタッフのシフト時間内か確認します。
+        -   同じ時間に他の予約が入っていないか確認します。
 
 ##### 処理内容
 
 1.  `StoreBookingRequest` で認可とバリデーションを実行します。
 2.  バリデーションが成功した場合、`bookings` テーブルに新しいレコードを作成します。
     -   予約者情報 (`booker_name`, `contact_email`, `contact_phone`) は、ログイン中の会員の `ShopBooker` から取得して自動設定します。
-    -   `booking_channel` は `online` (会員予約) として設定します。
+    -   `booking_channel` は `web` (会員予約) として設定します。
 3.  登録後、予約一覧画面 (`/shops/{shop}/booker/bookings`) にリダイレクトし、「予約が完了しました」という成功メッセージを表示します。
 
 ##### API エンドポイント（空き時間取得用）

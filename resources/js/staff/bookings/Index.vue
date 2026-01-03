@@ -137,6 +137,16 @@
                                 {{ getChannelText(item.booking_channel) }}
                             </template>
 
+                            <!-- Member Type -->
+                            <template v-slot:item.is_guest="{ item }">
+                                <v-chip v-if="item.is_guest" color="warning" size="small" variant="flat">
+                                    ゲスト
+                                </v-chip>
+                                <v-chip v-else color="info" size="small" variant="flat">
+                                    会員
+                                </v-chip>
+                            </template>
+
                             <!-- Actions -->
                             <template v-slot:item.actions="{ item }">
                                 <v-btn
@@ -320,8 +330,16 @@ const filterableColumns = ref([
         value: "booking_channel",
         type: "select",
         items: [
-            { text: "Web", value: "web" },
             { text: "手動", value: "manual" },
+        ]
+    },
+    {
+        text: "会員種別",
+        value: "is_guest",
+        type: "select",
+        items: [
+            { text: "ゲスト", value: "true" },
+            { text: "会員", value: "false" },
         ]
     },
 ]);
@@ -426,6 +444,7 @@ const sortableColumns = ref([
     { text: "ステータス", value: "status" },
     { text: "合計料金", value: "total_price" },
     { text: "予約経路", value: "booking_channel" },
+    { text: "会員種別", value: "is_guest" },
 ]);
 
 const sortBy = ref<Sort>({ column: null, order: null });
@@ -562,6 +581,7 @@ const loadItems = async (options: Options) => {
 const headers: Headers = [
     { title: "予約日時", key: "start_at", sortable: false },
     { title: "予約者番号", key: "booker_number", sortable: false },
+    { title: "会員種別", key: "is_guest", sortable: false },
     { title: "顧客名", key: "booker_name", sortable: false },
     { title: "メニュー", key: "menu_name", sortable: false }, // API should return menu_name
     { title: "担当スタッフ", key: "assigned_staff_name", sortable: false }, // API should return assigned_staff_name

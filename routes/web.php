@@ -22,6 +22,25 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// --- Guest Booking Routes ---
+Route::prefix('shops/{shop:slug}/guest')->name('guest.')->group(function () {
+    Route::get('/bookings/create', [App\Http\Controllers\Guest\BookingController::class, 'create'])->name('bookings.create');
+    Route::post('/bookings', [App\Http\Controllers\Guest\BookingController::class, 'store'])->name('bookings.store');
+    Route::get('/bookings/{booking}/complete', [App\Http\Controllers\Guest\BookingController::class, 'complete'])->name('bookings.complete');
+
+    // Guest API Routes
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::get('/available-slots', [App\Http\Controllers\Api\Booker\AvailableSlotController::class, 'index'])->name('available-slots.index');
+        Route::get('/menus/{menu}/staffs', [App\Http\Controllers\Api\Booker\ShopMenuController::class, 'staffs'])->name('menus.staffs');
+        Route::get('/staffs/{staff}/working-days', [App\Http\Controllers\Api\Booker\WorkingDayController::class, 'index'])->name('staffs.working-days');
+        
+        Route::get('/bookings/validate-staff', [App\Http\Controllers\Api\Guest\BookingController::class, 'validateStaff'])->name('bookings.validate-staff');
+        Route::get('/bookings/validate-shift', [App\Http\Controllers\Api\Guest\BookingController::class, 'validateShift'])->name('bookings.validate-shift');
+        Route::get('/bookings/validate-conflict', [App\Http\Controllers\Api\Guest\BookingController::class, 'validateConflict'])->name('bookings.validate-conflict');
+        Route::get('/bookings/cancellation-deadline', [App\Http\Controllers\Api\Guest\BookingController::class, 'getCancellationDeadline'])->name('bookings.cancellation-deadline');
+    });
+});
+
 // ==============================================================================
 // Authenticated Routes (Login Required)
 // ==============================================================================
@@ -174,6 +193,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/staffs', [App\Http\Controllers\Api\Staff\ShopStaffController::class, 'index'])->name('staffs.index');
             Route::get('/menus/{menu}/staffs', [App\Http\Controllers\Api\Staff\ShopMenuController::class, 'staffs'])->name('menus.staffs');
             Route::get('/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Staff\TimeSlotController::class, 'index'])->name('staffs.timeslots');
+            Route::get('/staffs/{staff}/schedule', [App\Http\Controllers\Api\Staff\ShopStaffController::class, 'getSchedule'])->name('staffs.schedule');
         });
     });
 
@@ -208,6 +228,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/bookings/validate-staff', [App\Http\Controllers\Api\Booker\BookingController::class, 'validateStaff'])->name('bookings.validate-staff');
             Route::get('/bookings/validate-shift', [App\Http\Controllers\Api\Booker\BookingController::class, 'validateShift'])->name('bookings.validate-shift');
             Route::get('/bookings/validate-conflict', [App\Http\Controllers\Api\Booker\BookingController::class, 'validateConflict'])->name('bookings.validate-conflict');
+            Route::get('/bookings/cancellation-deadline', [App\Http\Controllers\Api\Booker\BookingController::class, 'getCancellationDeadline'])->name('bookings.cancellation-deadline');
             Route::get('/available-slots', [App\Http\Controllers\Api\Booker\AvailableSlotController::class, 'index'])->name('available-slots.index');
             Route::get('/staffs/{staff}/working-days', [App\Http\Controllers\Api\Booker\WorkingDayController::class, 'index'])->name('staffs.working-days');
         });

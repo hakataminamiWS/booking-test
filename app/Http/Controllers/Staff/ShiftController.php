@@ -149,13 +149,13 @@ class ShiftController extends Controller
                                 'Y-m-d H:i',
                                 $currentDate->toDateString() . ' ' . $shift['start_time'],
                                 $shop->timezone
-                            )->setTimezone(config('app.timezone'));
+                            )->setTimezone('UTC');
 
                             $endAt = Carbon::createFromFormat(
                                 'Y-m-d H:i',
                                 $currentDate->toDateString() . ' ' . $shift['end_time'],
                                 $shop->timezone
-                            )->setTimezone(config('app.timezone'));
+                            )->setTimezone('UTC');
 
                             // 終了時刻が開始時刻より前の場合は、日付を1日進める
                             if ($endAt->lessThan($startAt)) {

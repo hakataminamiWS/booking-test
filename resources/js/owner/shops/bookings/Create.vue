@@ -174,7 +174,9 @@
                                 <!-- 予約日時 -->
                                 <v-col cols="12" md="8">
                                     <v-card variant="text">
-                                        <v-card-title class="px-0">予約日時</v-card-title>
+                                        <v-card-title class="px-0">
+                                            予約日時
+                                        </v-card-title>
 
                                         <v-card-text class="px-0" v-if="!form.menu_id">
                                             <p>

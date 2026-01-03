@@ -71,8 +71,8 @@ class BookingController extends Controller
         $staff = ShopStaff::findOrFail($request->input('assigned_staff_id'));
 
         // 検索のため、対象日の開始・終了時刻をUTCで取得
-        $startOfDayUtc = $date->copy()->startOfDay()->setTimezone(config('app.timezone'));
-        $endOfDayUtc = $date->copy()->endOfDay()->setTimezone(config('app.timezone'));
+        $startOfDayUtc = $date->copy()->startOfDay()->setTimezone('UTC');
+        $endOfDayUtc = $date->copy()->endOfDay()->setTimezone('UTC');
 
         $shifts = $staff->schedules()
             ->whereBetween('workable_start_at', [$startOfDayUtc, $endOfDayUtc])
@@ -112,26 +112,7 @@ class BookingController extends Controller
         $staff = ShopStaff::findOrFail($request->input('assigned_staff_id'));
         
         // 既存予約取得
-        // UTCでの対象期間
-        $searchStartUtc = $startAt->copy()->startOfDay()->setTimezone(config('app.timezone'));
-        $searchEndUtc = $startAt->copy()->endOfDay()->setTimezone(config('app.timezone'));
-        $timezone = $shop->timezone;
-
-        $existingBookings = $staff->bookings()
-            ->where(function ($query) use ($searchStartUtc, $searchEndUtc) {
-                $query->where('start_at', '<', $searchEndUtc)
-                      ->where('end_at', '>', $searchStartUtc);
-            })
-            // 自分自身を除外（更新時）
-            ->when($request->input('exclude_booking_id'), function ($query, $excludeId) {
-                $query->where('id', '!=', $excludeId);
-            })
-            ->get()
-            ->map(fn($booking) => (object)[
-                'start' => Carbon::parse($booking->start_at)->setTimezone($timezone)->format('H:i'),
-                'end' => Carbon::parse($booking->end_at)->setTimezone($timezone)->format('H:i')
-            ])
-            ->all();
+        $existingBookings = $timeSlotService->getFormattedBookings($staff, $date, $timezone, $request->input('exclude_booking_id'));
         
         // TimeSlotServiceのhasConflictは 'H:i' 文字列で比較する実装になっている。
         // validateShiftと同様に対応する。
@@ -196,18 +177,31 @@ class BookingController extends Controller
         if ($request->filled('start_at_from')) {
             // 入力された日付(Shop Timezone)の00:00:00をUTCに変換して検索
             $date = Carbon::parse($request->input('start_at_from'), $shop->timezone)->startOfDay();
-            $query->where('start_at', '>=', $date->setTimezone(config('app.timezone')));
+            $query->where('start_at', '>=', $date->setTimezone('UTC'));
         }
         if ($request->filled('start_at_to')) {
              // 入力された日付(Shop Timezone)の23:59:59をUTCに変換して検索
             $date = Carbon::parse($request->input('start_at_to'), $shop->timezone)->endOfDay();
-            $query->where('start_at', '<=', $date->setTimezone(config('app.timezone')));
+            $query->where('start_at', '<=', $date->setTimezone('UTC'));
         }
         if ($request->filled('booker_number')) {
             // shop_bookersテーブルとjoinして予約者番号でフィルタ
             $query->whereHas('booker', function (Builder $q) use ($request) {
                 $q->where('number', $request->input('booker_number'));
             });
+        }
+        if ($request->has('is_guest')) {
+            // 会員種別によるフィルタ（true: ゲスト、false: ログインユーザー）
+            $isGuest = filter_var($request->input('is_guest'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($isGuest !== null) {
+                $query->whereHas('booker', function (Builder $q) use ($isGuest) {
+                    if ($isGuest) {
+                        $q->whereNull('user_id');
+                    } else {
+                        $q->whereNotNull('user_id');
+                    }
+                });
+            }
         }
         if ($request->filled('booker_name')) {
             $query->where('booker_name', 'like', '%' . $request->input('booker_name') . '%');
@@ -234,6 +228,11 @@ class BookingController extends Controller
             $query->join('shop_bookers', 'bookings.shop_booker_id', '=', 'shop_bookers.id')
                 ->select('bookings.*')
                 ->orderBy('shop_bookers.number', $sortOrder);
+        } elseif ($sortBy === 'is_guest') {
+            // 会員種別でのソート（user_idがnullかどうか）
+            $query->join('shop_bookers', 'bookings.shop_booker_id', '=', 'shop_bookers.id')
+                ->select('bookings.*')
+                ->orderByRaw('CASE WHEN shop_bookers.user_id IS NULL THEN 1 ELSE 0 END ' . $sortOrder);
         } elseif ($sortBy === 'total_price') {
             // 合計料金でのソート（計算が必要なためSQLでのソートが難しい場合はコレクションでソートするか、
             // 保存時に合計金額カラムを持たせるか。ここでは簡易的にmenu_priceでのソートにするか、
@@ -257,6 +256,8 @@ class BookingController extends Controller
             $booking->total_price = $booking->menu_price + $optionsTotal;
             // 予約者番号を追加
             $booking->booker_number = $booking->booker?->number;
+            // 会員種別フラグを追加（true: ゲスト、false: ログインユーザー）
+            $booking->is_guest = $booking->booker?->user_id === null;
             return $booking;
         });
 

@@ -67,8 +67,8 @@ class AvailableSlotController extends Controller
             $startOfDayInUserTz = $date->copy()->startOfDay();
             $endOfDayInUserTz = $date->copy()->endOfDay();
 
-            $startOfDayUtc = $startOfDayInUserTz->copy()->setTimezone(config('app.timezone'));
-            $endOfDayUtc = $endOfDayInUserTz->copy()->setTimezone(config('app.timezone'));
+            $startOfDayUtc = $startOfDayInUserTz->copy()->setTimezone('UTC');
+            $endOfDayUtc = $endOfDayInUserTz->copy()->setTimezone('UTC');
 
             $shifts = $staff->schedules()
                 ->whereBetween('workable_start_at', [$startOfDayUtc, $endOfDayUtc])
@@ -80,18 +80,7 @@ class AvailableSlotController extends Controller
                 ->all();
 
             // Get existing bookings for this staff
-            $existingBookings = $staff->bookings()
-                ->where(function($query) use ($startOfDayUtc, $endOfDayUtc) {
-                    $query->whereBetween('start_at', [$startOfDayUtc, $endOfDayUtc])
-                          ->orWhereBetween('end_at', [$startOfDayUtc, $endOfDayUtc]);
-                })
-                ->whereIn('status', ['pending', 'confirmed'])
-                ->get()
-                ->map(fn($booking) => (object)[
-                    'start' => Carbon::parse($booking->start_at)->setTimezone($userTimezone)->format('H:i'),
-                    'end' => Carbon::parse($booking->end_at)->setTimezone($userTimezone)->format('H:i')
-                ])
-                ->all();
+            $existingBookings = $this->timeSlotService->getFormattedBookings($staff, $date, $userTimezone);
 
             $slots = $this->timeSlotService->calculateAvailableTimeSlots(
                 $date,

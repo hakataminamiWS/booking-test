@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Api\Owner;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Owner\IndexShopStaffsRequest;
 use App\Models\Shop;
+use App\Services\TimeSlotService;
 use Illuminate\Http\JsonResponse;
 
 class ShopStaffController extends Controller
 {
+    protected $timeSlotService;
+
+    public function __construct(TimeSlotService $timeSlotService)
+    {
+        $this->timeSlotService = $timeSlotService;
+    }
+
     public function index(IndexShopStaffsRequest $request, Shop $shop): JsonResponse
     {
         $query = $shop->staffs()->with('profile');
@@ -55,11 +63,6 @@ class ShopStaffController extends Controller
         $timezone = $shop->timezone;
         $date = \Carbon\Carbon::parse($request->input('date'), $timezone);
         
-        // Find individual schedule for the date
-        // Note: workable_start_at is in UTC.
-        // We need to find a schedule that overlaps or is contained within the target date (in shop timezone)
-        // For simplicity as requested, we look for schedules that start within the target day (shop timezone).
-        
         $startOfDay = $date->copy()->startOfDay()->setTimezone('UTC');
         $endOfDay = $date->copy()->endOfDay()->setTimezone('UTC');
 
@@ -75,13 +78,9 @@ class ShopStaffController extends Controller
             ];
         }
 
-        // Get bookings for the staff on that date
-        // Bookings start_at is stored in DB (usually UTC or configured app timezone, but assumed consistent with Model access)
-        // We filter by date in Shop Timezone
-        $bookings = $staff->bookings()
-            ->whereBetween('start_at', [$date->copy()->startOfDay()->setTimezone(config('app.timezone')), $date->copy()->endOfDay()->setTimezone(config('app.timezone'))])
-            ->with('booker') // Load booker info
-            ->get()
+        // アクティブな予約を取得（サービスを利用）
+        $bookings = $this->timeSlotService->getActiveBookingsForDate($staff, $date, $timezone)
+            ->load('booker')
             ->map(function ($booking) use ($timezone) {
                 $start = \Carbon\Carbon::parse($booking->start_at)->setTimezone($timezone);
                 $end = \Carbon\Carbon::parse($booking->end_at)->setTimezone($timezone);
@@ -90,7 +89,7 @@ class ShopStaffController extends Controller
                     'start' => $start->format('H:i'),
                     'end' => $end->format('H:i'),
                     'booker_name' => $booking->booker_name,
-                    'booker_number' => $booking->booker?->number, // Optional
+                    'booker_number' => $booking->booker?->number,
                 ];
             });
 

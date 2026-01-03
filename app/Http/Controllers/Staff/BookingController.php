@@ -12,6 +12,7 @@ use App\Models\ShopStaff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class BookingController extends Controller
@@ -78,7 +79,7 @@ class BookingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBookingRequest $request, Shop $shop)
+    public function store(StoreBookingRequest $request, Shop $shop, \App\Services\ShopBookerCrmService $crmService)
     {
         $this->getAuthenticatedStaff($shop);
         $validated = $request->validated();
@@ -92,10 +93,10 @@ class BookingController extends Controller
             $totalDuration += $option->additional_duration;
         }
 
-        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone(config('app.timezone'));
+        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone('UTC');
         $endAt = $startAt->copy()->addMinutes($totalDuration);
 
-        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt) {
+        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt, $crmService) {
             if (empty($validated['shop_booker_id'])) {
                 $booker = $shop->bookers()->create([
                     'name' => $validated['booker_name'],
@@ -160,6 +161,9 @@ class BookingController extends Controller
                 });
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
+
+            // 統計情報の更新
+            $crmService->updateStats($booker);
         });
 
         return redirect()->route('staff.bookings.index', ['shop' => $shop->slug])
@@ -225,7 +229,7 @@ class BookingController extends Controller
             $totalDuration += $option->additional_duration;
         }
 
-        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone(config('app.timezone'));
+        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone('UTC');
         $endAt = $startAt->copy()->addMinutes($totalDuration);
 
         DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $booking, $startAt, $endAt) {

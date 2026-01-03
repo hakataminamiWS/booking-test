@@ -312,7 +312,7 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 | :--------------------- | :------------- | :----------------------------------------------------- | :--------------------------------------------------------- |
 | `id`                   | `bigint`       | `PK`, `AI`                                             | 主キー                                                     |
 | `shop_id`              | `bigint`       | `FK (shops.id)`, `onDelete: CASCADE`                   | 店舗 ID                                                    |
-| `shop_booker_id`       | `bigint`       | `FK (shop_bookers.id)`, `Nullable`                     | 予約者識別子 ID。`null` の場合はゲスト予約として扱う       |
+| `shop_booker_id`       | `bigint`       | `FK (shop_bookers.id)`, `Nullable`                     | 予約者識別子 ID。ゲスト予約の場合も ShopBooker レコード（`user_id`=null）が作成され、その ID が設定される。       |
 | `status`               | `varchar(255)` | `Default: 'pending'`                                   | 予約ステータス (例: `pending`, `confirmed`, `cancelled`)   |
 | `menu_id`              | `bigint`       | `FK (shop_menus.id)`, `Nullable`, `onDelete: SET NULL` | メニューの ID（スナップショット）                          |
 | `menu_name`            | `varchar(255)` |                                                        | 予約時のメニュー名（スナップショット）                     |

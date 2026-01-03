@@ -85,7 +85,7 @@ class BookingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBookingRequest $request, Shop $shop)
+    public function store(StoreBookingRequest $request, Shop $shop, \App\Services\ShopBookerCrmService $crmService)
     {
         $validated = $request->validated();
 
@@ -100,12 +100,12 @@ class BookingController extends Controller
         }
 
         // Parse start_at using shop's timezone and convert to UTC for storage
-        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone(config('app.timezone'));
+        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone('UTC');
         
         // Calculate end_at based on duration
         $endAt = $startAt->copy()->addMinutes($totalDuration);
 
-        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt) {
+        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt, $crmService) {
             // ----------------------------------------------------------------
             // 予約者 (ShopBooker) の準備
             // ----------------------------------------------------------------
@@ -188,6 +188,11 @@ class BookingController extends Controller
                 });
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
+
+            // ----------------------------------------------------------------
+            // 統計情報の更新
+            // ----------------------------------------------------------------
+            $crmService->updateStats($booker);
         });
 
         return redirect()->route('owner.shops.bookings.index', ['shop' => $shop->slug])
@@ -272,7 +277,7 @@ class BookingController extends Controller
         }
 
         // Parse start_at using shop's timezone
-        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone(config('app.timezone'));
+        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone('UTC');
         
         // Calculate end_at based on duration
         $endAt = $startAt->copy()->addMinutes($totalDuration);

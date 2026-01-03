@@ -1,9 +1,9 @@
 <template>
     <v-footer app fixed bottom elevation="4" border class="bg-surface">
-        <v-container class="py-2 container-width-1200" :class="{ 'px-0': mobile }">
+        <v-container class="py-2 mx-auto" :style="{ maxWidth: maxWidth }" :class="{ 'px-0': mobile }">
             <v-row align="center" no-gutters>
                 <!-- デスクトップ表示（モバイルでは非表示） -->
-                <v-col v-if="!mobile" class="d-flex align-center flex-wrap gap-4">
+                <v-col v-if="!shouldUseMobileLayout" class="d-flex align-center flex-wrap gap-4">
 
                     <!-- Prependスロット（削除ボタン等） -->
                     <div v-if="$slots.prepend" class="mr-4">
@@ -62,19 +62,20 @@
 
                 <!-- アクション & 価格（右側） -->
                 <v-col cols="auto" class="d-flex ml-auto"
-                       :class="mobile ? 'flex-column align-end justify-center' : 'align-center'">
+                       :class="shouldUseMobileLayout ? 'flex-column align-end justify-center' : 'align-center'">
                     <!-- 価格 -->
-                    <div :class="mobile ? 'mb-1' : 'mr-4 mb-0'" class="text-right">
-                        <span class="text-caption text-medium-emphasis" v-if="!mobile">合計金額</span>
-                        <span :class="mobile ? 'text-subtitle-1' : 'text-h6'" class="font-weight-bold text-primary">
+                    <div :class="shouldUseMobileLayout ? 'mb-1' : 'mr-4 mb-0'" class="text-right">
+                        <span class="text-caption text-medium-emphasis" v-if="!shouldUseMobileLayout">合計金額</span>
+                        <span :class="shouldUseMobileLayout ? 'text-subtitle-1' : 'text-h6'"
+                              class="font-weight-bold text-primary">
                             {{ totalPrice?.toLocaleString() }}円
                         </span>
                     </div>
 
                     <!-- 送信ボタン -->
-                    <v-btn color="primary" :size="mobile ? 'default' : 'large'" :disabled="disabled"
+                    <v-btn color="primary" :size="shouldUseMobileLayout ? 'default' : 'large'" :disabled="disabled"
                            @click="$emit('submit')"
-                           :min-width="mobile ? 100 : 160" :height="mobile ? 36 : 44">
+                           :min-width="shouldUseMobileLayout ? 100 : 160" :height="shouldUseMobileLayout ? 36 : 44">
                         {{ submitLabel }}
                     </v-btn>
                 </v-col>
@@ -84,26 +85,30 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     menuName?: string;
     staffName?: string;
     dateTime?: string;
     totalPrice?: number;
     submitLabel?: string;
     disabled?: boolean;
-}>();
+    maxWidth?: string;
+    mobileLayout?: boolean;
+}>(), {
+    maxWidth: '1200px',
+    mobileLayout: false
+});
 
 defineEmits<{
     (e: 'submit'): void;
 }>();
 
 const { mobile } = useDisplay();
+
+const shouldUseMobileLayout = computed(() => mobile.value || props.mobileLayout);
 </script>
 
-<style scoped>
-.container-width-1200 {
-    max-width: 1200px;
-}
-</style>
+<style scoped></style>

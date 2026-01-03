@@ -11,6 +11,7 @@ use App\Models\ShopMenu;
 use App\Models\ShopStaff;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class BookingController extends Controller
@@ -38,7 +39,18 @@ class BookingController extends Controller
         $shop->load(['businessHoursRegular', 'shopSpecialOpenDays', 'shopSpecialClosedDays']);
 
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
-        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get();
+        $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
+            $imageUrl = null;
+            if ($staff->profile && $staff->profile->small_image_url) {
+                $imageUrl = Storage::disk('public')->url($staff->profile->small_image_url);
+            }
+            
+            // プロフィール情報の形式を調整
+            // StaffモデルのtoArray()結果に、変換済みのURLを上書きする
+            $staff->profile->small_image_url = $imageUrl;
+            
+            return $staff; 
+        });
         
         $bookings = $shop->bookings()
             ->where('start_at', '>=', now())
@@ -57,7 +69,7 @@ class BookingController extends Controller
     /**
      * Store a newly created booking.
      */
-    public function store(StoreBookingRequest $request, Shop $shop)
+    public function store(StoreBookingRequest $request, Shop $shop, \App\Services\ShopBookerCrmService $crmService)
     {
         $booker = $this->getAuthenticatedBooker($shop);
         $validated = $request->validated();
@@ -71,10 +83,10 @@ class BookingController extends Controller
             $totalDuration += $option->additional_duration;
         }
 
-        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone(config('app.timezone'));
+        $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone('UTC');
         $endAt = $startAt->copy()->addMinutes($totalDuration);
 
-        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $booker, $startAt, $endAt) {
+        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $booker, $startAt, $endAt, $crmService) {
             $booking = $shop->bookings()->create([
                 'shop_booker_id' => $booker->id,
                 'assigned_staff_id' => $validated['assigned_staff_id'] ?? null,
@@ -105,6 +117,9 @@ class BookingController extends Controller
                 });
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
+
+            // 統計情報の更新
+            $crmService->updateStats($booker);
         });
 
         return redirect()->route('booker.bookings.index', ['shop' => $shop->slug])
@@ -177,6 +192,8 @@ class BookingController extends Controller
         $booker = ShopBooker::where('shop_id', $shop->id)
             ->where('user_id', Auth::id())
             ->firstOrFail();
+
+        $booker->load('crm');
 
         return $booker;
     }

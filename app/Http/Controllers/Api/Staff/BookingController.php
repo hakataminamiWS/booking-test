@@ -69,8 +69,8 @@ class BookingController extends Controller
 
         $staff = ShopStaff::findOrFail($request->input('assigned_staff_id'));
 
-        $startOfDayUtc = $date->copy()->startOfDay()->setTimezone(config('app.timezone'));
-        $endOfDayUtc = $date->copy()->endOfDay()->setTimezone(config('app.timezone'));
+        $startOfDayUtc = $date->copy()->startOfDay()->setTimezone('UTC');
+        $endOfDayUtc = $date->copy()->endOfDay()->setTimezone('UTC');
 
         $shifts = $staff->schedules()
             ->whereBetween('workable_start_at', [$startOfDayUtc, $endOfDayUtc])
@@ -108,14 +108,7 @@ class BookingController extends Controller
 
         $staff = ShopStaff::findOrFail($request->input('assigned_staff_id'));
         
-        $existingBookings = $staff->bookings()
-            ->whereDate('start_at', $startAt->toDateString())
-            ->get()
-            ->map(fn($booking) => (object)[
-                'start' => Carbon::parse($booking->start_at)->format('H:i'),
-                'end' => Carbon::parse($booking->end_at)->format('H:i')
-            ])
-            ->all();
+        $existingBookings = $this->timeSlotService->getFormattedBookings($staff, $date, $timezone, $request->input('exclude_booking_id'));
         
         $hasConflict = $timeSlotService->hasConflict($startAt, $endAt, $existingBookings);
 
@@ -162,16 +155,28 @@ class BookingController extends Controller
 
         if ($request->filled('start_at_from')) {
             $date = Carbon::parse($request->input('start_at_from'), $shop->timezone)->startOfDay();
-            $query->where('start_at', '>=', $date->setTimezone(config('app.timezone')));
+            $query->where('start_at', '>=', $date->setTimezone('UTC'));
         }
         if ($request->filled('start_at_to')) {
             $date = Carbon::parse($request->input('start_at_to'), $shop->timezone)->endOfDay();
-            $query->where('start_at', '<=', $date->setTimezone(config('app.timezone')));
+            $query->where('start_at', '<=', $date->setTimezone('UTC'));
         }
         if ($request->filled('booker_number')) {
             $query->whereHas('booker', function (Builder $q) use ($request) {
                 $q->where('number', $request->input('booker_number'));
             });
+        }
+        if ($request->has('is_guest')) {
+            $isGuest = filter_var($request->input('is_guest'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($isGuest !== null) {
+                $query->whereHas('booker', function (Builder $q) use ($isGuest) {
+                    if ($isGuest) {
+                        $q->whereNull('user_id');
+                    } else {
+                        $q->whereNotNull('user_id');
+                    }
+                });
+            }
         }
         if ($request->filled('booker_name')) {
             $query->where('booker_name', 'like', '%' . $request->input('booker_name') . '%');
@@ -196,6 +201,10 @@ class BookingController extends Controller
             $query->join('shop_bookers', 'bookings.shop_booker_id', '=', 'shop_bookers.id')
                 ->select('bookings.*')
                 ->orderBy('shop_bookers.number', $sortOrder);
+        } elseif ($sortBy === 'is_guest') {
+            $query->join('shop_bookers', 'bookings.shop_booker_id', '=', 'shop_bookers.id')
+                ->select('bookings.*')
+                ->orderByRaw('CASE WHEN shop_bookers.user_id IS NULL THEN 1 ELSE 0 END ' . $sortOrder);
         } elseif ($sortBy === 'total_price') {
             $query->withSum('bookingOptions as options_total_price', 'option_price');
             $query->orderByRaw('(menu_price + COALESCE(booking_options_sum_option_price, 0)) ' . $sortOrder);
@@ -210,6 +219,7 @@ class BookingController extends Controller
             $optionsTotal = $booking->bookingOptions->sum('option_price');
             $booking->total_price = $booking->menu_price + $optionsTotal;
             $booking->booker_number = $booking->booker?->number;
+            $booking->is_guest = $booking->booker?->user_id === null;
             return $booking;
         });
 

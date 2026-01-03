@@ -1,15 +1,8 @@
 <?php
 
-namespace App\Http\Requests\Booker;
+namespace App\Http\Requests\Guest;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\ShopStaff;
-use App\Models\ShopMenu;
-use App\Models\ShopOption;
-use App\Services\TimeSlotService;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Validator;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -18,30 +11,37 @@ class StoreBookingRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return true; 
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
+            'booking_token' => ['nullable', 'string'], // For idempotency/csrf if needed, though mainly reliance on session csrf
             'menu_id' => ['required', 'exists:shop_menus,id'],
-            'assigned_staff_id' => ['nullable', 'exists:shop_staffs,id'],
             'option_ids' => ['nullable', 'array'],
             'option_ids.*' => ['exists:shop_options,id'],
-            'start_at' => ['required', 'date'],
+            // assigned_staff_id is required: must match logic in Booker/Staff controller where staff must be selected
+            'assigned_staff_id' => ['required', 'exists:shop_staffs,id'],
+            'start_at' => ['required', 'date', 'after:now'],
             'note_from_booker' => ['nullable', 'string', 'max:1000'],
+            
+            // Booker info (Guest specific)
+            'booker_name' => ['required', 'string', 'max:255'],
+            'contact_email' => ['required_without:contact_phone', 'nullable', 'email', 'max:255'],
+            'contact_phone' => ['required_without:contact_email', 'nullable', 'string', 'max:20'],
         ];
     }
 
     /**
      * Configure the validator instance.
      */
-    public function withValidator(Validator $validator): void
+    public function withValidator(\Illuminate\Validation\Validator $validator): void
     {
         $validator->after(function ($validator) {
             if ($validator->errors()->any()) return;
@@ -52,21 +52,21 @@ class StoreBookingRequest extends FormRequest
             $startAtStr = $this->input('start_at');
             $optionIds = $this->input('option_ids', []);
 
-            if (!$staffId) return; // 担当スタッフなしの場合はここではチェックしない（TimeSlotService側の挙動に依存）
+            if (!$staffId) return;
 
             $timezone = $shop->timezone;
-            $startAt = Carbon::parse($startAtStr, $timezone);
+            $startAt = \Illuminate\Support\Carbon::parse($startAtStr, $timezone);
             
-            $menu = ShopMenu::findOrFail($menuId);
-            $options = ShopOption::find($optionIds);
+            $menu = \App\Models\ShopMenu::findOrFail($menuId);
+            $options = \App\Models\ShopOption::find($optionIds);
             $totalDuration = $menu->duration + $options->sum('additional_duration');
             $endAt = $startAt->copy()->addMinutes($totalDuration);
 
-            $staff = ShopStaff::findOrFail($staffId);
+            $staff = \App\Models\ShopStaff::findOrFail($staffId);
 
             // 1. スタッフのメニュー対応チェック
             if ($menu->requires_staff_assignment) {
-                $isAssignedToMenu = DB::table('shop_menu_staffs')
+                $isAssignedToMenu = \Illuminate\Support\Facades\DB::table('shop_menu_staffs')
                     ->where('shop_menu_id', $menuId)
                     ->where('shop_staff_id', $staffId)
                     ->exists();
@@ -74,7 +74,6 @@ class StoreBookingRequest extends FormRequest
                     $validator->errors()->add('assigned_staff_id', '選択されたスタッフはこのメニューを担当できません。');
                 }
             } else {
-                // 指名不要なメニューの場合は、店舗所属のスタッフであればOK (コントローラー側で担保されているが念のため)
                 if ($staff->shop_id !== $shop->id) {
                     $validator->errors()->add('assigned_staff_id', '選択されたスタッフはこの店舗に所属していません。');
                 }
@@ -93,7 +92,7 @@ class StoreBookingRequest extends FormRequest
                 ])
                 ->all();
 
-            $timeSlotService = app(TimeSlotService::class);
+            $timeSlotService = app(\App\Services\TimeSlotService::class);
             if (!$timeSlotService->isWithinShift($startAt, $endAt, $shifts)) {
                 $validator->errors()->add('start_at', '選択された時間はスタッフの勤務時間外です。');
             }
@@ -104,8 +103,8 @@ class StoreBookingRequest extends FormRequest
                 ->whereIn('status', ['pending', 'confirmed'])
                 ->get()
                 ->map(fn($booking) => (object)[
-                    'start' => Carbon::parse($booking->start_at)->setTimezone($timezone)->format('H:i'),
-                    'end' => Carbon::parse($booking->end_at)->setTimezone($timezone)->format('H:i')
+                    'start' => \Illuminate\Support\Carbon::parse($booking->start_at)->setTimezone($timezone)->format('H:i'),
+                    'end' => \Illuminate\Support\Carbon::parse($booking->end_at)->setTimezone($timezone)->format('H:i')
                 ])
                 ->all();
 

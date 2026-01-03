@@ -42,6 +42,7 @@
 | :--- | :--- | :--- | :--- | :--- |
 | 予約日時 | `bookings.start_at` | 可 (日付範囲) | 可 | |
 | 予約者番号 | `shop_bookers.number` | 可 (数値入力) | 可 | |
+| 会員種別 | `shop_bookers.user_id` の有無で判定 | 可 (セレクト) | 可 | |
 | 顧客名 | `bookings.booker_name` | 可 (テキスト入力) | 可 | |
 | メニュー | `bookings.menu_name` | 可 (セレクト) | 不可 | |
 | 担当スタッフ | `bookings.assigned_staff_name` | 可 (セレクト) | 不可 | |

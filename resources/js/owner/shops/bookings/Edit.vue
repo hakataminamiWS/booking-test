@@ -198,10 +198,10 @@
                                                         </v-card-title>
                                                         <v-card-text class="px-0">
                                                             <v-date-picker v-model="selectedDateValue" hide-header
+                                                                           min-width="304"
                                                                            @update:year="onPickerYearChange"
                                                                            @update:month="onPickerMonthChange"
-                                                                           :allowed-dates="allowedDates"
-                                                                           show-adjacent-months>
+                                                                           :allowed-dates="allowedDates">
                                                                 <!-- カレンダーの日付スロット -->
                                                                 <template v-slot:day="{ item, props: dayProps }">
                                                                     <v-btn
@@ -342,13 +342,16 @@
 
                                                 <v-card-text class="px-0" v-if="dailyBookings.length > 0">
                                                     <v-chip v-for="booking in dailyBookings" :key="booking.id"
-                                                            class="mb-1 mr-1" color="secondary"
-                                                            variant="flat"
-                                                            :href="`/owner/shops/${props.shop.slug}/bookings/${booking.id}/edit`"
+                                                            class="mb-1 mr-1"
+                                                            :variant="booking.id === props.booking.id ? 'text' : 'tonal'"
+                                                            :href="booking.id === props.booking.id ? undefined : `/owner/shops/${props.shop.slug}/bookings/${booking.id}/edit`"
                                                             target="_blank">
                                                         {{ booking.start }} - {{ booking.end }} {{
                                                             booking.booker_name
                                                         }}
+                                                        <span v-if="booking.id === props.booking.id" class="ml-1">
+                                                            (編集中)
+                                                        </span>
                                                     </v-chip>
                                                 </v-card-text>
 
@@ -416,7 +419,7 @@
                                                     <div>
                                                         <div class="text-caption text-medium-emphasis">最終予約日時</div>
                                                         <div class="text-body-1">{{ bookerHistory.last_booking_at || '－'
-                                                            }}</div>
+                                                        }}</div>
                                                     </div>
                                                 </div>
 
@@ -641,7 +644,9 @@ const props = defineProps<Props>();
 
 // --- フォーム状態 ---
 const form = ref({
-    start_at: props.booking.start_at,
+    start_at: props.booking.start_at
+        ? formatInTimeZone(props.booking.start_at, props.shop.timezone || 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:00')
+        : "",
     menu_id: Number(props.booking.menu_id) as number | null,
     option_ids: props.booking.booking_options ? props.booking.booking_options.map(bo => Number(bo.option_id)) : [] as number[],
     assigned_staff_id: Number(props.booking.assigned_staff_id) as number | null,
@@ -828,7 +833,10 @@ const fetchAssignedStaffs = async (checkAutoEnable = false) => {
 
         const newStaffs = response.data.staffs;
         if (checkAutoEnable && form.value.assigned_staff_id && !newStaffs.some((s: Staff) => s.id === form.value.assigned_staff_id)) {
-            showAllStaffs.value = true;
+            // 割り当て必須メニューの場合のみ、リストにないスタッフが選ばれていたら「全表示」をONにする
+            if (selectedMenu.value?.requires_staff_assignment) {
+                showAllStaffs.value = true;
+            }
         }
         assignedStaffs.value = newStaffs;
     } catch (error) {
