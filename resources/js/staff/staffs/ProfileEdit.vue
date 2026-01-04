@@ -1,60 +1,60 @@
 <template>
     <StaffLayout :shop="shop" currentPage="profile">
-        <v-main>
-            <v-container>
-                <!-- Navigation Removed -->
-                <!-- ShopHeader Removed -->
 
-                <v-row>
-                    <v-col cols="12">
-                        <v-card>
-                            <v-card-title>マイプロフィール編集</v-card-title>
-                            <v-card-text>
-                                <form
-                                      id="form"
-                                      :action="formActionUrl"
-                                      method="POST"
-                                      enctype="multipart/form-data">
-                                    <input
-                                           type="hidden"
-                                           name="_token"
-                                           :value="props.csrfToken" />
-                                    <input type="hidden" name="_method" value="PUT" />
+        <v-container>
+            <!-- Navigation Removed -->
+            <!-- ShopHeader Removed -->
 
-                                    <v-text-field
-                                                  v-model="form.nickname"
-                                                  name="nickname"
-                                                  label="ニックネーム *"
-                                                  required
-                                                  :rules="[rules.required]"></v-text-field>
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title>マイプロフィール編集</v-card-title>
+                        <v-card-text>
+                            <form
+                                  id="form"
+                                  :action="formActionUrl"
+                                  method="POST"
+                                  enctype="multipart/form-data">
+                                <input
+                                       type="hidden"
+                                       name="_token"
+                                       :value="props.csrfToken" />
+                                <input type="hidden" name="_method" value="PUT" />
 
-                                    <ImageUploader
-                                                   label="プロフィール画像(小)"
-                                                   :initial-url="props.staff.profile?.small_image_url ?? null"
-                                                   :max-size="2"
-                                                   recommended-resolution="正方形 (推奨)"
-                                                   input-name="small_image" />
+                                <v-text-field
+                                              v-model="form.nickname"
+                                              name="nickname"
+                                              label="ニックネーム *"
+                                              required
+                                              :rules="[rules.required]"></v-text-field>
 
-                                    <ImageUploader
-                                                   label="プロフィール画像(大)"
-                                                   :initial-url="props.staff.profile?.large_image_url ?? null"
-                                                   :max-size="5"
-                                                   recommended-resolution="横長 (推奨)"
-                                                   input-name="large_image" />
-                                </form>
-                            </v-card-text>
+                                <ImageUploader
+                                               label="プロフィール画像(小)"
+                                               :initial-url="props.staff.profile?.small_image_url ?? null"
+                                               :max-size="2"
+                                               recommended-resolution="正方形 (推奨)"
+                                               input-name="small_image" />
 
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn form="form" color="primary" type="submit" :disabled="!isFormValid">
-                                    更新する
-                                </v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-col>
-                </v-row>
-            </v-container>
-        </v-main>
+                                <ImageUploader
+                                               label="プロフィール画像(大)"
+                                               :initial-url="props.staff.profile?.large_image_url ?? null"
+                                               :max-size="5"
+                                               recommended-resolution="横長 (推奨)"
+                                               input-name="large_image" />
+                            </form>
+                        </v-card-text>
+
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn form="form" color="primary" type="submit" :disabled="!isFormValid">
+                                更新する
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+
     </StaffLayout>
 </template>
 

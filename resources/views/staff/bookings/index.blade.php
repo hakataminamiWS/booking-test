@@ -12,7 +12,7 @@
     @endphp
     <div
         id="app"
-        data-page="staff/bookings/Index"
+        data-page="staff/shops/bookings/Index"
         data-props="{{ json_encode($props) }}"
     >
     </div>

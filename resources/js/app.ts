@@ -143,30 +143,29 @@ const pages = {
     "staff/shops/Dashboard": defineAsyncComponent(
         () => import("@/staff/shops/Dashboard.vue")
     ),
-    "staff/shifts/Index": defineAsyncComponent(
-
-        () => import("@/staff/shifts/Index.vue")
+    "staff/shops/shifts/Index": defineAsyncComponent(
+        () => import("@/staff/shops/shifts/Index.vue")
     ),
-    "staff/shifts/Edit": defineAsyncComponent(
-        () => import("@/staff/shifts/Edit.vue")
+    "staff/shops/shifts/Edit": defineAsyncComponent(
+        () => import("@/staff/shops/shifts/Edit.vue")
     ),
-    "staff/bookings/Index": defineAsyncComponent(
-        () => import("@/staff/bookings/Index.vue")
+    "staff/shops/bookings/Index": defineAsyncComponent(
+        () => import("@/staff/shops/bookings/Index.vue")
     ),
-    "staff/bookings/Create": defineAsyncComponent(
-        () => import("@/staff/bookings/Create.vue")
+    "staff/shops/bookings/Create": defineAsyncComponent(
+        () => import("@/staff/shops/bookings/Create.vue")
     ),
-    "staff/bookings/Edit": defineAsyncComponent(
-        () => import("@/staff/bookings/Edit.vue")
+    "staff/shops/bookings/Edit": defineAsyncComponent(
+        () => import("@/staff/shops/bookings/Edit.vue")
     ),
-    "staff/bookers/Index": defineAsyncComponent(
-        () => import("@/staff/bookers/Index.vue")
+    "staff/shops/bookers/Index": defineAsyncComponent(
+        () => import("@/staff/shops/bookers/Index.vue")
     ),
-    "staff/bookers/Create": defineAsyncComponent(
-        () => import("@/staff/bookers/Create.vue")
+    "staff/shops/bookers/Create": defineAsyncComponent(
+        () => import("@/staff/shops/bookers/Create.vue")
     ),
-    "staff/bookers/Edit": defineAsyncComponent(
-        () => import("@/staff/bookers/Edit.vue")
+    "staff/shops/bookers/Edit": defineAsyncComponent(
+        () => import("@/staff/shops/bookers/Edit.vue")
     ),
     "staff/staffs/Index": defineAsyncComponent(
         () => import("@/staff/staffs/Index.vue")

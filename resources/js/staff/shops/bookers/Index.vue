@@ -1,15 +1,30 @@
 <template>
-    <StaffLayout :shop="shop" currentPage="staffs">
+    <StaffLayout :shop="shop" currentPage="bookers">
 
         <v-container>
-            <!-- Navigation Removed -->
-            <!-- ShopHeader Removed -->
+            <!-- ナビゲーション (Removed) -->
+
+            <!-- ショップヘッダー (Removed) -->
 
             <v-row>
                 <v-col cols="12">
                     <v-card>
-                        <v-card-title>
-                            <span>スタッフ一覧</span>
+                        <v-card-title
+                                      :class="{
+                                        'd-flex': true,
+                                        'flex-column': smAndDown,
+                                        'align-start': smAndDown,
+                                        'justify-space-between': !smAndDown,
+                                        'align-center': !smAndDown,
+                                    }">
+                            <span>予約者一覧</span>
+                            <v-btn
+                                   prepend-icon="mdi-plus"
+                                   :href="`/shops/${props.shop.slug}/staff/bookers/create`"
+                                   :class="{ 'mt-2': smAndDown }"
+                                   color="primary">
+                                予約者を新規登録する
+                            </v-btn>
                         </v-card-title>
                         <v-card-text>
                             <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
@@ -85,24 +100,18 @@
                                                  @update:options="loadItems"
                                                  hide-default-footer
                                                  class="elevation-1 mt-4">
-                                <template v-slot:item.user_id="{ item }">
-                                    <v-chip
-                                            :color="statusColor(item.user_id)"
-                                            dark
-                                            small>{{
-                                                item.user_id ? "担当者" : "予約枠"
-                                            }}</v-chip>
+                                <template v-slot:item.updated_at="{ item }">
+                                    {{ new Date(item.updated_at).toLocaleString() }}
                                 </template>
-                                <template v-slot:item.created_at="{ item }">
-                                    {{ new Date(item.created_at).toLocaleString() }}
+                                <template v-slot:item.last_booking_at="{ item }">
+                                    <span v-if="item.crm && item.crm.last_booking_at">
+                                        {{ item.crm.last_booking_at.substring(0, 10) }}
+                                    </span>
                                 </template>
                                 <template v-slot:item.actions="{ item }">
                                     <v-btn
-                                           v-if="item.id === props.currentStaffId"
                                            color="primary"
-                                           variant="flat"
-                                           :href="`/shops/${props.shop.slug}/staff/profile`">
-                                        プロフィールを編集
+                                           :href="`/shops/${props.shop.slug}/staff/bookers/${item.id}/edit`">編集する
                                     </v-btn>
                                 </template>
                             </v-data-table-server>
@@ -126,10 +135,26 @@
                                 <v-text-field v-if="getColumnType(filter.column) === 'text'" v-model="filter.value"
                                               label="値" dense
                                               hide-details></v-text-field>
-                                <v-select v-if="getColumnType(filter.column) === 'select'" v-model="filter.value"
-                                          :items="getColumnItems(filter.column)" item-title="title" item-value="value"
-                                          label="値" dense
-                                          hide-details></v-select>
+                                <div v-if="
+                                    getColumnType(filter.column) ===
+                                    'date-range'
+                                " class="d-flex align-center">
+                                    <v-text-field v-model="filter.value" label="開始日 (YYYY-MM-DD)" dense hide-details
+                                                  class="mr-2"></v-text-field>
+                                    <span>-</span>
+                                    <v-text-field v-model="filter.value_to" label="終了日 (YYYY-MM-DD)" dense hide-details
+                                                  class="ml-2"></v-text-field>
+                                </div>
+                                <div v-if="
+                                    getColumnType(filter.column) ===
+                                    'number-range'
+                                " class="d-flex align-center">
+                                    <v-text-field v-model="filter.value" label="以上" dense hide-details class="mr-2"
+                                                  type="number"></v-text-field>
+                                    <span>-</span>
+                                    <v-text-field v-model="filter.value_to" label="以下" dense hide-details class="ml-2"
+                                                  type="number"></v-text-field>
+                                </div>
                             </v-col>
                             <v-col cols="1">
                                 <v-btn icon size="small" @click="removeFilter(filter.id)">
@@ -137,12 +162,12 @@
                                 </v-btn>
                             </v-col>
                         </v-row>
-                        <v-btn text @click="addFilter" class="mt-4">+ フィルタを追加する</v-btn>
+                        <v-btn text @click="addFilter" class="mt-4">+ フィルタを追加</v-btn>
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn text @click="filterDialog = false">キャンセルする</v-btn>
-                        <v-btn color="primary" @click="applyFilters">適用する</v-btn>
+                        <v-btn text @click="filterDialog = false">キャンセル</v-btn>
+                        <v-btn color="primary" @click="applyFilters">適用</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
@@ -180,22 +205,28 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
 import StaffLayout from "@/components/staff/StaffLayout.vue";
 
 const props = defineProps<{
     shop: { name: string; slug: string };
-    currentStaffId: number;
-    csrfToken: string;
 }>();
+
+const shopShowUrl = computed(() => `/shops/${props.shop.slug}/staff/bookings`);
 
 const { smAndDown } = useDisplay();
 
-// Fixes: Use generic VDataTableServer prop types or just any if type exports are tricky in this setup
-// Using partial types based on inspection of Vuetify types
-type Headers = any[];
-type Options = any;
+interface Options {
+    page: number;
+    itemsPerPage: number;
+    sortBy: readonly any[];
+    groupBy: readonly any[];
+    search: string;
+}
+
+type Headers = any;
 
 // --- Component State ---
 const filterDialog = ref(false);
@@ -218,18 +249,18 @@ let isInitialLoad = true;
 interface Filter {
     id: number;
     column: string | null;
-    value: string | null;
+    value: any;
+    value_to?: any;
 }
 
 const filterableColumns = ref([
-    { text: "スタッフID", value: "id", type: "text" },
-    { text: "ニックネーム", value: "nickname", type: "text" },
-    {
-        text: "担当者/予約枠",
-        value: "type",
-        type: "select",
-        items: ["担当者", "予約枠"],
-    },
+    { text: "会員番号", value: "number", type: "text" },
+    { text: "名前", value: "name", type: "text" },
+    { text: "よみかた", value: "name_kana", type: "text" },
+    { text: "連絡先メールアドレス", value: "contact_email", type: "text" },
+    { text: "連絡先電話番号", value: "contact_phone", type: "text" },
+    { text: "最終予約日時", value: "last_booking_at", type: "date-range" },
+    { text: "予約回数", value: "booking_count", type: "number-range" },
 ]);
 
 const filters = ref<Filter[]>([]);
@@ -240,13 +271,6 @@ const getColumnType = (columnValue: string | null) => {
     return (
         filterableColumns.value.find((c) => c.value === columnValue)?.type ||
         "text"
-    );
-};
-const getColumnItems = (columnValue: string | null) => {
-    if (!columnValue) return [];
-    return (
-        filterableColumns.value.find((c) => c.value === columnValue)?.items ||
-        []
     );
 };
 
@@ -268,6 +292,8 @@ const removeFilter = (id: number) => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: "",
     });
 };
 
@@ -276,17 +302,34 @@ const activeFiltersText = computed(() => {
         const column = filterableColumns.value.find(
             (c) => c.value === f.column
         );
+        let displayValue: string | null = f.value;
+
+        if (
+            column?.type === "date-range" ||
+            column?.type === "number-range"
+        ) {
+            if (f.value && f.value_to) {
+                displayValue = `${f.value} - ${f.value_to}`;
+            } else if (f.value) {
+                displayValue = `${f.value} 以降`;
+            } else if (f.value_to) {
+                displayValue = `${f.value_to} 以前`;
+            }
+        }
+
         return {
             id: f.id,
             text: column ? column.text : "",
-            value: f.value,
+            value: displayValue,
         };
     });
 });
 
 const applyFilters = (shouldCloseDialog = true) => {
     activeFilters.value = JSON.parse(
-        JSON.stringify(filters.value.filter((f) => f.column && f.value))
+        JSON.stringify(
+            filters.value.filter((f) => f.column && (f.value || f.value_to))
+        )
     );
     if (shouldCloseDialog) {
         filterDialog.value = false;
@@ -296,6 +339,8 @@ const applyFilters = (shouldCloseDialog = true) => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: "",
     });
 };
 
@@ -306,10 +351,12 @@ interface Sort {
 }
 
 const sortableColumns = ref([
-    { text: "スタッフID", value: "id" },
-    { text: "ニックネーム", value: "nickname" },
-    { text: "担当者/予約枠", value: "type" },
-    { text: "登録日時", value: "created_at" },
+    { text: "会員番号", value: "number" },
+    { text: "名前", value: "name" },
+    { text: "よみかた", value: "name_kana" },
+    { text: "連絡先メールアドレス", value: "contact_email" },
+    { text: "最終予約日時", value: "last_booking_at" },
+    { text: "予約回数", value: "booking_count" },
 ]);
 
 const sortBy = ref<Sort>({ column: null, order: null });
@@ -323,6 +370,8 @@ const applySort = () => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: "",
     });
 };
 
@@ -334,6 +383,8 @@ const removeSort = () => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: "",
     });
 };
 
@@ -367,18 +418,29 @@ const loadItems = async (options: Options) => {
         }
 
         const tempFilters: Filter[] = [];
-        urlParams.forEach((value, key) => {
-            const columnDef = filterableColumns.value.find(
-                (c) => c.value === key
-            );
-            if (columnDef) {
-                tempFilters.push({
-                    id: Date.now() + Math.random(),
-                    column: key,
-                    value,
-                });
+        filterableColumns.value.forEach((col) => {
+            if (col.type.endsWith("-range")) {
+                const from = urlParams.get(`${col.value}_from`);
+                const to = urlParams.get(`${col.value}_to`);
+                if (from || to) {
+                    tempFilters.push({
+                        id: Date.now() + Math.random(),
+                        column: col.value,
+                        value: from,
+                        value_to: to,
+                    });
+                }
+            } else {
+                if (urlParams.has(col.value)) {
+                    tempFilters.push({
+                        id: Date.now() + Math.random(),
+                        column: col.value,
+                        value: urlParams.get(col.value),
+                    });
+                }
             }
         });
+
         if (tempFilters.length > 0) {
             filters.value = tempFilters;
             activeFilters.value = JSON.parse(JSON.stringify(tempFilters));
@@ -399,17 +461,28 @@ const loadItems = async (options: Options) => {
     }
 
     activeFilters.value.forEach((filter) => {
-        if (filter.column && filter.value) {
-            params.append(filter.column, filter.value);
+        const columnDef = filterableColumns.value.find(
+            (c) => c.value === filter.column
+        );
+        if (columnDef?.type.endsWith("-range")) {
+            if (filter.value) {
+                params.append(`${filter.column}_from`, filter.value);
+            }
+            if (filter.value_to) {
+                params.append(`${filter.column}_to`, filter.value_to);
+            }
+        } else {
+            if (filter.column && filter.value) {
+                params.append(filter.column, filter.value);
+            }
         }
     });
 
-    // NOTE: API endpoint is tailored for staff portal
-    const apiUrl = `/shops/${props.shop.slug}/staff/api/staffs?${params.toString()}`;
+    const apiUrl = `/shops/${props.shop.slug}/staff/api/bookers?${params.toString()}`;
     history.pushState(
         null,
         "",
-        `/shops/${props.shop.slug}/staff/staffs?${params.toString()}`
+        `/shops/${props.shop.slug}/staff/bookers?${params.toString()}`
     );
 
     try {
@@ -423,15 +496,14 @@ const loadItems = async (options: Options) => {
     }
 };
 
-const statusColor = (userId: number | null) => {
-    return userId ? "green" : "blue";
-};
-
 const headers: Headers = [
-    { title: "スタッフID", key: "id", sortable: false },
-    { title: "ニックネーム", key: "profile.nickname", sortable: false },
-    { title: "担当者/予約枠", key: "user_id", sortable: false },
-    { title: "登録日時", key: "created_at", sortable: false },
+    { title: "会員番号", key: "number", sortable: false },
+    { title: "名前", key: "name", sortable: false },
+    { title: "よみかた", key: "crm.name_kana", sortable: false },
+    { title: "連絡先メールアドレス", key: "contact_email", sortable: false },
+    { title: "連絡先電話番号", key: "contact_phone", sortable: false },
+    { title: "最終予約日時", key: "last_booking_at", sortable: false },
+    { title: "予約回数", key: "crm.booking_count", sortable: false },
     { title: "操作", key: "actions", sortable: false },
 ];
 </script>

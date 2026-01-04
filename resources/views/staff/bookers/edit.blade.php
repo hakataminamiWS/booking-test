@@ -11,5 +11,5 @@
             'errors' => $errors->all(),
         ];
     @endphp
-    <div id="app" data-page="staff/bookers/Edit" data-props="{{ json_encode($props) }}"></div>
+    <div id="app" data-page="staff/shops/bookers/Edit" data-props="{{ json_encode($props) }}"></div>
 @endsection

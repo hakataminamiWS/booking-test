@@ -17,5 +17,5 @@
             'oldInput' => session()->getOldInput(),
         ];
     @endphp
-    <div id="app" data-page="staff/shifts/Edit" data-props="{{ json_encode($props) }}"></div>
+    <div id="app" data-page="staff/shops/shifts/Edit" data-props="{{ json_encode($props) }}"></div>
 @endsection

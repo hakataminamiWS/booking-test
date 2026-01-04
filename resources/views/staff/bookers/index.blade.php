@@ -9,5 +9,5 @@
             'errors' => $errors->all(),
         ];
     @endphp
-    <div id="app" data-page="staff/bookers/Index" data-props="{{ json_encode($props) }}"></div>
+    <div id="app" data-page="staff/shops/bookers/Index" data-props="{{ json_encode($props) }}"></div>
 @endsection

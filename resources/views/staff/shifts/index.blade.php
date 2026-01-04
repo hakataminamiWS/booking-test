@@ -12,6 +12,6 @@
             'currentStaffId' => $currentStaffId,
         ];
     @endphp
-    <div id="app" data-page="staff/shifts/Index" data-props="{{ json_encode($props) }}">
+    <div id="app" data-page="staff/shops/shifts/Index" data-props="{{ json_encode($props) }}">
     </div>
 @endsection

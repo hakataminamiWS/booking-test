@@ -34,7 +34,7 @@
             <v-list density="compact" nav>
                 <!-- ダッシュボード -->
                 <v-list-item :href="`/shops/${shop.slug}/staff/dashboard`" :active="currentPage === 'dashboard'"
-                             title="ダッシュボード" prepend-icon="mdi-view-dashboard"></v-list-item>
+                             title="ダッシュボード"></v-list-item>
 
                 <v-divider class="my-2"></v-divider>
 
