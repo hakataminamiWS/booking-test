@@ -1,195 +1,204 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12">
-                <v-btn :href="menusIndexUrl" prepend-icon="mdi-arrow-left">
-                    メニュー一覧に戻る
-                </v-btn>
-            </v-col>
-        </v-row>
+    <OwnerLayout :shop="shop" currentPage="menus">
+        <v-container>
 
-        <v-row>
-            <v-col cols="12">
-                <ShopHeader :shop="shop" />
-            </v-col>
-        </v-row>
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title>メニュー新規登録</v-card-title>
+                        <v-card-text>
+                            <v-alert
+                                     v-if="props.errors.length > 0"
+                                     type="error"
+                                     class="mb-4"
+                                     closable>
+                                <ul>
+                                    <li
+                                        v-for="(error, index) in props.errors"
+                                        :key="index">
+                                        {{ error }}
+                                    </li>
+                                </ul>
+                            </v-alert>
 
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>メニュー新規登録</v-card-title>
-                    <v-card-text>
-                        <v-alert
-                                 v-if="props.errors.length > 0"
-                                 type="error"
-                                 class="mb-4"
-                                 closable>
-                            <ul>
-                                <li
-                                    v-for="(error, index) in props.errors"
-                                    :key="index">
-                                    {{ error }}
-                                </li>
-                            </ul>
-                        </v-alert>
+                            <form :action="formAction" method="POST">
+                                <input
+                                       type="hidden"
+                                       name="_token"
+                                       :value="csrfToken" />
 
-                        <form :action="formAction" method="POST">
-                            <input
-                                   type="hidden"
-                                   name="_token"
-                                   :value="csrfToken" />
+                                <v-text-field
+                                              v-model="formData.name"
+                                              name="name"
+                                              label="メニュー名"
+                                              required
+                                              :rules="[rules.required]"
+                                              hint="お客様に表示されるメニューの正式名称を入力します。"
+                                              persistent-hint
+                                              class="mb-4"></v-text-field>
 
-                            <v-text-field
-                                          v-model="formData.name"
-                                          name="name"
-                                          label="メニュー名"
-                                          required
-                                          :rules="[rules.required]"
-                                          hint="お客様に表示されるメニューの正式名称を入力します。"
+                                <v-text-field
+                                              v-model="formData.price"
+                                              @update:model-value="formData.price = formatNumericInput($event)"
+                                              name="price"
+                                              label="価格"
+                                              :rules="[rules.required, rules.numeric]"
+                                              inputmode="numeric"
+                                              suffix="円"
+                                              required
+                                              hint="メニューの価格を円単位で入力します。"
+                                              persistent-hint
+                                              class="mb-4"></v-text-field>
+
+                                <v-text-field
+                                              v-model="formData.duration"
+                                              @update:model-value="formData.duration = formatNumericInput($event)"
+                                              name="duration"
+                                              label="所要時間"
+                                              :rules="[rules.required, rules.numeric]"
+                                              inputmode="numeric"
+                                              suffix="分"
+                                              required
+                                              hint="サービスの所要時間を分単位で入力します。"
+                                              persistent-hint
+                                              class="mb-4"></v-text-field>
+
+                                <v-textarea
+                                            v-model="formData.description"
+                                            name="description"
+                                            label="メニューの説明"
+                                            hint="お客様に表示されるメニューの詳細な説明を入力します。（任意）"
+                                            persistent-hint
+                                            class="mb-4"></v-textarea>
+
+                                <v-switch
+                                          v-model="formData.requires_staff_assignment"
+                                          :true-value="1"
+                                          :false-value="0"
+                                          name="requires_staff_assignment"
+                                          label="担当者の割り当て"
+                                          hint="このメニューの予約時に、担当スタッフの選択を必須にするかどうかを設定します。"
                                           persistent-hint
-                                          class="mb-4"></v-text-field>
+                                          inset
+                                          color="primary"></v-switch>
+                                <input
+                                       type="hidden"
+                                       name="requires_staff_assignment"
+                                       :value="formData.requires_staff_assignment ? 1 : 0
+                                        " />
 
-                            <v-text-field
-                                          v-model="formData.price"
-                                          @update:model-value="formData.price = formatNumericInput($event)"
-                                          name="price"
-                                          label="価格"
-                                          :rules="[rules.required, rules.numeric]"
-                                          inputmode="numeric"
-                                          suffix="円"
-                                          required
-                                          hint="メニューの価格を円単位で入力します。"
+                                <v-select
+                                          v-model="formData.staff_ids"
+                                          :items="props.staffs"
+                                          item-title="profile.nickname"
+                                          item-value="id"
+                                          label="担当スタッフ"
+                                          multiple
+                                          chips
+                                          closable-chips
+                                          hint="このメニューを担当できるスタッフをすべて選択してください。"
                                           persistent-hint
-                                          class="mb-4"></v-text-field>
+                                          class="mb-4"></v-select>
 
-                            <v-text-field
-                                          v-model="formData.duration"
-                                          @update:model-value="formData.duration = formatNumericInput($event)"
-                                          name="duration"
-                                          label="所要時間"
-                                          :rules="[rules.required, rules.numeric]"
-                                          inputmode="numeric"
-                                          suffix="分"
-                                          required
-                                          hint="サービスの所要時間を分単位で入力します。"
-                                          persistent-hint
-                                          class="mb-4"></v-text-field>
+                                <template
+                                          v-for="staffId in formData.staff_ids"
+                                          :key="staffId">
+                                    <input
+                                           type="hidden"
+                                           name="staff_ids[]"
+                                           :value="staffId" />
+                                </template>
 
-                            <v-textarea
-                                        v-model="formData.description"
-                                        name="description"
-                                        label="メニューの説明"
-                                        hint="お客様に表示されるメニューの詳細な説明を入力します。（任意）"
-                                        persistent-hint
-                                        class="mb-4"></v-textarea>
+                                <v-select v-model="formData.option_ids" :items="props.options" item-title="name"
+                                          item-value="id" label="関連オプション"
+                                          multiple chips closable-chips hint="このメニューに適用可能なオプションをすべて選択してください。"
+                                          persistent-hint class="mb-4"></v-select>
 
-                            <v-switch
-                                      v-model="formData.requires_staff_assignment"
-                                      :true-value="1"
-                                      :false-value="0"
-                                      name="requires_staff_assignment"
-                                      label="担当者の割り当て"
-                                      hint="このメニューの予約時に、担当スタッフの選択を必須にするかどうかを設定します。"
-                                      persistent-hint
-                                      inset
-                                      color="primary"></v-switch>
-                            <input
-                                   type="hidden"
-                                   name="requires_staff_assignment"
-                                   :value="formData.requires_staff_assignment ? 1 : 0
+                                <template v-for="optionId in formData.option_ids" :key="optionId">
+                                    <input
+                                           type="hidden"
+                                           name="option_ids[]"
+                                           :value="optionId" />
+                                </template>
+
+                                <v-switch v-model="formData.requires_cancellation_deadline
+                                    " :true-value="1" :false-value="0" name="requires_cancellation_deadline"
+                                          label="特別なキャンセル期限" hint="店舗の基本設定とは異なるキャンセル期限を設定する場合にオンにします。" persistent-hint
+                                          inset color="primary"></v-switch>
+                                <input type="hidden" name="requires_cancellation_deadline" :value="formData.requires_cancellation_deadline
+                                    ? 1
+                                    : 0
                                     " />
 
-                            <v-select
-                                      v-model="formData.staff_ids"
-                                      :items="props.staffs"
-                                      item-title="profile.nickname"
-                                      item-value="id"
-                                      label="担当スタッフ"
-                                      multiple
-                                      chips
-                                      closable-chips
-                                      hint="このメニューを担当できるスタッフをすべて選択してください。"
-                                      persistent-hint
-                                      class="mb-4"></v-select>
+                                <v-text-field v-if="formData.requires_cancellation_deadline"
+                                              v-model="formData.cancellation_deadline_minutes"
+                                              @update:model-value="formData.cancellation_deadline_minutes = formatNumericInput($event)
+                                                " name="cancellation_deadline_minutes" label="キャンセル期限"
+                                              :rules="[rules.required, rules.numeric]" inputmode="numeric" suffix="分前"
+                                              hint="予約の何分前までお客様によるキャンセルを許可するか設定します。"
+                                              persistent-hint class="mb-4"></v-text-field>
 
-                            <template
-                                      v-for="staffId in formData.staff_ids"
-                                      :key="staffId">
-                                <input
-                                       type="hidden"
-                                       name="staff_ids[]"
-                                       :value="staffId" />
-                            </template>
+                                <v-switch v-model="formData.requires_booking_deadline" :true-value="1" :false-value="0"
+                                          name="requires_booking_deadline"
+                                          label="特別な予約締切" hint="店舗の基本設定とは異なる予約締切を設定する場合にオンにします。" persistent-hint inset
+                                          color="primary"></v-switch>
+                                <input type="hidden" name="requires_booking_deadline" :value="formData.requires_booking_deadline ? 1 : 0
+                                    " />
 
-                            <v-select v-model="formData.option_ids" :items="props.options" item-title="name"
-                                      item-value="id" label="関連オプション"
-                                      multiple chips closable-chips hint="このメニューに適用可能なオプションをすべて選択してください。"
-                                      persistent-hint class="mb-4"></v-select>
+                                <v-text-field v-if="formData.requires_booking_deadline"
+                                              v-model="formData.booking_deadline_minutes"
+                                              @update:model-value="formData.booking_deadline_minutes = formatNumericInput($event)"
+                                              name="booking_deadline_minutes"
+                                              label="予約締切" :rules="[rules.required, rules.numeric]" inputmode="numeric"
+                                              suffix="分前"
+                                              hint="予約の何分前でオンライン予約の受付を締め切るか設定します。" persistent-hint
+                                              class="mb-4"></v-text-field>
 
-                            <template v-for="optionId in formData.option_ids" :key="optionId">
-                                <input
-                                       type="hidden"
-                                       name="option_ids[]"
-                                       :value="optionId" />
-                            </template>
-
-                            <v-switch v-model="formData.requires_cancellation_deadline
-                                " :true-value="1" :false-value="0" name="requires_cancellation_deadline"
-                                      label="特別なキャンセル期限" hint="店舗の基本設定とは異なるキャンセル期限を設定する場合にオンにします。" persistent-hint inset
-                                      color="primary"></v-switch>
-                            <input type="hidden" name="requires_cancellation_deadline" :value="formData.requires_cancellation_deadline
-                                ? 1
-                                : 0
-                                " />
-
-                            <v-text-field v-if="formData.requires_cancellation_deadline"
-                                          v-model="formData.cancellation_deadline_minutes"
-                                          @update:model-value="formData.cancellation_deadline_minutes = formatNumericInput($event)
-                                            " name="cancellation_deadline_minutes" label="キャンセル期限"
-                                          :rules="[rules.required, rules.numeric]" inputmode="numeric" suffix="分前"
-                                          hint="予約の何分前までお客様によるキャンセルを許可するか設定します。"
-                                          persistent-hint class="mb-4"></v-text-field>
-
-                            <v-switch v-model="formData.requires_booking_deadline" :true-value="1" :false-value="0"
-                                      name="requires_booking_deadline"
-                                      label="特別な予約締切" hint="店舗の基本設定とは異なる予約締切を設定する場合にオンにします。" persistent-hint inset
-                                      color="primary"></v-switch>
-                            <input type="hidden" name="requires_booking_deadline" :value="formData.requires_booking_deadline ? 1 : 0
-                                " />
-
-                            <v-text-field v-if="formData.requires_booking_deadline"
-                                          v-model="formData.booking_deadline_minutes"
-                                          @update:model-value="formData.booking_deadline_minutes = formatNumericInput($event)"
-                                          name="booking_deadline_minutes"
-                                          label="予約締切" :rules="[rules.required, rules.numeric]" inputmode="numeric"
-                                          suffix="分前"
-                                          hint="予約の何分前でオンライン予約の受付を締め切るか設定します。" persistent-hint
-                                          class="mb-4"></v-text-field>
-
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn type="submit" color="primary" :disabled="!isFormValid">登録する</v-btn>
-                            </v-card-actions>
-                        </form>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn type="submit" color="primary" :disabled="!isFormValid">登録する</v-btn>
+                                </v-card-actions>
+                            </form>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </OwnerLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import { ref, computed, onMounted, type PropType } from "vue";
+import OwnerLayout from "@/components/owner/OwnerLayout.vue";
 import { formatNumericInput } from "@/composables/useNumericInput";
 
-const props = defineProps({
-    shop: { type: Object, required: true },
-    staffs: { type: Array, required: true },
-    options: { type: Array, required: true },
-    csrfToken: { type: String, required: true },
-    errors: { type: Array, default: () => [] },
-    oldInput: { type: Object, default: () => ({}) },
+interface Shop {
+    name: string;
+    slug: string;
+}
+
+interface Staff {
+    id: number;
+    profile: {
+        nickname: string;
+    };
+}
+
+interface Option {
+    id: number;
+    name: string;
+}
+
+const props = withDefaults(defineProps<{
+    shop: Shop;
+    staffs: Staff[];
+    options: Option[];
+    csrfToken: string;
+    errors?: string[];
+    oldInput?: Record<string, any>;
+}>(), {
+    errors: () => [],
+    oldInput: () => ({}),
 });
 
 const menusIndexUrl = computed(() => `/owner/shops/${props.shop.slug}/menus`);
@@ -197,16 +206,16 @@ const formAction = computed(() => `/owner/shops/${props.shop.slug}/menus`);
 
 const formData = ref({
     name: "",
-    price: 0,
-    duration: 30,
+    price: 0 as number | string,
+    duration: 30 as number | string,
     description: "",
     requires_staff_assignment: 0,
     requires_cancellation_deadline: 0,
-    cancellation_deadline_minutes: 0,
+    cancellation_deadline_minutes: 0 as number | string,
     requires_booking_deadline: 0,
-    booking_deadline_minutes: 0,
-    staff_ids: [],
-    option_ids: [],
+    booking_deadline_minutes: 0 as number | string,
+    staff_ids: [] as number[],
+    option_ids: [] as number[],
 });
 
 onMounted(() => {

@@ -47,6 +47,9 @@ const pages = {
     "owner/shops/Edit": defineAsyncComponent(
         () => import("@/owner/shops/Edit.vue")
     ),
+    "owner/shops/Dashboard": defineAsyncComponent(
+        () => import("@/owner/shops/Dashboard.vue")
+    ),
     "owner/shops/business-hours/Index": defineAsyncComponent(
         () => import("@/owner/shops/business-hours/Index.vue")
     ),
@@ -137,7 +140,11 @@ const pages = {
     "staff/profile/Edit": defineAsyncComponent(
         () => import("@/staff/staffs/ProfileEdit.vue")
     ),
+    "staff/shops/Dashboard": defineAsyncComponent(
+        () => import("@/staff/shops/Dashboard.vue")
+    ),
     "staff/shifts/Index": defineAsyncComponent(
+
         () => import("@/staff/shifts/Index.vue")
     ),
     "staff/shifts/Edit": defineAsyncComponent(
@@ -169,8 +176,14 @@ const pages = {
     "booker/shops/Index": defineAsyncComponent(
         () => import("@/booker/shops/Index.vue")
     ),
+    "booker/shops/Show": defineAsyncComponent(
+        () => import("@/booker/shops/Show.vue")
+    ),
     "booker/profile/Edit": defineAsyncComponent(
         () => import("@/booker/profile/Edit.vue")
+    ),
+    "booker/profile/Create": defineAsyncComponent(
+        () => import("@/booker/profile/Create.vue")
     ),
     "booker/bookings/Index": defineAsyncComponent(
         () => import("@/booker/bookings/Index.vue")
@@ -186,6 +199,9 @@ const pages = {
     ),
     "guest/bookings/Complete": defineAsyncComponent(
         () => import("@/guest/bookings/Complete.vue")
+    ),
+    "shop/Entry": defineAsyncComponent(
+        () => import("@/shop/Entry.vue")
     ),
 };
 

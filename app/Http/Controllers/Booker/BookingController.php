@@ -34,7 +34,20 @@ class BookingController extends Controller
      */
     public function create(Shop $shop)
     {
-        $booker = $this->getAuthenticatedBooker($shop);
+        if (!$shop->accepts_online_bookings) {
+            abort(403, '現在、オンライン予約の受付を停止しています。');
+        }
+
+        // Check if the user has a ShopBooker profile
+        $booker = ShopBooker::where('shop_id', $shop->id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$booker) {
+            return redirect()->route('booker.profile.create', ['shop' => $shop]);
+        }
+
+        $booker->load('crm');
 
         $shop->load(['businessHoursRegular', 'shopSpecialOpenDays', 'shopSpecialClosedDays']);
 
@@ -71,6 +84,10 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request, Shop $shop, \App\Services\ShopBookerCrmService $crmService)
     {
+        if (!$shop->accepts_online_bookings) {
+            abort(403, '現在、オンライン予約の受付を停止しています。');
+        }
+
         $booker = $this->getAuthenticatedBooker($shop);
         $validated = $request->validated();
 

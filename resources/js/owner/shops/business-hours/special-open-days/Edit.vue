@@ -1,140 +1,142 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12">
-                <v-btn
-                       :href="businessHoursIndexUrl"
-                       prepend-icon="mdi-arrow-left"
-                       variant="text">
-                    営業時間一覧へ戻る
-                </v-btn>
-            </v-col>
-        </v-row>
+    <OwnerLayout :shop="shop" currentPage="business-hours">
+        <v-container>
 
-        <v-row>
-            <v-col cols="12">
-                <ShopHeader :shop="shop" />
-            </v-col>
-        </v-row>
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title>特別営業日編集</v-card-title>
+                        <v-card-text>
+                            <form :action="formAction" method="POST">
+                                <input
+                                       type="hidden"
+                                       name="_token"
+                                       :value="props.csrfToken" />
+                                <input type="hidden" name="_method" value="PUT" />
 
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>特別営業日編集</v-card-title>
-                    <v-card-text>
-                        <form :action="formAction" method="POST">
-                            <input
-                                   type="hidden"
-                                   name="_token"
-                                   :value="props.csrfToken" />
-                            <input type="hidden" name="_method" value="PUT" />
+                                <v-alert
+                                         v-if="props.errors.length > 0"
+                                         type="error"
+                                         class="mb-4">
+                                    <ul>
+                                        <li
+                                            v-for="(error, i) in props.errors"
+                                            :key="i">
+                                            {{ error }}
+                                        </li>
+                                    </ul>
+                                </v-alert>
 
-                            <v-alert
-                                     v-if="props.errors.length > 0"
-                                     type="error"
-                                     class="mb-4">
-                                <ul>
-                                    <li
-                                        v-for="(error, i) in props.errors"
-                                        :key="i">
-                                        {{ error }}
-                                    </li>
-                                </ul>
-                            </v-alert>
+                                <v-text-field
+                                              v-model="form.date"
+                                              name="date"
+                                              label="日付 *"
+                                              type="text"
+                                              placeholder="YYYY-MM-DD"
+                                              required
+                                              :rules="dateRule"
+                                              validate-on="lazy invalid-input"
+                                              append-inner-icon="mdi-calendar"
+                                              @click:append-inner="openDateDialog"></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.date"
-                                          name="date"
-                                          label="日付 *"
-                                          type="text"
-                                          placeholder="YYYY-MM-DD"
-                                          required
-                                          :rules="dateRule"
-                                          validate-on="lazy invalid-input"
-                                          append-inner-icon="mdi-calendar"
-                                          @click:append-inner="openDateDialog"></v-text-field>
+                                <v-dialog v-model="dateDialog" width="auto">
+                                    <v-date-picker
+                                                   v-model="dateForPicker"
+                                                   @update:modelValue="updateDateFromPicker"
+                                                   title="日付"></v-date-picker>
+                                </v-dialog>
 
-                            <v-dialog v-model="dateDialog" width="auto">
-                                <v-date-picker
-                                               v-model="dateForPicker"
-                                               @update:modelValue="updateDateFromPicker"
-                                               title="日付"></v-date-picker>
-                            </v-dialog>
+                                <v-text-field
+                                              v-model="form.start_time"
+                                              name="start_time"
+                                              label="開始時刻 *"
+                                              type="time"
+                                              required
+                                              append-inner-icon="mdi-clock-outline"
+                                              @click:append-inner="openDialog('start_time')"></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.start_time"
-                                          name="start_time"
-                                          label="開始時刻 *"
-                                          type="time"
-                                          required
-                                          append-inner-icon="mdi-clock-outline"
-                                          @click:append-inner="openDialog('start_time')"></v-text-field>
+                                <v-text-field
+                                              v-model="form.end_time"
+                                              name="end_time"
+                                              label="終了時刻 *"
+                                              type="time"
+                                              required
+                                              :error-messages="form.endTimeError"
+                                              append-inner-icon="mdi-clock-outline"
+                                              @click:append-inner="openDialog('end_time')"></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.end_time"
-                                          name="end_time"
-                                          label="終了時刻 *"
-                                          type="time"
-                                          required
-                                          :error-messages="form.endTimeError"
-                                          append-inner-icon="mdi-clock-outline"
-                                          @click:append-inner="openDialog('end_time')"></v-text-field>
+                                <v-text-field
+                                              v-model="form.name"
+                                              name="name"
+                                              label="営業日名"
+                                              hint="（例：「祝日特別営業」）"
+                                              persistent-hint></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.name"
-                                          name="name"
-                                          label="営業日名"
-                                          hint="（例：「祝日特別営業」）"
-                                          persistent-hint></v-text-field>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn
+                                           type="submit"
+                                           color="primary"
+                                           @click="validateForm">更新する</v-btn>
+                                </v-card-actions>
+                            </form>
+                        </v-card-text>
+                    </v-card>
 
+                    <v-dialog v-model="dialog" width="auto">
+                        <v-card>
+                            <v-time-picker
+                                           v-model="currentTime"
+                                           format="24hr"></v-time-picker>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
                                 <v-btn
-                                       type="submit"
-                                       color="primary"
-                                       @click="validateForm">更新する</v-btn>
+                                       color="blue-darken-1"
+                                       variant="text"
+                                       @click="closeDialog">
+                                    キャンセル
+                                </v-btn>
+                                <v-btn
+                                       color="blue-darken-1"
+                                       variant="text"
+                                       @click="saveTime">
+                                    OK
+                                </v-btn>
                             </v-card-actions>
-                        </form>
-                    </v-card-text>
-                </v-card>
-
-                <v-dialog v-model="dialog" width="auto">
-                    <v-card>
-                        <v-time-picker
-                                       v-model="currentTime"
-                                       format="24hr"></v-time-picker>
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn
-                                   color="blue-darken-1"
-                                   variant="text"
-                                   @click="closeDialog">
-                                キャンセル
-                            </v-btn>
-                            <v-btn
-                                   color="blue-darken-1"
-                                   variant="text"
-                                   @click="saveTime">
-                                OK
-                            </v-btn>
-                        </v-card-actions>
-                    </v-card>
-                </v-dialog>
-            </v-col>
-        </v-row>
-    </v-container>
+                        </v-card>
+                    </v-dialog>
+                </v-col>
+            </v-row>
+        </v-container>
+    </OwnerLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import { ref, computed, onMounted, type PropType } from "vue";
+import OwnerLayout from "@/components/owner/OwnerLayout.vue";
 
-const props = defineProps({
-    shop: Object,
-    specialOpenDay: Object,
-    csrfToken: String,
-    errors: Array as () => string[],
-    oldInput: Object,
+interface Shop {
+    name: string;
+    slug: string;
+}
+
+interface SpecialOpenDay {
+    id: number;
+    name: string | null;
+    date: string;
+    start_time: string;
+    end_time: string;
+}
+
+const props = withDefaults(defineProps<{
+    shop: Shop;
+    specialOpenDay: SpecialOpenDay;
+    csrfToken: string;
+    errors?: string[];
+    oldInput?: Record<string, any>;
+}>(), {
+    errors: () => [],
+    oldInput: () => ({}),
 });
 
 const form = ref({
@@ -152,7 +154,7 @@ onMounted(() => {
         form.value.start_time = props.oldInput.start_time ?? "";
         form.value.end_time = props.oldInput.end_time ?? "";
     } else if (props.specialOpenDay) {
-        form.value.name = props.specialOpenDay.name;
+        form.value.name = props.specialOpenDay.name ?? "";
         form.value.date = props.specialOpenDay.date;
         form.value.start_time = props.specialOpenDay.start_time;
         form.value.end_time = props.specialOpenDay.end_time;
@@ -199,7 +201,7 @@ const openDialog = (type: "start_time" | "end_time") => {
 };
 
 const saveTime = () => {
-    if (editingField.value) {
+    if (editingField.value && currentTime.value !== null) {
         form.value[editingField.value] = currentTime.value;
     }
     closeDialog();

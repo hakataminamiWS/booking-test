@@ -3,10 +3,10 @@
         <v-row>
             <v-col cols="12">
                 <v-btn
-                       href="/booker/shops"
+                       :href="`/shops/${shop.slug}/booker`"
                        prepend-icon="mdi-arrow-left"
                        variant="text">
-                    登録店舗一覧へ戻る
+                    マイページへ戻る
                 </v-btn>
             </v-col>
         </v-row>

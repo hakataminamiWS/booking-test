@@ -1,12 +1,12 @@
 <template>
-    <v-container>
+    <v-container class="container-width-600">
         <v-row>
             <v-col cols="12">
                 <v-btn
-                       href="/booker/shops"
+                       :href="`/shops/${shop.slug}/booker`"
                        prepend-icon="mdi-arrow-left"
                        variant="text">
-                    登録店舗一覧へ戻る
+                    マイページへ戻る
                 </v-btn>
             </v-col>
         </v-row>
@@ -166,3 +166,9 @@ const isFormValid = computed(() => {
     return nameValid && emailValid && phoneValid;
 });
 </script>
+
+<style scoped>
+.container-width-600 {
+    max-width: 600px;
+}
+</style>

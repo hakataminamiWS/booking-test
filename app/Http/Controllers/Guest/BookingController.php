@@ -16,6 +16,10 @@ class BookingController extends Controller
 {
     public function create(Shop $shop)
     {
+        if (!$shop->accepts_online_bookings) {
+            abort(403, '現在、オンライン予約の受付を停止しています。');
+        }
+
         $shop->load(['businessHoursRegular', 'shopSpecialOpenDays', 'shopSpecialClosedDays']);
 
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
@@ -46,6 +50,10 @@ class BookingController extends Controller
 
     public function store(StoreBookingRequest $request, Shop $shop, \App\Services\ShopBookerCrmService $crmService)
     {
+        if (!$shop->accepts_online_bookings) {
+            abort(403, '現在、オンライン予約の受付を停止しています。');
+        }
+
         $validated = $request->validated();
 
         $menu = ShopMenu::findOrFail($validated['menu_id']);

@@ -1,173 +1,173 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12">
-                <v-btn :href="bookersIndexUrl" prepend-icon="mdi-arrow-left">
-                    予約者一覧に戻る
-                </v-btn>
-            </v-col>
-        </v-row>
+    <StaffLayout :shop="shop" currentPage="bookers">
+        <v-main>
+            <v-container>
+                <!-- ナビゲーション (Removed) -->
 
-        <v-row>
-            <v-col cols="12">
-                <ShopHeader :shop="shop" />
-            </v-col>
-        </v-row>
+                <!-- ショップヘッダー (Removed) -->
 
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>予約者新規登録</v-card-title>
-                    <v-card-text>
-                        <v-alert
-                                 v-if="props.errors.length > 0"
-                                 type="error"
-                                 class="mb-4"
-                                 closable>
-                            <ul>
-                                <li
-                                    v-for="(error, index) in props.errors"
-                                    :key="index">
-                                    {{ error }}
-                                </li>
-                            </ul>
-                        </v-alert>
+                <v-row>
+                    <v-col cols="12">
+                        <v-card>
+                            <v-card-title>予約者新規登録</v-card-title>
+                            <v-card-text>
+                                <v-alert
+                                         v-if="props.errors && props.errors.length > 0"
+                                         type="error"
+                                         class="mb-4"
+                                         closable>
+                                    <ul>
+                                        <li
+                                            v-for="(error, index) in props.errors"
+                                            :key="index">
+                                            {{ error }}
+                                        </li>
+                                    </ul>
+                                </v-alert>
 
-                        <form :action="formAction" method="POST">
-                            <input
-                                   type="hidden"
-                                   name="_token"
-                                   :value="csrfToken" />
+                                <form :action="formAction" method="POST">
+                                    <input
+                                           type="hidden"
+                                           name="_token"
+                                           :value="csrfToken" />
 
-                            <v-card variant="outlined" class="mb-4">
-                                <v-card-title class="text-h6">
-                                    予約者・店舗共通情報
-                                </v-card-title>
-                                <v-card-text>
-                                    <v-text-field
-                                                  v-model="formData.name"
-                                                  name="name"
-                                                  label="名前"
-                                                  required
-                                                  :rules="[rules.required, rules.maxLength(255)]"
-                                                  hint="お客様の呼び名などを入力します。"
-                                                  persistent-hint
-                                                  class="mb-4"></v-text-field>
+                                    <v-card variant="outlined" class="mb-4">
+                                        <v-card-title class="text-h6">
+                                            予約者・店舗共通情報
+                                        </v-card-title>
+                                        <v-card-text>
+                                            <v-text-field
+                                                          v-model="formData.name"
+                                                          name="name"
+                                                          label="名前"
+                                                          required
+                                                          :rules="[rules.required, rules.maxLength(255)]"
+                                                          hint="お客様の呼び名などを入力します。"
+                                                          persistent-hint
+                                                          class="mb-4"></v-text-field>
 
-                                    <v-text-field
-                                                  v-model="formData.contact_email"
-                                                  name="contact_email"
-                                                  label="連絡先メールアドレス"
-                                                  type="email"
-                                                  required
-                                                  :rules="[rules.required, rules.email]"
-                                                  hint="予約通知などに使用するメールアドレス。"
-                                                  persistent-hint
-                                                  class="mb-4"></v-text-field>
+                                            <v-text-field
+                                                          v-model="formData.contact_email"
+                                                          name="contact_email"
+                                                          label="連絡先メールアドレス"
+                                                          type="email"
+                                                          required
+                                                          :rules="[rules.required, rules.email]"
+                                                          hint="予約通知などに使用するメールアドレス。"
+                                                          persistent-hint
+                                                          class="mb-4"></v-text-field>
 
-                                    <v-text-field
-                                                  v-model="formData.contact_phone"
-                                                  name="contact_phone"
-                                                  label="連絡先電話番号"
-                                                  type="tel"
-                                                  required
-                                                  :rules="[rules.required, rules.maxLength(20)]"
-                                                  hint="お客様の電話番号。"
-                                                  persistent-hint
-                                                  class="mb-4"></v-text-field>
+                                            <v-text-field
+                                                          v-model="formData.contact_phone"
+                                                          name="contact_phone"
+                                                          label="連絡先電話番号"
+                                                          type="tel"
+                                                          required
+                                                          :rules="[rules.required, rules.maxLength(20)]"
+                                                          hint="お客様の電話番号。"
+                                                          persistent-hint
+                                                          class="mb-4"></v-text-field>
 
-                                    <v-textarea
-                                                v-model="formData.note_from_booker"
-                                                name="note_from_booker"
-                                                label="予約者からのメモ"
-                                                hint="予約者が入力するメモ。（任意）"
-                                                persistent-hint
-                                                class="mb-4"></v-textarea>
-                                </v-card-text>
-                            </v-card>
+                                            <v-textarea
+                                                        v-model="formData.note_from_booker"
+                                                        name="note_from_booker"
+                                                        label="予約者からのメモ"
+                                                        hint="予約者が入力するメモ。（任意）"
+                                                        persistent-hint
+                                                        class="mb-4"></v-textarea>
+                                        </v-card-text>
+                                    </v-card>
 
-                            <v-card variant="outlined">
-                                <v-card-title class="text-h6">
-                                    店舗管理用の情報
-                                </v-card-title>
-                                <v-card-text>
-                                    <v-text-field
-                                                  v-model="formData.name_kana"
-                                                  name="name_kana"
-                                                  label="よみかた"
-                                                  :rules="[rules.maxLength(255)]"
-                                                  hint="（任意）"
-                                                  persistent-hint
-                                                  class="mb-4"></v-text-field>
+                                    <v-card variant="outlined">
+                                        <v-card-title class="text-h6">
+                                            店舗管理用の情報
+                                        </v-card-title>
+                                        <v-card-text>
+                                            <v-text-field
+                                                          v-model="formData.name_kana"
+                                                          name="name_kana"
+                                                          label="よみかた"
+                                                          :rules="[rules.maxLength(255)]"
+                                                          hint="（任意）"
+                                                          persistent-hint
+                                                          class="mb-4"></v-text-field>
 
-                                    <v-textarea
-                                                v-model="formData.shop_memo"
-                                                name="shop_memo"
-                                                label="店舗側メモ"
-                                                hint="お客様に関する店舗側で管理するメモ。（任意）"
-                                                persistent-hint
-                                                class="mb-4"></v-textarea>
+                                            <v-textarea
+                                                        v-model="formData.shop_memo"
+                                                        name="shop_memo"
+                                                        label="店舗側メモ"
+                                                        hint="お客様に関する店舗側で管理するメモ。（任意）"
+                                                        persistent-hint
+                                                        class="mb-4"></v-textarea>
 
-                                    <v-text-field
-                                                  v-model="formData.last_booking_at"
-                                                  name="last_booking_at"
-                                                  label="最終予約日"
-                                                  :rules="lastBookingAtRule"
-                                                  hint="YYYY-MM-DD形式で入力。（任意）"
-                                                  persistent-hint
-                                                  class="mb-4"
-                                                  append-inner-icon="mdi-calendar"
-                                                  @click:append-inner="dateDialog = true"></v-text-field>
+                                            <v-text-field
+                                                          v-model="formData.last_booking_at"
+                                                          name="last_booking_at"
+                                                          label="最終予約日"
+                                                          :rules="lastBookingAtRule"
+                                                          hint="YYYY-MM-DD形式で入力。（任意）"
+                                                          persistent-hint
+                                                          class="mb-4"
+                                                          append-inner-icon="mdi-calendar"
+                                                          @click:append-inner="dateDialog = true"></v-text-field>
 
-                                    <v-dialog v-model="dateDialog" max-width="400px">
-                                        <v-card>
-                                            <v-date-picker
-                                                           v-model="pickerDate"
-                                                           @update:model-value="setDate"
-                                                           show-adjacent-months></v-date-picker>
-                                        </v-card>
-                                    </v-dialog>
+                                            <v-dialog v-model="dateDialog" max-width="400px">
+                                                <v-card>
+                                                    <v-date-picker
+                                                                   v-model="pickerDate"
+                                                                   @update:model-value="setDate"
+                                                                   show-adjacent-months></v-date-picker>
+                                                </v-card>
+                                            </v-dialog>
 
-                                    <v-text-field
-                                                  v-model="formData.booking_count"
-                                                  @update:model-value="formData.booking_count = formatNumericInput($event)"
-                                                  name="booking_count"
-                                                  label="予約回数"
-                                                  inputmode="numeric"
-                                                  :rules="[rules.numeric]"
-                                                  hint="数値を入力。（任意）"
-                                                  persistent-hint
-                                                  class="mb-4"></v-text-field>
-                                </v-card-text>
-                            </v-card>
+                                            <v-text-field
+                                                          v-model="formData.booking_count"
+                                                          @update:model-value="formData.booking_count = formatNumericInput($event)"
+                                                          name="booking_count"
+                                                          label="予約回数"
+                                                          inputmode="numeric"
+                                                          :rules="[rules.numeric]"
+                                                          hint="数値を入力。（任意）"
+                                                          persistent-hint
+                                                          class="mb-4"></v-text-field>
+                                        </v-card-text>
+                                    </v-card>
 
-                            <v-card-actions class="mt-4">
-                                <v-spacer></v-spacer>
-                                <v-btn
-                                       type="submit"
-                                       color="primary"
-                                       :disabled="!isFormValid"
-                                       @click="validateForm">登録する</v-btn>
-                            </v-card-actions>
-                        </form>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+                                    <v-card-actions class="mt-4">
+                                        <v-spacer></v-spacer>
+                                        <v-btn
+                                               type="submit"
+                                               color="primary"
+                                               :disabled="!isFormValid"
+                                               @click="validateForm">登録する</v-btn>
+                                    </v-card-actions>
+                                </form>
+                            </v-card-text>
+                        </v-card>
+                    </v-col>
+                </v-row>
+
+            </v-container>
+        </v-main>
+    </StaffLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import StaffLayout from "@/components/staff/StaffLayout.vue";
 import { formatNumericInput } from "@/composables/useNumericInput";
 
-const props = defineProps({
-    shop: { type: Object, required: true },
-    csrfToken: { type: String, required: true },
-    errors: { type: Array, default: () => [] },
-    oldInput: { type: Object, default: () => ({}) },
-});
+interface Shop {
+    name: string;
+    slug: string;
+}
+
+const props = defineProps<{
+    shop: Shop;
+    csrfToken: string;
+    errors?: string[];
+    oldInput?: Record<string, any>;
+}>();
 
 const bookersIndexUrl = computed(
     () => `/shops/${props.shop.slug}/staff/bookers`

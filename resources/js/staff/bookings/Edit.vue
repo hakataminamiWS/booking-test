@@ -1,25 +1,10 @@
 <template>
-    <v-app>
+    <StaffLayout :shop="shop" currentPage="bookings">
         <v-main>
             <v-container fluid class="container-width-1200">
-                <!-- ナビゲーション -->
-                <v-row>
-                    <v-col cols="12">
-                        <v-btn
-                               :href="`/shops/${props.shop.slug}/staff/bookings`"
-                               prepend-icon="mdi-arrow-left"
-                               variant="text">
-                            予約一覧に戻る
-                        </v-btn>
-                    </v-col>
-                </v-row>
+                <!-- ナビゲーション (Removed) -->
 
-                <!-- ショップヘッダー -->
-                <v-row>
-                    <v-col cols="12">
-                        <ShopHeader :shop="shop" />
-                    </v-col>
-                </v-row>
+                <!-- ショップヘッダー (Removed) -->
 
                 <!-- メインフォームカード -->
                 <v-row>
@@ -419,7 +404,7 @@
                                                     <div>
                                                         <div class="text-caption text-medium-emphasis">最終予約日時</div>
                                                         <div class="text-body-1">{{ bookerHistory.last_booking_at || '－'
-                                                            }}</div>
+                                                        }}</div>
                                                     </div>
                                                 </div>
 
@@ -477,7 +462,7 @@
                                 <v-col cols="12">
                                     <v-card-actions class="px-0">
                                         <v-btn color="error" variant="text" @click="deleteDialog = true">
-                                            この予約を削除する
+                                            この予約をキャンセルする
                                         </v-btn>
                                     </v-card-actions>
                                 </v-col>
@@ -502,29 +487,25 @@
                     </v-card>
                 </v-dialog>
 
-                <!-- 削除確認ダイアログ -->
+                <!-- キャンセル確認ダイアログ -->
                 <v-dialog v-model="deleteDialog" max-width="500px">
                     <v-card>
                         <v-card-title class="text-h5">
-                            本当に削除しますか？
+                            本当にキャンセルしますか？
                         </v-card-title>
-                        <v-card-text>
-                            この操作は元に戻せません。この予約は完全に削除されます。
-                        </v-card-text>
                         <v-card-actions>
-                            <v-spacer></v-spacer>
                             <v-btn color="blue-darken-1" variant="text" @click="deleteDialog = false">
-                                キャンセル
+                                戻る
                             </v-btn>
+                            <v-spacer></v-spacer>
                             <form :action="`/shops/${props.shop.slug}/staff/bookings/${props.booking.id}`" method="POST"
                                   style="display: inline">
                                 <input type="hidden" name="_token" :value="props.csrfToken" />
                                 <input type="hidden" name="_method" value="DELETE" />
                                 <v-btn color="error" variant="text" type="submit">
-                                    削除する
+                                    この予約をキャンセルにする
                                 </v-btn>
                             </form>
-                            <v-spacer></v-spacer>
                         </v-card-actions>
                     </v-card>
                 </v-dialog>
@@ -535,13 +516,13 @@
                              :date-time="displayDateTime"
                              :total-price="totalPrice" submit-label="更新する" :disabled="!isFormValid"
                              @submit="submitForm" />
-    </v-app>
+    </StaffLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import StaffLayout from "@/components/staff/StaffLayout.vue";
 import BookingStickyFooter from "@/components/common/BookingStickyFooter.vue";
 import { formatInTimeZone } from "date-fns-tz";
 

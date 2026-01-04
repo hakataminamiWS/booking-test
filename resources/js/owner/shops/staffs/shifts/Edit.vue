@@ -1,176 +1,164 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12">
-                <v-btn :href="staffsIndexUrl" prepend-icon="mdi-arrow-left">
-                    スタッフ一覧に戻る
-                </v-btn>
-            </v-col>
-        </v-row>
+    <OwnerLayout :shop="props.shop" currentPage="shifts">
+        <v-container>
 
-        <v-row>
-            <v-col cols="12">
-                <ShopHeader :shop="props.shop" />
-            </v-col>
-        </v-row>
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title>シフト編集:
+                            {{ props.staff.profile.nickname }}</v-card-title>
 
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>シフト編集:
-                        {{ props.staff.profile.nickname }}</v-card-title>
+                        <v-card-subtitle
+                                         class="mt-2 d-flex justify-space-between align-center"
+                                         :class="mobile ? 'flex-column' : 'justify-space-between'
+                                            ">
+                            <v-menu :close-on-content-click="false">
+                                <template v-slot:activator="{ props: menuProps }">
+                                    <span
+                                          v-bind="menuProps"
+                                          class="cursor-pointer text-body-1 font-weight-bold">
+                                        {{ formattedWeekStart }} 〜
+                                        {{ formattedWeekEnd }}
+                                        <v-icon small>mdi-calendar</v-icon>
+                                    </span>
+                                </template>
+                                <v-date-picker :model-value="targetDate" @update:model-value="handleDateChange"
+                                               show-adjacent-months
+                                               hide-header></v-date-picker>
+                            </v-menu>
+                            <div>
+                                <v-btn :href="prevWeekUrl" variant="outlined" size="small" class="mr-2">前の週へ</v-btn>
+                                <v-btn :href="nextWeekUrl" variant="outlined" size="small">次の週へ</v-btn>
+                            </div>
+                        </v-card-subtitle>
 
-                    <v-card-subtitle
-                                     class="mt-2 d-flex justify-space-between align-center"
-                                     :class="mobile ? 'flex-column' : 'justify-space-between'
-                                        ">
-                        <v-menu :close-on-content-click="false">
-                            <template v-slot:activator="{ props: menuProps }">
-                                <span
-                                      v-bind="menuProps"
-                                      class="cursor-pointer text-body-1 font-weight-bold">
-                                    {{ formattedWeekStart }} 〜
-                                    {{ formattedWeekEnd }}
-                                    <v-icon small>mdi-calendar</v-icon>
-                                </span>
-                            </template>
-                            <v-date-picker :model-value="targetDate" @update:model-value="handleDateChange"
-                                           show-adjacent-months
-                                           hide-header></v-date-picker>
-                        </v-menu>
-                        <div>
-                            <v-btn :href="prevWeekUrl" variant="outlined" size="small" class="mr-2">前の週へ</v-btn>
-                            <v-btn :href="nextWeekUrl" variant="outlined" size="small">次の週へ</v-btn>
-                        </div>
-                    </v-card-subtitle>
+                        <v-card-text>
+                            <v-alert v-if="props.errors && props.errors.length > 0" type="error" class="mb-4" closable>
+                                <ul class="ml-4">
+                                    <li v-for="(error, index) in props.errors" :key="index">
+                                        {{ error }}
+                                    </li>
+                                </ul>
+                            </v-alert>
 
-                    <v-card-text>
-                        <v-alert v-if="props.errors && props.errors.length > 0" type="error" class="mb-4" closable>
-                            <ul class="ml-4">
-                                <li v-for="(error, index) in props.errors" :key="index">
-                                    {{ error }}
-                                </li>
-                            </ul>
-                        </v-alert>
+                            <form :action="formAction" method="POST">
+                                <v-text-field label="タイムゾーン" :model-value="props.shop.timezone" readonly disabled
+                                              class="mb-4"></v-text-field>
 
-                        <form :action="formAction" method="POST">
-                            <v-text-field label="タイムゾーン" :model-value="props.shop.timezone" readonly disabled
-                                          class="mb-4"></v-text-field>
+                                <input type="hidden" name="_token" :value="csrfToken" />
+                                <input type="hidden" name="_method" value="PUT" />
+                                <input type="hidden" name="date" :value="date" />
 
-                            <input type="hidden" name="_token" :value="csrfToken" />
-                            <input type="hidden" name="_method" value="PUT" />
-                            <input type="hidden" name="date" :value="date" />
-
-                            <v-row v-for="(day, dayIndex) in weekSchedules" :key="day.formattedDate" align="center"
-                                   class="my-2 pa-2 border rounded" :class="{
-                                    'bg-grey-lighten-4':
-                                        day.shopBusinessInfo.includes(
-                                            '定休日'
-                                        ) ||
-                                        day.shopBusinessInfo.includes(
-                                            '特別休業日'
-                                        ),
-                                }">
-                                <v-col cols="12" md="3">
-                                    <h3 class="text-h6">
-                                        {{ day.formattedDate }}
-                                    </h3>
-                                    <span class="text-body-2 text-medium-emphasis">{{ day.shopBusinessInfo }}</span>
-                                </v-col>
-                                <v-col cols="12" md="9">
-                                    <div v-if="day.isHoliday" class="text-center pa-4">
-                                        <p class="text-medium-emphasis">休日</p>
-                                        <!-- 休日として00:00-00:00を送信するためのhidden input -->
-                                        <input type="hidden" :name="`schedules[${dayIndex}][0][start_time]`"
-                                               value="00:00" />
-                                        <input type="hidden" :name="`schedules[${dayIndex}][0][end_time]`"
-                                               value="00:00" />
-                                    </div>
-                                    <div v-else>
-                                        <div v-for="(
+                                <v-row v-for="(day, dayIndex) in weekSchedules" :key="day.formattedDate" align="center"
+                                       class="my-2 pa-2 border rounded" :class="{
+                                        'bg-grey-lighten-4':
+                                            day.shopBusinessInfo.includes(
+                                                '定休日'
+                                            ) ||
+                                            day.shopBusinessInfo.includes(
+                                                '特別休業日'
+                                            ),
+                                    }">
+                                    <v-col cols="12" md="3">
+                                        <h3 class="text-h6">
+                                            {{ day.formattedDate }}
+                                        </h3>
+                                        <span class="text-body-2 text-medium-emphasis">{{ day.shopBusinessInfo }}</span>
+                                    </v-col>
+                                    <v-col cols="12" md="9">
+                                        <div v-if="day.isHoliday" class="text-center pa-4">
+                                            <p class="text-medium-emphasis">休日</p>
+                                            <!-- 休日として00:00-00:00を送信するためのhidden input -->
+                                            <input type="hidden" :name="`schedules[${dayIndex}][0][start_time]`"
+                                                   value="00:00" />
+                                            <input type="hidden" :name="`schedules[${dayIndex}][0][end_time]`"
+                                                   value="00:00" />
+                                        </div>
+                                        <div v-else>
+                                            <div v-for="(
 schedule, scheduleIndex
                                             ) in day.schedules" :key="scheduleIndex" class="d-flex align-center my-2">
-                                            <v-text-field label="開始時刻" v-model="schedule.start_time"
-                                                          :name="`schedules[${dayIndex}][${scheduleIndex}][start_time]`"
-                                                          type="time"
-                                                          style="max-width: 150px" class="mr-2" :error-messages="schedule.startTimeError
-                                                            " append-inner-icon="mdi-clock-outline"
-                                                          @click:append-inner="
-                                                            openDialog(
-                                                                dayIndex,
-                                                                scheduleIndex,
-                                                                'start_time'
-                                                            )
-                                                            " />
-                                            <v-text-field label="終了時刻" v-model="schedule.end_time"
-                                                          :name="`schedules[${dayIndex}][${scheduleIndex}][end_time]`"
-                                                          type="time"
-                                                          style="max-width: 150px" class="mr-2" :error-messages="schedule.endTimeError
-                                                            " append-inner-icon="mdi-clock-outline"
-                                                          @click:append-inner="
-                                                            openDialog(
-                                                                dayIndex,
-                                                                scheduleIndex,
-                                                                'end_time'
-                                                            )
-                                                            " />
-                                            <v-btn icon="mdi-close" size="x-small" variant="tonal" @click="
-                                                removeSchedule(
-                                                    dayIndex,
-                                                    scheduleIndex
-                                                )
-                                                "></v-btn>
-                                            <v-tooltip v-if="hasWarning(day, schedule)" text="店舗の営業情報と異なります"
-                                                       location="top">
-                                                <template v-slot:activator="{
-                                                    props: tooltipProps,
-                                                }">
-                                                    <v-icon
-                                                            v-bind="tooltipProps"
-                                                            color="warning"
-                                                            class="ml-2">mdi-alert-circle-outline</v-icon>
-                                                </template>
-                                            </v-tooltip>
+                                                <v-text-field label="開始時刻" v-model="schedule.start_time"
+                                                              :name="`schedules[${dayIndex}][${scheduleIndex}][start_time]`"
+                                                              type="time"
+                                                              style="max-width: 150px" class="mr-2" :error-messages="schedule.startTimeError
+                                                                " append-inner-icon="mdi-clock-outline"
+                                                              @click:append-inner="
+                                                                openDialog(
+                                                                    dayIndex,
+                                                                    scheduleIndex,
+                                                                    'start_time'
+                                                                )
+                                                                " />
+                                                <v-text-field label="終了時刻" v-model="schedule.end_time"
+                                                              :name="`schedules[${dayIndex}][${scheduleIndex}][end_time]`"
+                                                              type="time"
+                                                              style="max-width: 150px" class="mr-2" :error-messages="schedule.endTimeError
+                                                                " append-inner-icon="mdi-clock-outline"
+                                                              @click:append-inner="
+                                                                openDialog(
+                                                                    dayIndex,
+                                                                    scheduleIndex,
+                                                                    'end_time'
+                                                                )
+                                                                " />
+                                                <v-btn icon="mdi-close" size="x-small" variant="tonal" @click="
+                                                    removeSchedule(
+                                                        dayIndex,
+                                                        scheduleIndex
+                                                    )
+                                                    "></v-btn>
+                                                <v-tooltip v-if="hasWarning(day, schedule)" text="店舗の営業情報と異なります"
+                                                           location="top">
+                                                    <template v-slot:activator="{
+                                                        props: tooltipProps,
+                                                    }">
+                                                        <v-icon
+                                                                v-bind="tooltipProps"
+                                                                color="warning"
+                                                                class="ml-2">mdi-alert-circle-outline</v-icon>
+                                                    </template>
+                                                </v-tooltip>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <v-btn size="default" @click="addSchedule(dayIndex)" class="mr-2">時間を追加</v-btn>
-                                    <v-btn size="default" @click="setAsHoliday(dayIndex)"
-                                           v-if="!day.isHoliday">休日にする</v-btn>
-                                </v-col>
-                            </v-row>
+                                        <v-btn size="default" @click="addSchedule(dayIndex)" class="mr-2">時間を追加</v-btn>
+                                        <v-btn size="default" @click="setAsHoliday(dayIndex)"
+                                               v-if="!day.isHoliday">休日にする</v-btn>
+                                    </v-col>
+                                </v-row>
 
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn type="submit" color="primary" @click="handleSubmit">この内容で保存する</v-btn>
+                                </v-card-actions>
+                            </form>
+                        </v-card-text>
+                    </v-card>
+
+                    <v-dialog v-model="dialog" width="auto">
+                        <v-card>
+                            <v-time-picker v-model="currentTime" format="24hr"></v-time-picker>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn type="submit" color="primary" @click="handleSubmit">この内容で保存する</v-btn>
+                                <v-btn color="blue-darken-1" variant="text" @click="closeDialog">
+                                    キャンセル
+                                </v-btn>
+                                <v-btn color="blue-darken-1" variant="text" @click="saveTime">
+                                    OK
+                                </v-btn>
                             </v-card-actions>
-                        </form>
-                    </v-card-text>
-                </v-card>
-
-                <v-dialog v-model="dialog" width="auto">
-                    <v-card>
-                        <v-time-picker v-model="currentTime" format="24hr"></v-time-picker>
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn color="blue-darken-1" variant="text" @click="closeDialog">
-                                キャンセル
-                            </v-btn>
-                            <v-btn color="blue-darken-1" variant="text" @click="saveTime">
-                                OK
-                            </v-btn>
-                        </v-card-actions>
-                    </v-card>
-                </v-dialog>
-            </v-col>
-        </v-row>
-    </v-container>
+                        </v-card>
+                    </v-dialog>
+                </v-col>
+            </v-row>
+        </v-container>
+    </OwnerLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, type PropType } from "vue";
 import { useDisplay } from "vuetify";
-
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import OwnerLayout from "@/components/owner/OwnerLayout.vue";
 
 import {
     format,
@@ -189,44 +177,69 @@ import { formatInTimeZone } from "date-fns-tz";
 
 interface Schedule {
     start_time: string;
-
     end_time: string;
-
     startTimeError?: string;
-
     endTimeError?: string;
 }
 
 interface DaySchedule {
     formattedDate: string;
-
     isHoliday: boolean;
-
     schedules: Schedule[];
-
     shopBusinessInfo: string;
+}
+
+interface Shop {
+    name: string;
+    slug: string;
+    timezone?: string;
+}
+
+interface Staff {
+    id: number;
+    profile: {
+        nickname: string;
+    };
+}
+
+interface Schedulable {
+    workable_start_at: string;
+    workable_end_at: string;
+}
+
+interface BusinessHour {
+    day_of_week: number;
+    is_open: boolean | number;
+    start_time: string;
+    end_time: string;
+}
+
+interface SpecialOpenDay {
+    date: string;
+    start_time: string;
+    end_time: string;
+}
+
+interface SpecialClosedDay {
+    name: string;
+    start_at: string;
+    end_at: string;
 }
 
 // --- Props --- //
 
-const props = defineProps({
-    shop: { type: Object, required: true },
-
-    staff: { type: Object, required: true },
-
-    schedules: { type: Array, required: true },
-
-    businessHours: { type: Array, required: true },
-
-    specialOpenDays: { type: Array, required: true },
-
-    specialClosedDays: { type: Array, required: true },
-
-    date: { type: String, required: true },
-
-    csrfToken: { type: String, required: true },
-
-    errors: { type: Array, default: () => [] },
+const props = withDefaults(defineProps<{
+    shop: Shop;
+    staff: Staff;
+    schedules: Schedulable[];
+    businessHours: BusinessHour[];
+    specialOpenDays: SpecialOpenDay[];
+    specialClosedDays: SpecialClosedDay[];
+    date: string;
+    csrfToken: string;
+    errors?: string[];
+}>(), {
+    errors: () => [],
 });
 
 const staffsIndexUrl = computed(() => `/owner/shops/${props.shop.slug}/staffs`);
@@ -327,29 +340,21 @@ const weekSchedules = ref<DaySchedule[]>(
 
                 const localDateStr = formatInTimeZone(
                     s.workable_start_at,
-
-                    props.shop.timezone,
-
+                    props.shop.timezone ?? "Asia/Tokyo",
                     "yyyy-MM-dd"
                 );
 
                 return localDateStr === dateStr;
             })
-
             .map((s) => ({
                 start_time: formatInTimeZone(
                     s.workable_start_at,
-
-                    props.shop.timezone,
-
+                    props.shop.timezone ?? "Asia/Tokyo",
                     "HH:mm"
                 ),
-
                 end_time: formatInTimeZone(
                     s.workable_end_at,
-
-                    props.shop.timezone,
-
+                    props.shop.timezone ?? "Asia/Tokyo",
                     "HH:mm"
                 ),
 
@@ -502,7 +507,7 @@ const openDialog = (
 };
 
 const saveTime = () => {
-    if (editingField.value) {
+    if (editingField.value && currentTime.value !== null) {
         const { dayIndex, scheduleIndex, type } = editingField.value;
 
         weekSchedules.value[dayIndex].schedules[scheduleIndex][type] =

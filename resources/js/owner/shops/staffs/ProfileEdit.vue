@@ -1,73 +1,62 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12">
-                <v-btn :href="staffsIndexUrl" prepend-icon="mdi-arrow-left">
-                    スタッフ一覧に戻る
-                </v-btn>
-            </v-col>
-        </v-row>
+    <OwnerLayout :shop="props.shop" currentPage="staffs">
+        <v-container>
 
-        <v-row>
-            <v-col cols="12">
-                <ShopHeader :shop="props.shop" />
-            </v-col>
-        </v-row>
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title>プロフィール編集</v-card-title>
+                        <v-card-text>
+                            <form
+                                  id="form"
+                                  :action="formActionUrl"
+                                  method="POST"
+                                  enctype="multipart/form-data">
+                                <input
+                                       type="hidden"
+                                       name="_token"
+                                       :value="props.csrfToken" />
+                                <input type="hidden" name="_method" value="PUT" />
 
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>プロフィール編集</v-card-title>
-                    <v-card-text>
-                        <form
-                              id="form"
-                              :action="formActionUrl"
-                              method="POST"
-                              enctype="multipart/form-data">
-                            <input
-                                   type="hidden"
-                                   name="_token"
-                                   :value="props.csrfToken" />
-                            <input type="hidden" name="_method" value="PUT" />
+                                <v-text-field
+                                              v-model="form.nickname"
+                                              name="nickname"
+                                              label="ニックネーム *"
+                                              required
+                                              :rules="[rules.required]"></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.nickname"
-                                          name="nickname"
-                                          label="ニックネーム *"
-                                          required
-                                          :rules="[rules.required]"></v-text-field>
+                                <ImageUploader
+                                               label="プロフィール画像(小)"
+                                               :initial-url="props.staff.profile?.small_image_url ?? null"
+                                               :max-size="2"
+                                               recommended-resolution="正方形 (推奨)"
+                                               input-name="small_image" />
 
-                            <ImageUploader
-                                           label="プロフィール画像(小)"
-                                           :initial-url="props.staff.profile?.small_image_url ?? null"
-                                           :max-size="2"
-                                           recommended-resolution="正方形 (推奨)"
-                                           input-name="small_image" />
+                                <ImageUploader
+                                               label="プロフィール画像(大)"
+                                               :initial-url="props.staff.profile?.large_image_url ?? null"
+                                               :max-size="5"
+                                               recommended-resolution="横長 (推奨)"
+                                               input-name="large_image" />
+                            </form>
+                        </v-card-text>
 
-                            <ImageUploader
-                                           label="プロフィール画像(大)"
-                                           :initial-url="props.staff.profile?.large_image_url ?? null"
-                                           :max-size="5"
-                                           recommended-resolution="横長 (推奨)"
-                                           input-name="large_image" />
-                        </form>
-                    </v-card-text>
-
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn form="form" color="primary" type="submit" :disabled="!isFormValid">
-                            更新する
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn form="form" color="primary" type="submit" :disabled="!isFormValid">
+                                更新する
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </OwnerLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import OwnerLayout from "@/components/owner/OwnerLayout.vue";
 import ImageUploader from "@/components/common/ImageUploader.vue";
 
 interface Shop {

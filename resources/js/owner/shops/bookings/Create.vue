@@ -1,564 +1,541 @@
 <template>
-    <v-app>
-        <v-main>
-            <v-container fluid class="container-width-1200">
-                <!-- ナビゲーション -->
-                <v-row>
-                    <v-col cols="12">
-                        <v-btn
-                               :href="`/owner/shops/${props.shop.slug}/bookings`"
-                               prepend-icon="mdi-arrow-left"
-                               variant="text">
-                            予約一覧に戻る
-                        </v-btn>
-                    </v-col>
-                </v-row>
+    <OwnerLayout :shop="props.shop" currentPage="bookings">
+        <v-container fluid class="container-width-1200">
 
-                <!-- ショップヘッダー -->
-                <v-row>
-                    <v-col cols="12">
-                        <ShopHeader :shop="shop" />
-                    </v-col>
-                </v-row>
+            <!-- メインフォームカード -->
+            <v-row>
+                <v-col cols="12">
+                    <form
+                          id="booking-create-form"
+                          :action="`/owner/shops/${props.shop.slug}/bookings`"
+                          method="POST">
+                        <input
+                               type="hidden"
+                               name="_token"
+                               :value="props.csrfToken" />
+                        <input
+                               type="hidden"
+                               name="start_at"
+                               :value="form.start_at" />
+                        <input
+                               type="hidden"
+                               name="shop_booker_id"
+                               :value="form.shop_booker_id ?? ''" />
 
-                <!-- メインフォームカード -->
-                <v-row>
-                    <v-col cols="12">
-                        <form
-                              id="booking-create-form"
-                              :action="`/owner/shops/${props.shop.slug}/bookings`"
-                              method="POST">
-                            <input
-                                   type="hidden"
-                                   name="_token"
-                                   :value="props.csrfToken" />
-                            <input
-                                   type="hidden"
-                                   name="start_at"
-                                   :value="form.start_at" />
-                            <input
-                                   type="hidden"
-                                   name="shop_booker_id"
-                                   :value="form.shop_booker_id ?? ''" />
+                        <!-- バリデーションエラー -->
+                        <v-alert
+                                 v-if="props.errors.length > 0"
+                                 type="error"
+                                 class="mb-4">
+                            <ul>
+                                <li
+                                    v-for="(error, i) in props.errors"
+                                    :key="i">
+                                    {{ error }}
+                                </li>
+                            </ul>
+                        </v-alert>
 
-                            <!-- バリデーションエラー -->
-                            <v-alert
-                                     v-if="props.errors.length > 0"
-                                     type="error"
-                                     class="mb-4">
-                                <ul>
-                                    <li
-                                        v-for="(error, i) in props.errors"
-                                        :key="i">
-                                        {{ error }}
-                                    </li>
-                                </ul>
-                            </v-alert>
-
-                            <v-row>
-                                <!-- メニュー・オプション・スタッフ -->
-                                <v-col cols="12" md="8">
-                                    <v-card variant="text">
-                                        <v-card-text class="pa-0">
-                                            <v-row>
-                                                <v-col cols="12" md="6">
-                                                    <v-card variant="text">
-                                                        <v-card-title class="px-0">メニュー・オプション</v-card-title>
-                                                        <v-card-text class="px-0">
-                                                            <v-select v-model="form.menu_id"
-                                                                      name="menu_id"
-                                                                      :items="props.menus"
-                                                                      item-title="name"
-                                                                      item-value="id"
-                                                                      label="メニュー（必須）"
-                                                                      required class="mb-2">
-                                                            </v-select>
-                                                            <v-select v-model="form.option_ids"
-                                                                      hide-details
-                                                                      :items="availableOptions"
-                                                                      item-title="name"
-                                                                      item-value="id"
-                                                                      label="オプション"
-                                                                      multiple
-                                                                      chips
-                                                                      closable-chips
-                                                                      :disabled="!form.menu_id"
-                                                                      class="mb-2">
-                                                            </v-select>
-                                                            <!-- 配列送信用の隠しフィールド -->
-                                                            <input v-for="optId in form.option_ids" :key="optId"
-                                                                   type="hidden"
-                                                                   name="option_ids[]" :value="optId" />
-                                                        </v-card-text>
-                                                    </v-card>
-                                                </v-col>
-                                                <v-col cols="12" md="6">
-                                                    <v-card variant="text">
-                                                        <v-card-title class="px-0">
-                                                            担当スタッフ
-                                                        </v-card-title>
-                                                        <v-card-text class="px-0" v-if="!form.menu_id">
-                                                            <p>
-                                                                メニューを選択してください
-                                                            </p>
-                                                        </v-card-text>
-
-                                                        <v-card-text class="px-0" v-else>
-                                                            <v-select v-model="form.assigned_staff_id"
-                                                                      name="assigned_staff_id"
-                                                                      :items="availableStaffs"
-                                                                      item-title="profile.nickname"
-                                                                      item-value="id"
-                                                                      label="担当スタッフ（必須）"
-                                                                      :disabled="!form.menu_id">
-                                                                <template v-slot:item="{ item, props }">
-                                                                    <v-list-item v-bind="props"
-                                                                                 :title="item.raw.profile?.nickname">
-                                                                        <template v-slot:prepend>
-                                                                            <v-avatar size="40">
-                                                                                <v-img v-if="item.raw.profile?.small_image_url"
-                                                                                       :src="item.raw.profile?.small_image_url" />
-                                                                                <v-icon v-else>mdi-account</v-icon>
-                                                                            </v-avatar>
-                                                                        </template>
-                                                                    </v-list-item>
-                                                                </template>
-                                                                <template v-slot:selection="{ item }">
-                                                                    <v-avatar size="32" class="mr-2">
-                                                                        <v-img v-if="item.raw.profile?.small_image_url"
-                                                                               :src="item.raw.profile?.small_image_url" />
-                                                                        <v-icon v-else size="small">mdi-account</v-icon>
-                                                                    </v-avatar>
-                                                                    {{ item.raw.profile?.nickname }}
-                                                                </template>
-                                                            </v-select>
-                                                            <v-checkbox v-model="showAllStaffs"
-                                                                        label="メニューに割り当たっていない担当スタッフも表示する" hide-details
-                                                                        class="mt-n4">
-                                                            </v-checkbox>
-                                                        </v-card-text>
-                                                    </v-card>
-
-                                                </v-col>
-                                            </v-row>
-                                        </v-card-text>
-
-                                        <v-card-text class="pa-0">
-                                            <v-alert v-if="staffWarning" type="warning" density="compact"
-                                                     variant="tonal" class="mb-2 mt-2">
-                                                {{ staffWarning }}
-                                            </v-alert>
-
-                                            <p v-if="form.menu_id" class="text-subtitle-1">
-                                                合計: {{ totalDuration }}分 /
-                                                {{ totalPrice.toLocaleString() }}円
-                                            </p>
-                                        </v-card-text>
-                                    </v-card>
-                                </v-col>
-
-                                <!-- メモ -->
-                                <v-col cols="12" md="4">
-                                    <v-card variant="text">
-                                        <v-card-title class="px-0">
-                                            予約時メモ
-                                        </v-card-title>
-                                        <v-card-text class="px-0">
-                                            <v-textarea v-model="form.note_from_booker" name="note_from_booker"
-                                                        label="予約に関するメモ" rows="3">
-                                            </v-textarea>
-                                        </v-card-text>
-                                    </v-card>
-                                </v-col>
-
-                                <!-- 予約日時 -->
-                                <v-col cols="12" md="8">
-                                    <v-card variant="text">
-                                        <v-card-title class="px-0">
-                                            予約日時
-                                        </v-card-title>
-
-                                        <v-card-text class="px-0" v-if="!form.menu_id">
-                                            <p>
-                                                メニューを選択してください
-                                            </p>
-                                        </v-card-text>
-
-                                        <v-card-text class="px-0" v-else-if="!form.assigned_staff_id">
-                                            <p>
-                                                担当スタッフを選択してください
-                                            </p>
-                                        </v-card-text>
-
-                                        <v-card-text class="pa-0" v-else>
-                                            <v-row>
-                                                <v-col cols="12" sm="6">
-                                                    <v-card variant="text">
-                                                        <v-card-title class="px-0 text-body-1">
-                                                            日付を選択
-                                                        </v-card-title>
-                                                        <v-card-text class="px-0">
-                                                            <v-date-picker v-model="selectedDateValue" hide-header
-                                                                           @update:year="onPickerYearChange"
-                                                                           @update:month="onPickerMonthChange"
-                                                                           :allowed-dates="allowedDates"
-                                                                           show-adjacent-months>
-                                                                <!-- カレンダーの日付スロット -->
-                                                                <template v-slot:day="{ item, props: dayProps }">
-                                                                    <v-btn
-                                                                           v-bind="dayProps"
-                                                                           :style="getDayStyle(item)"
-                                                                           class="d-flex justify-center align-center"
-                                                                           style="position: relative;"
-                                                                           :variant="isToday(item) && !isSelected(item) ? 'outlined' : (isSelected(item) ? 'flat' : 'text')"
-                                                                           :color="isSelected(item) ? 'primary' : (allowOffShift && !isWorkingDay(item) ? 'rgba(0, 0, 0, 0.38)' : undefined)"
-                                                                           size="small"
-                                                                           rounded="circle">
-                                                                        {{ getDayNumber(item) }}
-                                                                    </v-btn>
-                                                                </template>
-                                                            </v-date-picker>
-
-                                                            <v-checkbox v-model="allowOffShift" hide-details
-                                                                        label="担当スタッフのシフト外も選択可能にする"
-                                                                        density="compact" class="mt-2">
-                                                            </v-checkbox>
-
-                                                            <!-- 直接入力（シフト外選択可能時のみ表示） -->
-                                                            <v-text-field v-if="allowOffShift" v-model="directTimeInput"
-                                                                          hide-details
-                                                                          label="シフト外の時間を直接入力" readonly
-                                                                          append-inner-icon="mdi-clock-edit-outline"
-                                                                          class="mt-2"
-                                                                          @click="timePickerDialog = true"
-                                                                          @click:append-inner="timePickerDialog = true">
-                                                            </v-text-field>
-                                                        </v-card-text>
-                                                    </v-card>
-                                                </v-col>
-
-                                                <v-col cols="12" sm="6">
-                                                    <v-card variant="text">
-                                                        <v-card-title class="pa-0 text-body-1">
-                                                            時間を選択
-                                                        </v-card-title>
-
-                                                        <v-card-text class="px-0" v-if="!selectedDateValue">
-                                                            <p>
-                                                                予約日を選択してください
-                                                            </p>
-                                                        </v-card-text>
-
-                                                        <v-card-text class="px-0"
-                                                                     v-else-if="groupedTimeSlots.length > 0">
-
-                                                            <div v-for="group in groupedTimeSlots" :key="group.hour"
-                                                                 class="d-flex align-center py-1">
-                                                                <div class="text-body-2 font-weight-bold mr-4"
-                                                                     style="width: 40px">
-                                                                    {{ group.hour }}時
-                                                                </div>
-                                                                <v-chip-group v-model="selectedTime" column mandatory
-                                                                              active-class="primary">
-                                                                    <v-chip v-for="time in group.slots" :key="time"
-                                                                            :value="time" variant="outlined"
-                                                                            size="default" class="px-3">
-                                                                        <v-icon v-if="selectedTime === time" start
-                                                                                size="small">mdi-check</v-icon>
-                                                                        {{ time }}
-                                                                    </v-chip>
-                                                                </v-chip-group>
-                                                            </div>
-                                                        </v-card-text>
-
-                                                        <v-card-text class="px-0" v-else>
-                                                            予約可能な時間帯がありません。
-                                                        </v-card-text>
-                                                    </v-card>
-                                                </v-col>
-                                            </v-row>
-                                        </v-card-text>
-
-                                        <v-card-text class="pa-0">
-                                            <v-alert v-if="shiftWarning" type="warning" density="compact"
-                                                     variant="tonal" class="mb-2">
-                                                {{ shiftWarning }}
-                                            </v-alert>
-
-                                            <v-alert v-if="conflictWarning" type="warning" density="compact"
-                                                     variant="tonal" class="mb-2">
-                                                {{ conflictWarning }}
-                                            </v-alert>
-
-                                            <p v-if="displayDateTime" class="text-subtitle-1">
-                                                予約日時: {{ displayDateTime }}
-                                            </p>
-                                        </v-card-text>
-                                    </v-card>
-                                </v-col>
-
-                                <!-- スタッフスケジュール -->
-                                <v-col cols="12" md="4">
-                                    <v-card variant="text">
-                                        <v-card-title class="px-0">
-                                            担当スタッフのシフト・予約
-                                        </v-card-title>
-
-                                        <v-card-text class="px-0" v-if="!form.assigned_staff_id">
-                                            <p>
-                                                担当スタッフを選択してください
-                                            </p>
-                                        </v-card-text>
-
-                                        <v-card-text class="px-0" v-if="!selectedDateValue">
-                                            <p>
-                                                予約日を選択してください
-                                            </p>
-                                        </v-card-text>
-
-                                        <v-card-text class="px-0" v-else>
-
-                                            <v-card variant="text">
-                                                <v-card-title class="px-0">
-                                                    {{ formattedSelectedDate }} のシフト
-                                                </v-card-title>
-
-                                                <v-card-text class="px-0">
-                                                    <div class="mb-4">
-                                                        <span v-if="dailySchedule && dailySchedule.start">
-                                                            {{ dailySchedule.start }} - {{ dailySchedule.end }}
-                                                        </span>
-                                                        <span v-else class="text-grey">
-                                                            登録なし
-                                                        </span>
-                                                    </div>
-                                                </v-card-text>
-
-                                            </v-card>
-
-                                            <v-card variant="text">
-                                                <v-card-title class="px-0">
-                                                    予約状況:
-                                                </v-card-title>
-
-                                                <v-card-text class="px-0" v-if="dailyBookings.length > 0">
-                                                    <v-chip v-for="booking in dailyBookings" :key="booking.id"
-                                                            class="mb-1 mr-1" color="secondary"
-                                                            variant="flat"
-                                                            :href="`/owner/shops/${props.shop.slug}/bookings/${booking.id}/edit`"
-                                                            target="_blank">
-                                                        {{ booking.start }} - {{ booking.end }} {{
-                                                            booking.booker_name
-                                                        }}
-                                                    </v-chip>
-                                                </v-card-text>
-
-                                                <v-card-text v-else class="px-0">
-                                                    予約はありません
-                                                </v-card-text>
-                                            </v-card>
-                                        </v-card-text>
-                                    </v-card>
-
-                                </v-col>
-
-                                <!-- 予約者選択 -->
-                                <v-col cols="12" md="6">
-
-                                    <v-card variant="text">
-                                        <v-card-title class="px-0">
-                                            予約者
-                                        </v-card-title>
-                                        <v-card-text class="px-0">
-                                            <v-text-field v-model="form.booker_name" name="booker_name" label="予約者名 *"
-                                                          :readonly="!!form.shop_booker_id"
-                                                          required placeholder="予約者名を入力">
-                                                <template v-slot:append-inner>
-                                                    <v-btn
-                                                           color="primary"
-                                                           size="small"
-                                                           variant="text"
-                                                           @click="bookerDialog = true">
-                                                        選択 / 新規
-                                                    </v-btn>
-                                                </template>
-                                            </v-text-field>
-                                            <v-text-field v-model="form.booker_name_kana" name="booker_name_kana"
-                                                          label="予約者のよみがな（予約者には表示されません）"
-                                                          :readonly="!!form.shop_booker_id">
-                                            </v-text-field>
-                                            <v-text-field v-model="form.contact_email" name="contact_email"
-                                                          label="連絡先メールアドレス *" type="email" required>
-                                            </v-text-field>
-                                            <v-text-field v-model="form.contact_phone" name="contact_phone"
-                                                          label="連絡先電話番号 *" type="tel" required>
-                                            </v-text-field>
-                                            <v-textarea v-model="form.shop_memo" name="shop_memo"
-                                                        label="店舗側のメモ（予約者には表示されません）" rows="3">
-                                            </v-textarea>
-                                        </v-card-text>
-                                    </v-card>
-                                </v-col>
-
-                                <!-- 予約者履歴（既存予約者選択時のみ表示） -->
-                                <v-col cols="12" md="6" v-if="form.shop_booker_id">
-                                    <v-card variant="text">
-                                        <v-card-title class="px-0">
-                                            予約者履歴
-                                        </v-card-title>
-                                        <v-card-text class="px-0">
-                                            <v-progress-linear v-if="bookerHistoryLoading" indeterminate
-                                                               color="primary"></v-progress-linear>
-                                            <template v-else-if="bookerHistory">
-                                                <div class="d-flex flex-wrap ga-4 mb-4">
-                                                    <div>
-                                                        <div class="text-caption text-medium-emphasis">予約回数</div>
-                                                        <div class="text-h6">{{ bookerHistory.booking_count }}回</div>
-                                                    </div>
-                                                    <div>
-                                                        <div class="text-caption text-medium-emphasis">最終予約日時</div>
-                                                        <div class="text-body-1">{{ bookerHistory.last_booking_at || '－'
-                                                            }}</div>
-                                                    </div>
-                                                </div>
-
-                                                <div v-if="bookerHistory.note_from_booker" class="mb-3">
-                                                    <div class="text-caption text-medium-emphasis">予約者からのメモ</div>
-                                                    <div class="text-body-2 bg-grey-lighten-4 pa-2 rounded">{{
-                                                        bookerHistory.note_from_booker }}</div>
-                                                </div>
-
-                                                <div v-if="bookerHistory.shop_memo" class="mb-3">
-                                                    <div class="text-caption text-medium-emphasis">店舗側メモ</div>
-                                                    <div class="text-body-2 bg-amber-lighten-5 pa-2 rounded">{{
-                                                        bookerHistory.shop_memo }}</div>
-                                                </div>
-
-                                                <div v-if="bookerHistory.recent_bookings.length > 0">
-                                                    <div class="text-caption text-medium-emphasis mb-1">直近の予約履歴</div>
-                                                    <v-table density="compact">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>日時</th>
-                                                                <th>メニュー</th>
-                                                                <th>担当</th>
-                                                                <th>状態</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr v-for="booking in bookerHistory.recent_bookings"
-                                                                :key="booking.id">
-                                                                <td>{{ booking.start_at }}</td>
-                                                                <td>{{ booking.menu_name }}</td>
-                                                                <td>{{ booking.staff_name || '－' }}</td>
-                                                                <td>
-                                                                    <v-chip size="x-small"
-                                                                            :color="booking.status === 'cancelled' ? 'error' : booking.status === 'confirmed' ? 'success' : 'warning'">
-                                                                        {{ booking.status === 'pending' ? '保留' :
-                                                                            booking.status === 'confirmed' ? '確定' : 'キャンセル'
-                                                                        }}
-                                                                    </v-chip>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </v-table>
-                                                </div>
-                                                <div v-else class="text-body-2 text-medium-emphasis">
-                                                    過去の予約履歴はありません
-                                                </div>
-                                            </template>
-                                        </v-card-text>
-                                    </v-card>
-                                </v-col>
-                            </v-row>
-                        </form>
-                    </v-col>
-                </v-row>
-
-                <!-- 予約者選択ダイアログ -->
-                <v-dialog v-model="bookerDialog" max-width="800px" persistent>
-                    <v-card>
-                        <v-tabs v-model="dialogTab" bg-color="primary">
-                            <v-tab value="select">既存顧客から選択</v-tab>
-                            <v-tab value="create">新しく顧客を登録</v-tab>
-                        </v-tabs>
-                        <v-card-text>
-                            <v-window v-model="dialogTab">
-                                <v-window-item value="select">
-                                    <v-text-field v-model="bookerSearchQuery" label="顧客名、連絡先で検索"
-                                                  prepend-inner-icon="mdi-magnify"
-                                                  variant="solo-filled" flat hide-details class="mb-4"></v-text-field>
-                                    <v-list lines="two" style="max-height: 400px; overflow-y: auto">
-                                        <v-list-item v-for="booker in filteredBookers" :key="booker.id"
-                                                     :title="booker.name" :subtitle="`${booker.contact_email || 'メール未登録'
-                                                        } / ${booker.contact_phone || '電話番号未登録'
-                                                        }`" :active="selectedBookerInDialog === booker.id
-                                                            " @click="selectedBookerInDialog = booker.id">
-                                            <template v-slot:prepend>
-                                                <v-avatar color="grey-lighten-1">
-                                                    <v-icon color="white">mdi-account</v-icon>
-                                                </v-avatar>
-                                            </template>
-                                        </v-list-item>
-                                    </v-list>
-                                </v-window-item>
-                                <v-window-item value="create">
-                                    <v-container>
+                        <v-row>
+                            <!-- メニュー・オプション・スタッフ -->
+                            <v-col cols="12" md="8">
+                                <v-card variant="text">
+                                    <v-card-text class="pa-0">
                                         <v-row>
-                                            <v-col cols="12"><v-text-field v-model="newBookerForm.nickname"
-                                                              label="予約者名 *" required
-                                                              :rules="[
-                                                                (v) =>
-                                                                    !!v || '予約者名は必須です',
-                                                            ]"></v-text-field></v-col>
-                                            <v-col cols="12"><v-text-field v-model="newBookerForm.booker_name_kana
-                                                " label="予約者のよみがな"></v-text-field></v-col>
-                                            <v-col cols="12"><v-text-field v-model="newBookerForm.contact_email
-                                                " label="連絡先メールアドレス *" type="email" required></v-text-field></v-col>
-                                            <v-col cols="12"><v-text-field v-model="newBookerForm.contact_phone
-                                                " label="連絡先電話番号 *" type="tel" required></v-text-field></v-col>
-                                            <v-col cols="12"><v-textarea v-model="newBookerForm.shop_memo"
-                                                            label="店舗側のメモ"
-                                                            rows="3"></v-textarea></v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-card variant="text">
+                                                    <v-card-title class="px-0">メニュー・オプション</v-card-title>
+                                                    <v-card-text class="px-0">
+                                                        <v-select v-model="form.menu_id"
+                                                                  name="menu_id"
+                                                                  :items="props.menus"
+                                                                  item-title="name"
+                                                                  item-value="id"
+                                                                  label="メニュー（必須）"
+                                                                  required class="mb-2">
+                                                        </v-select>
+                                                        <v-select v-model="form.option_ids"
+                                                                  hide-details
+                                                                  :items="availableOptions"
+                                                                  item-title="name"
+                                                                  item-value="id"
+                                                                  label="オプション"
+                                                                  multiple
+                                                                  chips
+                                                                  closable-chips
+                                                                  :disabled="!form.menu_id"
+                                                                  class="mb-2">
+                                                        </v-select>
+                                                        <!-- 配列送信用の隠しフィールド -->
+                                                        <input v-for="optId in form.option_ids" :key="optId"
+                                                               type="hidden"
+                                                               name="option_ids[]" :value="optId" />
+                                                    </v-card-text>
+                                                </v-card>
+                                            </v-col>
+                                            <v-col cols="12" md="6">
+                                                <v-card variant="text">
+                                                    <v-card-title class="px-0">
+                                                        担当スタッフ
+                                                    </v-card-title>
+                                                    <v-card-text class="px-0" v-if="!form.menu_id">
+                                                        <p>
+                                                            メニューを選択してください
+                                                        </p>
+                                                    </v-card-text>
+
+                                                    <v-card-text class="px-0" v-else>
+                                                        <v-select v-model="form.assigned_staff_id"
+                                                                  name="assigned_staff_id"
+                                                                  :items="availableStaffs"
+                                                                  item-title="profile.nickname"
+                                                                  item-value="id"
+                                                                  label="担当スタッフ（必須）"
+                                                                  :disabled="!form.menu_id">
+                                                            <template v-slot:item="{ item, props }">
+                                                                <v-list-item v-bind="props"
+                                                                             :title="item.raw.profile?.nickname">
+                                                                    <template v-slot:prepend>
+                                                                        <v-avatar size="40">
+                                                                            <v-img v-if="item.raw.profile?.small_image_url"
+                                                                                   :src="item.raw.profile?.small_image_url" />
+                                                                            <v-icon v-else>mdi-account</v-icon>
+                                                                        </v-avatar>
+                                                                    </template>
+                                                                </v-list-item>
+                                                            </template>
+                                                            <template v-slot:selection="{ item }">
+                                                                <v-avatar size="32" class="mr-2">
+                                                                    <v-img v-if="item.raw.profile?.small_image_url"
+                                                                           :src="item.raw.profile?.small_image_url" />
+                                                                    <v-icon v-else size="small">mdi-account</v-icon>
+                                                                </v-avatar>
+                                                                {{ item.raw.profile?.nickname }}
+                                                            </template>
+                                                        </v-select>
+                                                        <v-checkbox v-model="showAllStaffs"
+                                                                    label="メニューに割り当たっていない担当スタッフも表示する" hide-details
+                                                                    class="mt-n4">
+                                                        </v-checkbox>
+                                                    </v-card-text>
+                                                </v-card>
+
+                                            </v-col>
                                         </v-row>
-                                    </v-container>
-                                </v-window-item>
-                            </v-window>
-                        </v-card-text>
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn text @click="cancelBookerSelection">キャンセル</v-btn>
-                            <v-btn color="primary" @click="confirmBookerSelection">決定</v-btn>
-                        </v-card-actions>
-                    </v-card>
-                </v-dialog>
+                                    </v-card-text>
 
-                <!-- 時間選択ダイアログ -->
-                <v-dialog v-model="timePickerDialog" width="auto">
-                    <v-card>
-                        <v-time-picker v-model="directTimeInput" format="24hr"></v-time-picker>
-                        <v-card-actions>
-                            <v-spacer></v-spacer>
-                            <v-btn color="primary" variant="text" @click="timePickerDialog = false">
-                                完了
-                            </v-btn>
-                        </v-card-actions>
-                    </v-card>
-                </v-dialog>
-            </v-container>
-        </v-main>
+                                    <v-card-text class="pa-0">
+                                        <v-alert v-if="staffWarning" type="warning" density="compact" variant="tonal"
+                                                 class="mb-2 mt-2">
+                                            {{ staffWarning }}
+                                        </v-alert>
 
+                                        <p v-if="form.menu_id" class="text-subtitle-1">
+                                            合計: {{ totalDuration }}分 /
+                                            {{ totalPrice.toLocaleString() }}円
+                                        </p>
+                                    </v-card-text>
+                                </v-card>
+                            </v-col>
+
+                            <!-- メモ -->
+                            <v-col cols="12" md="4">
+                                <v-card variant="text">
+                                    <v-card-title class="px-0">
+                                        予約時メモ
+                                    </v-card-title>
+                                    <v-card-text class="px-0">
+                                        <v-textarea v-model="form.note_from_booker" name="note_from_booker"
+                                                    label="予約に関するメモ" rows="3">
+                                        </v-textarea>
+                                    </v-card-text>
+                                </v-card>
+                            </v-col>
+
+                            <!-- 予約日時 -->
+                            <v-col cols="12" md="8">
+                                <v-card variant="text">
+                                    <v-card-title class="px-0">
+                                        予約日時
+                                    </v-card-title>
+
+                                    <v-card-text class="px-0" v-if="!form.menu_id">
+                                        <p>
+                                            メニューを選択してください
+                                        </p>
+                                    </v-card-text>
+
+                                    <v-card-text class="px-0" v-else-if="!form.assigned_staff_id">
+                                        <p>
+                                            担当スタッフを選択してください
+                                        </p>
+                                    </v-card-text>
+
+                                    <v-card-text class="pa-0" v-else>
+                                        <v-row>
+                                            <v-col cols="12" sm="6">
+                                                <v-card variant="text">
+                                                    <v-card-title class="px-0 text-body-1">
+                                                        日付を選択
+                                                    </v-card-title>
+                                                    <v-card-text class="px-0">
+                                                        <v-date-picker v-model="selectedDateValue" hide-header
+                                                                       @update:year="onPickerYearChange"
+                                                                       @update:month="onPickerMonthChange"
+                                                                       :allowed-dates="allowedDates"
+                                                                       show-adjacent-months>
+                                                            <!-- カレンダーの日付スロット -->
+                                                            <template v-slot:day="{ item, props: dayProps }">
+                                                                <v-btn
+                                                                       v-bind="dayProps"
+                                                                       :style="getDayStyle(item)"
+                                                                       class="d-flex justify-center align-center"
+                                                                       style="position: relative;"
+                                                                       :variant="isToday(item) && !isSelected(item) ? 'outlined' : (isSelected(item) ? 'flat' : 'text')"
+                                                                       :color="isSelected(item) ? 'primary' : (allowOffShift && !isWorkingDay(item) ? 'rgba(0, 0, 0, 0.38)' : undefined)"
+                                                                       size="small"
+                                                                       rounded="circle">
+                                                                    {{ getDayNumber(item) }}
+                                                                </v-btn>
+                                                            </template>
+                                                        </v-date-picker>
+
+                                                        <v-checkbox v-model="allowOffShift" hide-details
+                                                                    label="担当スタッフのシフト外も選択可能にする"
+                                                                    density="compact" class="mt-2">
+                                                        </v-checkbox>
+
+                                                        <!-- 直接入力（シフト外選択可能時のみ表示） -->
+                                                        <v-text-field v-if="allowOffShift" v-model="directTimeInput"
+                                                                      hide-details
+                                                                      label="シフト外の時間を直接入力" readonly
+                                                                      append-inner-icon="mdi-clock-edit-outline"
+                                                                      class="mt-2"
+                                                                      @click="timePickerDialog = true"
+                                                                      @click:append-inner="timePickerDialog = true">
+                                                        </v-text-field>
+                                                    </v-card-text>
+                                                </v-card>
+                                            </v-col>
+
+                                            <v-col cols="12" sm="6">
+                                                <v-card variant="text">
+                                                    <v-card-title class="pa-0 text-body-1">
+                                                        時間を選択
+                                                    </v-card-title>
+
+                                                    <v-card-text class="px-0" v-if="!selectedDateValue">
+                                                        <p>
+                                                            予約日を選択してください
+                                                        </p>
+                                                    </v-card-text>
+
+                                                    <v-card-text class="px-0" v-else-if="groupedTimeSlots.length > 0">
+
+                                                        <div v-for="group in groupedTimeSlots" :key="group.hour"
+                                                             class="d-flex align-center py-1">
+                                                            <div class="text-body-2 font-weight-bold mr-4"
+                                                                 style="width: 40px">
+                                                                {{ group.hour }}時
+                                                            </div>
+                                                            <v-chip-group v-model="selectedTime" column mandatory
+                                                                          active-class="primary">
+                                                                <v-chip v-for="time in group.slots" :key="time"
+                                                                        :value="time" variant="outlined"
+                                                                        size="default" class="px-3">
+                                                                    <v-icon v-if="selectedTime === time" start
+                                                                            size="small">mdi-check</v-icon>
+                                                                    {{ time }}
+                                                                </v-chip>
+                                                            </v-chip-group>
+                                                        </div>
+                                                    </v-card-text>
+
+                                                    <v-card-text class="px-0" v-else>
+                                                        予約可能な時間帯がありません。
+                                                    </v-card-text>
+                                                </v-card>
+                                            </v-col>
+                                        </v-row>
+                                    </v-card-text>
+
+                                    <v-card-text class="pa-0">
+                                        <v-alert v-if="shiftWarning" type="warning" density="compact" variant="tonal"
+                                                 class="mb-2">
+                                            {{ shiftWarning }}
+                                        </v-alert>
+
+                                        <v-alert v-if="conflictWarning" type="warning" density="compact" variant="tonal"
+                                                 class="mb-2">
+                                            {{ conflictWarning }}
+                                        </v-alert>
+
+                                        <p v-if="displayDateTime" class="text-subtitle-1">
+                                            予約日時: {{ displayDateTime }}
+                                        </p>
+                                    </v-card-text>
+                                </v-card>
+                            </v-col>
+
+                            <!-- スタッフスケジュール -->
+                            <v-col cols="12" md="4">
+                                <v-card variant="text">
+                                    <v-card-title class="px-0">
+                                        担当スタッフのシフト・予約
+                                    </v-card-title>
+
+                                    <v-card-text class="px-0" v-if="!form.assigned_staff_id">
+                                        <p>
+                                            担当スタッフを選択してください
+                                        </p>
+                                    </v-card-text>
+
+                                    <v-card-text class="px-0" v-if="!selectedDateValue">
+                                        <p>
+                                            予約日を選択してください
+                                        </p>
+                                    </v-card-text>
+
+                                    <v-card-text class="px-0" v-else>
+
+                                        <v-card variant="text">
+                                            <v-card-title class="px-0">
+                                                {{ formattedSelectedDate }} のシフト
+                                            </v-card-title>
+
+                                            <v-card-text class="px-0">
+                                                <div class="mb-4">
+                                                    <span v-if="dailySchedule && dailySchedule.start">
+                                                        {{ dailySchedule.start }} - {{ dailySchedule.end }}
+                                                    </span>
+                                                    <span v-else class="text-grey">
+                                                        登録なし
+                                                    </span>
+                                                </div>
+                                            </v-card-text>
+
+                                        </v-card>
+
+                                        <v-card variant="text">
+                                            <v-card-title class="px-0">
+                                                予約状況:
+                                            </v-card-title>
+
+                                            <v-card-text class="px-0" v-if="dailyBookings.length > 0">
+                                                <v-chip v-for="booking in dailyBookings" :key="booking.id"
+                                                        class="mb-1 mr-1" color="secondary"
+                                                        variant="flat"
+                                                        :href="`/owner/shops/${props.shop.slug}/bookings/${booking.id}/edit`"
+                                                        target="_blank">
+                                                    {{ booking.start }} - {{ booking.end }} {{
+                                                        booking.booker_name
+                                                    }}
+                                                </v-chip>
+                                            </v-card-text>
+
+                                            <v-card-text v-else class="px-0">
+                                                予約はありません
+                                            </v-card-text>
+                                        </v-card>
+                                    </v-card-text>
+                                </v-card>
+
+                            </v-col>
+
+                            <!-- 予約者選択 -->
+                            <v-col cols="12" md="6">
+
+                                <v-card variant="text">
+                                    <v-card-title class="px-0">
+                                        予約者
+                                    </v-card-title>
+                                    <v-card-text class="px-0">
+                                        <v-text-field v-model="form.booker_name" name="booker_name" label="予約者名 *"
+                                                      :readonly="!!form.shop_booker_id"
+                                                      required placeholder="予約者名を入力">
+                                            <template v-slot:append-inner>
+                                                <v-btn
+                                                       color="primary"
+                                                       size="small"
+                                                       variant="text"
+                                                       @click="bookerDialog = true">
+                                                    選択 / 新規
+                                                </v-btn>
+                                            </template>
+                                        </v-text-field>
+                                        <v-text-field v-model="form.booker_name_kana" name="booker_name_kana"
+                                                      label="予約者のよみがな（予約者には表示されません）"
+                                                      :readonly="!!form.shop_booker_id">
+                                        </v-text-field>
+                                        <v-text-field v-model="form.contact_email" name="contact_email"
+                                                      label="連絡先メールアドレス *" type="email" required>
+                                        </v-text-field>
+                                        <v-text-field v-model="form.contact_phone" name="contact_phone"
+                                                      label="連絡先電話番号 *" type="tel" required>
+                                        </v-text-field>
+                                        <v-textarea v-model="form.shop_memo" name="shop_memo"
+                                                    label="店舗側のメモ（予約者には表示されません）" rows="3">
+                                        </v-textarea>
+                                    </v-card-text>
+                                </v-card>
+                            </v-col>
+
+                            <!-- 予約者履歴（既存予約者選択時のみ表示） -->
+                            <v-col cols="12" md="6" v-if="form.shop_booker_id">
+                                <v-card variant="text">
+                                    <v-card-title class="px-0">
+                                        予約者履歴
+                                    </v-card-title>
+                                    <v-card-text class="px-0">
+                                        <v-progress-linear v-if="bookerHistoryLoading" indeterminate
+                                                           color="primary"></v-progress-linear>
+                                        <template v-else-if="bookerHistory">
+                                            <div class="d-flex flex-wrap ga-4 mb-4">
+                                                <div>
+                                                    <div class="text-caption text-medium-emphasis">予約回数</div>
+                                                    <div class="text-h6">{{ bookerHistory.booking_count }}回</div>
+                                                </div>
+                                                <div>
+                                                    <div class="text-caption text-medium-emphasis">最終予約日時</div>
+                                                    <div class="text-body-1">{{ bookerHistory.last_booking_at || '－'
+                                                    }}</div>
+                                                </div>
+                                            </div>
+
+                                            <div v-if="bookerHistory.note_from_booker" class="mb-3">
+                                                <div class="text-caption text-medium-emphasis">予約者からのメモ</div>
+                                                <div class="text-body-2 bg-grey-lighten-4 pa-2 rounded">{{
+                                                    bookerHistory.note_from_booker }}</div>
+                                            </div>
+
+                                            <div v-if="bookerHistory.shop_memo" class="mb-3">
+                                                <div class="text-caption text-medium-emphasis">店舗側メモ</div>
+                                                <div class="text-body-2 bg-amber-lighten-5 pa-2 rounded">{{
+                                                    bookerHistory.shop_memo }}</div>
+                                            </div>
+
+                                            <div v-if="bookerHistory.recent_bookings.length > 0">
+                                                <div class="text-caption text-medium-emphasis mb-1">直近の予約履歴</div>
+                                                <v-table density="compact">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>日時</th>
+                                                            <th>メニュー</th>
+                                                            <th>担当</th>
+                                                            <th>状態</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr v-for="booking in bookerHistory.recent_bookings"
+                                                            :key="booking.id">
+                                                            <td>{{ booking.start_at }}</td>
+                                                            <td>{{ booking.menu_name }}</td>
+                                                            <td>{{ booking.staff_name || '－' }}</td>
+                                                            <td>
+                                                                <v-chip size="x-small"
+                                                                        :color="booking.status === 'cancelled' ? 'error' : booking.status === 'confirmed' ? 'success' : 'warning'">
+                                                                    {{ booking.status === 'pending' ? '保留' :
+                                                                        booking.status === 'confirmed' ? '確定' : 'キャンセル'
+                                                                    }}
+                                                                </v-chip>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </v-table>
+                                            </div>
+                                            <div v-else class="text-body-2 text-medium-emphasis">
+                                                過去の予約履歴はありません
+                                            </div>
+                                        </template>
+                                    </v-card-text>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </form>
+                </v-col>
+            </v-row>
+
+            <!-- 予約者選択ダイアログ -->
+            <v-dialog v-model="bookerDialog" max-width="800px" persistent>
+                <v-card>
+                    <v-tabs v-model="dialogTab" bg-color="primary">
+                        <v-tab value="select">既存顧客から選択</v-tab>
+                        <v-tab value="create">新しく顧客を登録</v-tab>
+                    </v-tabs>
+                    <v-card-text>
+                        <v-window v-model="dialogTab">
+                            <v-window-item value="select">
+                                <v-text-field v-model="bookerSearchQuery" label="顧客名、連絡先で検索"
+                                              prepend-inner-icon="mdi-magnify"
+                                              variant="solo-filled" flat hide-details class="mb-4"></v-text-field>
+                                <v-list lines="two" style="max-height: 400px; overflow-y: auto">
+                                    <v-list-item v-for="booker in filteredBookers" :key="booker.id" :title="booker.name"
+                                                 :subtitle="`${booker.contact_email || 'メール未登録'
+                                                    } / ${booker.contact_phone || '電話番号未登録'
+                                                    }`" :active="selectedBookerInDialog === booker.id
+                                                            " @click="selectedBookerInDialog = booker.id">
+                                        <template v-slot:prepend>
+                                            <v-avatar color="grey-lighten-1">
+                                                <v-icon color="white">mdi-account</v-icon>
+                                            </v-avatar>
+                                        </template>
+                                    </v-list-item>
+                                </v-list>
+                            </v-window-item>
+                            <v-window-item value="create">
+                                <v-container>
+                                    <v-row>
+                                        <v-col cols="12"><v-text-field v-model="newBookerForm.nickname" label="予約者名 *"
+                                                          required
+                                                          :rules="[
+                                                            (v) =>
+                                                                !!v || '予約者名は必須です',
+                                                        ]"></v-text-field></v-col>
+                                        <v-col cols="12"><v-text-field v-model="newBookerForm.booker_name_kana
+                                            " label="予約者のよみがな"></v-text-field></v-col>
+                                        <v-col cols="12"><v-text-field v-model="newBookerForm.contact_email
+                                            " label="連絡先メールアドレス *" type="email" required></v-text-field></v-col>
+                                        <v-col cols="12"><v-text-field v-model="newBookerForm.contact_phone
+                                            " label="連絡先電話番号 *" type="tel" required></v-text-field></v-col>
+                                        <v-col cols="12"><v-textarea v-model="newBookerForm.shop_memo" label="店舗側のメモ"
+                                                        rows="3"></v-textarea></v-col>
+                                    </v-row>
+                                </v-container>
+                            </v-window-item>
+                        </v-window>
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn text @click="cancelBookerSelection">キャンセル</v-btn>
+                        <v-btn color="primary" @click="confirmBookerSelection">決定</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+
+            <!-- 時間選択ダイアログ -->
+            <v-dialog v-model="timePickerDialog" width="auto">
+                <v-card>
+                    <v-time-picker v-model="directTimeInput" format="24hr"></v-time-picker>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="primary" variant="text" @click="timePickerDialog = false">
+                            完了
+                        </v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
+        </v-container>
         <BookingStickyFooter :menu-name="selectedMenu?.name" :staff-name="selectedStaffName"
                              :date-time="displayDateTime"
                              :total-price="totalPrice" submit-label="登録する" :disabled="!isFormValid"
                              @submit="submitForm" />
-    </v-app>
+    </OwnerLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import OwnerLayout from "@/components/owner/OwnerLayout.vue";
 import BookingStickyFooter from "@/components/common/BookingStickyFooter.vue";
 
 // --- 型定義 ---

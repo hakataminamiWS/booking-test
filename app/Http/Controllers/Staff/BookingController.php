@@ -278,16 +278,16 @@ class BookingController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Cancel the specified booking (status update, not physical delete).
      */
     public function destroy(Shop $shop, Booking $booking)
     {
         $this->getAuthenticatedStaff($shop);
 
-        $booking->delete();
+        $booking->update(['status' => 'cancelled']);
 
         return redirect()->route('staff.bookings.index', ['shop' => $shop->slug])
-            ->with('success', '予約を削除しました。');
+            ->with('success', '予約をキャンセルしました。');
     }
 
     private function getAuthenticatedStaff(Shop $shop): ShopStaff

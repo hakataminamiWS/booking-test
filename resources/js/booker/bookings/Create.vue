@@ -214,7 +214,10 @@
                                 </v-card-title>
                                 <v-card-text class="px-0">
                                     <v-alert type="info" density="compact" variant="tonal" class="mb-4">
-                                        ご登録情報はマイページから変更可能です。
+                                        ご登録情報は<a :href="`/shops/${props.shop.slug}/booker/profile/edit`"
+                                           style="color: inherit; text-decoration: underline;">
+                                            プロフィール編集
+                                        </a>から変更可能です。
                                     </v-alert>
 
                                     <v-text-field v-model="form.booker_name" name="booker_name" label="お名前 *" readonly

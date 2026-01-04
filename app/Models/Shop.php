@@ -77,4 +77,9 @@ class Shop extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    public function shifts(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(ShopStaffSchedule::class, ShopStaff::class);
+    }
 }

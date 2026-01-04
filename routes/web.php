@@ -22,8 +22,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// --- Guest Booking Routes ---
-Route::prefix('shops/{shop:slug}/guest')->name('guest.')->group(function () {
+// --- Shop Entry Route ---
+    Route::get('/shops/{shop:slug}', [App\Http\Controllers\ShopEntryController::class, 'show'])->name('shop.entry');
+
+    // --- Guest Booking Routes ---
+    Route::prefix('shops/{shop:slug}/guest')->name('guest.')->group(function () {
     Route::get('/bookings/create', [App\Http\Controllers\Guest\BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [App\Http\Controllers\Guest\BookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}/complete', [App\Http\Controllers\Guest\BookingController::class, 'complete'])->name('bookings.complete');
@@ -70,6 +73,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops', [App\Http\Controllers\Owner\ShopsController::class, 'index'])->name('shops.index');
         Route::get('/shops/create', [App\Http\Controllers\Owner\ShopsController::class, 'create'])->name('shops.create');
         Route::post('/shops', [App\Http\Controllers\Owner\ShopsController::class, 'store'])->name('shops.store');
+        Route::get('/shops/{shop:slug}/dashboard', [App\Http\Controllers\Owner\ShopDashboardController::class, 'index'])->name('shops.dashboard');
         Route::get('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'show'])->name('shops.show');
         Route::get('/shops/{shop:slug}/edit', [App\Http\Controllers\Owner\ShopsController::class, 'edit'])->name('shops.edit');
         Route::put('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'update'])->name('shops.update');
@@ -162,6 +166,7 @@ Route::middleware('auth')->group(function () {
     // --- Staff Routes ---
     Route::prefix('shops/{shop:slug}/staff')->name('staff.')->group(function () { // TODO: Add middleware('staff') later
         // Web
+        Route::get('/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'edit'])->name('staffs.edit');
         Route::put('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'update'])->name('staffs.update');
         // Shifts
@@ -211,8 +216,12 @@ Route::middleware('auth')->group(function () {
     // --- Booker Shop-specific Routes ---
     Route::prefix('shops/{shop:slug}/booker')->name('booker.')->group(function () {
         // Profile
-        Route::get('/profile/edit', [App\Http\Controllers\Booker\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/', [App\Http\Controllers\Booker\ShopController::class, 'show'])->name('shop.show');
+    Route::get('/profile/edit', [App\Http\Controllers\Booker\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::get('/profile/create', [App\Http\Controllers\Booker\ProfileController::class, 'create'])->name('profile.create');
+        Route::post('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'store'])->name('profile.store');
         Route::put('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'destroy'])->name('profile.destroy');
 
         // Bookings
         Route::get('/bookings', [App\Http\Controllers\Booker\BookingController::class, 'index'])->name('bookings.index');
@@ -239,5 +248,6 @@ Route::middleware('auth')->group(function () {
 // Debug Routes
 // ==============================================================================
 if (app()->environment(['local', 'staging'])) {
+    Route::get('/login-as-unregistered/{shop:slug}', [\App\Http\Controllers\DebugController::class, 'loginAsUnregistered'])->name('debug.login-as-unregistered');
     Route::get('/login-as/{user}', [\App\Http\Controllers\DebugController::class, 'loginAs'])->name('debug.login-as');
 }

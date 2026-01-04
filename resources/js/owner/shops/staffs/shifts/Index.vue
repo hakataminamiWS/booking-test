@@ -1,101 +1,87 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12">
-                <v-btn
-                       :href="staffsIndexUrl"
-                       prepend-icon="mdi-arrow-left"
-                       variant="text">
-                    スタッフ一覧に戻る
-                </v-btn>
-            </v-col>
-        </v-row>
+    <OwnerLayout :shop="shop" currentPage="shifts">
+        <v-container>
 
-        <v-row>
-            <v-col cols="12">
-                <ShopHeader :shop="shop" />
-            </v-col>
-        </v-row>
-
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title
-                                  class="d-flex align-center"
-                                  :class="mobile ? 'flex-column' : 'justify-space-between'
-                                    ">
-                        <span>シフト一覧</span>
-                        <div
-                             class="d-flex align-center"
-                             :class="{ 'mt-2': mobile }">
-                            <v-btn :href="prevMonthUrl" icon variant="text">
-                                <v-icon>mdi-chevron-left</v-icon>
-                            </v-btn>
-                            <span class="mx-4 text-h6">{{
-                                formattedMonth
-                            }}</span>
-                            <v-btn :href="nextMonthUrl" icon variant="text">
-                                <v-icon>mdi-chevron-right</v-icon>
-                            </v-btn>
-                        </div>
-                    </v-card-title>
-                    <v-card-text>
-                        <v-table>
-                            <thead>
-                                <tr>
-                                    <th class="text-left">週</th>
-                                    <th
-                                        v-for="staff in staffs"
-                                        :key="staff.id"
-                                        class="text-center">
-                                        {{ staff.profile?.nickname || "N/A" }}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr
-                                    v-for="item in weeksWithShiftStatus"
-                                    :key="item.week.start">
-                                    <td>
-                                        {{ formatWeekRange(item.week) }}
-                                    </td>
-                                    <td
-                                        v-for="staff in staffs"
-                                        :key="staff.id"
-                                        class="text-center pa-0">
-                                        <a
-                                           :href="getShiftEditUrl(
-                                            staff.id,
-                                            format(
-                                                parseISO(
-                                                    item.week.start
-                                                ),
-                                                'yyyy-MM-dd'
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title
+                                      class="d-flex align-center"
+                                      :class="mobile ? 'flex-column' : 'justify-space-between'
+                                        ">
+                            <span>シフト一覧</span>
+                            <div
+                                 class="d-flex align-center"
+                                 :class="{ 'mt-2': mobile }">
+                                <v-btn :href="prevMonthUrl" icon variant="text">
+                                    <v-icon>mdi-chevron-left</v-icon>
+                                </v-btn>
+                                <span class="mx-4 text-h6">{{
+                                    formattedMonth
+                                    }}</span>
+                                <v-btn :href="nextMonthUrl" icon variant="text">
+                                    <v-icon>mdi-chevron-right</v-icon>
+                                </v-btn>
+                            </div>
+                        </v-card-title>
+                        <v-card-text>
+                            <v-table>
+                                <thead>
+                                    <tr>
+                                        <th class="text-left">週</th>
+                                        <th
+                                            v-for="staff in staffs"
+                                            :key="staff.id"
+                                            class="text-center">
+                                            {{ staff.profile?.nickname || "N/A" }}
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        v-for="item in weeksWithShiftStatus"
+                                        :key="item.week.start">
+                                        <td>
+                                            {{ formatWeekRange(item.week) }}
+                                        </td>
+                                        <td
+                                            v-for="staff in staffs"
+                                            :key="staff.id"
+                                            class="text-center pa-0">
+                                            <a
+                                               :href="getShiftEditUrl(
+                                                staff.id,
+                                                format(
+                                                    parseISO(
+                                                        item.week.start
+                                                    ),
+                                                    'yyyy-MM-dd'
+                                                )
                                             )
-                                        )
-                                            "
-                                           class="d-block pa-4 text-decoration-none">
-                                            <span
-                                                  :class="`text-${getStatusColor(
-                                                    item.statuses[staff.id]
-                                                )}`">
-                                                {{
-                                                    item.statuses[staff.id] ===
-                                                        "entered"
-                                                        ? "入力済み"
-                                                        : "未入力"
-                                                }}
-                                            </span>
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </v-table>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+                                                "
+                                               class="d-block pa-4 text-decoration-none">
+                                                <span
+                                                      :class="`text-${getStatusColor(
+                                                        item.statuses[staff.id]
+                                                    )}`">
+                                                    {{
+                                                        item.statuses[staff.id] ===
+                                                            "entered"
+                                                            ? "入力済み"
+                                                            : "未入力"
+                                                    }}
+                                                </span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </v-table>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </OwnerLayout>
 </template>
 
 <script setup lang="ts">
@@ -104,7 +90,7 @@ import { useDisplay } from "vuetify";
 import { format, parseISO, addMonths, subMonths } from "date-fns";
 import { ja } from "date-fns/locale";
 import { formatInTimeZone } from "date-fns-tz";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import OwnerLayout from "@/components/owner/OwnerLayout.vue";
 
 // --- Type Definitions ---
 interface Shop {

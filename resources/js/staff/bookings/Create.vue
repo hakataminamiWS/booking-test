@@ -1,25 +1,10 @@
 <template>
-    <v-app>
+    <StaffLayout :shop="shop" currentPage="bookings">
         <v-main>
             <v-container fluid class="container-width-1200">
-                <!-- ナビゲーション -->
-                <v-row>
-                    <v-col cols="12">
-                        <v-btn
-                               :href="`/shops/${props.shop.slug}/staff/bookings`"
-                               prepend-icon="mdi-arrow-left"
-                               variant="text">
-                            予約一覧に戻る
-                        </v-btn>
-                    </v-col>
-                </v-row>
+                <!-- ナビゲーション (Removed as per design) -->
 
-                <!-- ショップヘッダー -->
-                <v-row>
-                    <v-col cols="12">
-                        <ShopHeader :shop="shop" />
-                    </v-col>
-                </v-row>
+                <!-- ショップヘッダー (Removed as StaffLayout handles it) -->
 
                 <!-- メインフォームカード -->
                 <v-row>
@@ -550,13 +535,13 @@
                              :date-time="displayDateTime"
                              :total-price="totalPrice" submit-label="登録する" :disabled="!isFormValid"
                              @submit="submitForm" />
-    </v-app>
+    </StaffLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import StaffLayout from "@/components/staff/StaffLayout.vue";
 import BookingStickyFooter from "@/components/common/BookingStickyFooter.vue";
 
 // --- 型定義 ---
