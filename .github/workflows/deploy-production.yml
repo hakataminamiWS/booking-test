@@ -28,7 +28,7 @@ env:
     phpunit.xml
     vite.config.js
     package*.json
-    composer.*
+
     *.md
     .vscode
     .idea
