@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  DEPLOY_PATH: /home/net-get/staging-yoyaku/
+  DEPLOY_PATH: /home/netget/staging-yoyaku/
   RSYNC_EXCLUDE: |
     .env
     .env.*
