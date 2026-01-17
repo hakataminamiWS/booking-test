@@ -11,7 +11,7 @@ on:
         type: string
 
 env:
-  DEPLOY_PATH: /home/net-get/yoyaku/
+  DEPLOY_PATH: /home/netget/yoyaku/
   RSYNC_EXCLUDE: |
     .env
     .env.*
