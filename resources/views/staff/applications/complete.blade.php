@@ -4,7 +4,12 @@
 
 @section('content')
     @php
-        $props = [];
+        $props = [
+            'shop' => $shop,
+            'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
+        ];
     @endphp
     <div id="app" data-page="staff/applications/Complete" data-props='{{ json_encode($props) }}'></div>
 @endsection

@@ -16,7 +16,7 @@ class ShopBookerController extends Controller
 
     public function index(Shop $shop)
     {
-        $this->authorize('viewAny', [ShopBooker::class, $shop]);
+
 
         return view('owner.shops.bookers.index', ['shop' => $shop]);
     }
@@ -26,7 +26,7 @@ class ShopBookerController extends Controller
      */
     public function create(Shop $shop)
     {
-        $this->authorize('create', [ShopBooker::class, $shop]);
+
 
         return view('owner.shops.bookers.create', compact('shop'));
     }
@@ -69,7 +69,7 @@ class ShopBookerController extends Controller
      */
     public function edit(Shop $shop, ShopBooker $booker)
     {
-        $this->authorize('update', $booker);
+
 
         $booker->load('crm');
 

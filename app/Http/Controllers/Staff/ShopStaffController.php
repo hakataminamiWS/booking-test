@@ -30,11 +30,9 @@ class ShopStaffController extends Controller
         $staff->load('profile');
 
         // パスを完全なURLに変換
-        if ($staff->profile?->small_image_url) {
-            $staff->profile->small_image_url = Storage::disk('public')->url($staff->profile->small_image_url);
-        }
-        if ($staff->profile?->large_image_url) {
-            $staff->profile->large_image_url = Storage::disk('public')->url($staff->profile->large_image_url);
+        // パスを完全なURLに変換
+        if ($staff->profile?->image_url) {
+            $staff->profile->image_url = Storage::disk('public')->url($staff->profile->image_url);
         }
 
         return view('staff.staffs.edit', compact('shop', 'staff'));
@@ -50,50 +48,31 @@ class ShopStaffController extends Controller
         $profile = $staff->profile;
 
         // 画像削除処理 (スモール)
-        if ($request->boolean('is_delete_small_image')) {
-            if ($profile && $profile->small_image_url) {
-                Storage::disk('public')->delete($profile->small_image_url);
+        // 画像削除処理
+        if ($request->boolean('is_delete_image')) {
+            if ($profile && $profile->image_url) {
+                Storage::disk('public')->delete($profile->image_url);
             }
-            $profileData['small_image_url'] = null;
+            $profileData['image_url'] = null;
         }
 
-        if ($request->hasFile('small_image')) {
-            if ($profile && $profile->small_image_url) {
-                Storage::disk('public')->delete($profile->small_image_url);
+        if ($request->hasFile('image')) {
+            if ($profile && $profile->image_url) {
+                Storage::disk('public')->delete($profile->image_url);
             }
 
-            $file = $request->file('small_image');
+            $file = $request->file('image');
             $image = Image::read($file)
                 ->resize(300, 300, fn ($constraint) => $constraint->aspectRatio())
                 ->encode(new JpegEncoder(90));
             $fileName = Str::random(40) . '.jpg';
-            $path = 'staff_profiles/small/' . $fileName;
+            $path = 'staff_profiles/' . $fileName;
             Storage::disk('public')->put($path, (string) $image);
-            $profileData['small_image_url'] = $path;
+            $profileData['image_url'] = $path;
         }
 
         // 画像削除処理 (ラージ)
-        if ($request->boolean('is_delete_large_image')) {
-            if ($profile && $profile->large_image_url) {
-                Storage::disk('public')->delete($profile->large_image_url);
-            }
-            $profileData['large_image_url'] = null;
-        }
 
-        if ($request->hasFile('large_image')) {
-            if ($profile && $profile->large_image_url) {
-                Storage::disk('public')->delete($profile->large_image_url);
-            }
-
-            $file = $request->file('large_image');
-            $image = Image::read($file)
-                ->resize(800, 800, fn ($constraint) => $constraint->aspectRatio())
-                ->encode(new JpegEncoder(90));
-            $fileName = Str::random(40) . '.jpg';
-            $path = 'staff_profiles/large/' . $fileName;
-            Storage::disk('public')->put($path, (string) $image);
-            $profileData['large_image_url'] = $path;
-        }
 
         $staff->profile()->updateOrCreate(
             ['shop_staff_id' => $staff->id],

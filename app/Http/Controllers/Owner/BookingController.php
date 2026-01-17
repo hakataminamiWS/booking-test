@@ -23,7 +23,7 @@ class BookingController extends Controller
      */
     public function index(Shop $shop)
     {
-        $this->authorize('viewAny', [Booking::class, $shop]);
+
 
         // フィルタ用のデータを取得
         $menus = $shop->menus()->select(['id', 'name'])->get();
@@ -43,7 +43,7 @@ class BookingController extends Controller
      */
     public function create(Shop $shop)
     {
-        $this->authorize('create', [Booking::class, $shop]);
+
 
         // 必要なリレーションをまとめてロード
         $shop->load(['businessHoursRegular', 'shopSpecialOpenDays', 'shopSpecialClosedDays']);
@@ -53,15 +53,15 @@ class BookingController extends Controller
         // スタッフ画像のパスをURLに変換
         $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
             $imageUrl = null;
-            if ($staff->profile && $staff->profile->small_image_url) {
-                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->small_image_url);
+            if ($staff->profile && $staff->profile->image_url) {
+                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->image_url);
             }
             
             // Vueコンポーネントが期待する形式に変換（APIと同様の構造）
             $staffData = $staff->toArray();
             $staffData['profile'] = [
                 'nickname' => $staff->profile->nickname ?? '',
-                'small_image_url' => $imageUrl,
+                'image_url' => $imageUrl,
             ];
             return $staffData;
         });
@@ -213,7 +213,7 @@ class BookingController extends Controller
      */
     public function edit(Shop $shop, Booking $booking)
     {
-        $this->authorize('update', $booking);
+
 
         // 必要なリレーションをまとめてロード
         $shop->load(['businessHoursRegular', 'shopSpecialOpenDays', 'shopSpecialClosedDays']);
@@ -223,8 +223,8 @@ class BookingController extends Controller
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
         $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
             $imageUrl = null;
-            if ($staff->profile && $staff->profile->small_image_url) {
-                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->small_image_url);
+            if ($staff->profile && $staff->profile->image_url) {
+                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->image_url);
             }
             
             // Vueコンポーネントが期待する形式に変換（APIと同様の構造）
@@ -232,7 +232,7 @@ class BookingController extends Controller
             $staffData = $staff->toArray();
             $staffData['profile'] = [
                 'nickname' => $staff->profile->nickname ?? '',
-                'small_image_url' => $imageUrl,
+                'image_url' => $imageUrl,
             ];
             
             // 配列からオブジェクト(stdClass)にキャストして返す、またはVueに渡す際に配列として渡されるため配列のままでよいが
@@ -263,7 +263,7 @@ class BookingController extends Controller
      */
     public function update(StoreBookingRequest $request, Shop $shop, Booking $booking)
     {
-        $this->authorize('update', $booking);
+
         $validated = $request->validated();
 
         $menu = ShopMenu::findOrFail($validated['menu_id']);
@@ -344,7 +344,7 @@ class BookingController extends Controller
      */
     public function destroy(Shop $shop, Booking $booking)
     {
-        $this->authorize('delete', $booking);
+
 
         $booking->update(['status' => 'cancelled']);
 

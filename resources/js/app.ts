@@ -193,11 +193,17 @@ const pages = {
     "booker/bookings/Show": defineAsyncComponent(
         () => import("@/booker/bookings/Show.vue")
     ),
+    "booker/bookings/Provisional": defineAsyncComponent(
+        () => import("@/booker/bookings/Provisional.vue")
+    ),
     "guest/bookings/Create": defineAsyncComponent(
         () => import("@/guest/bookings/Create.vue")
     ),
     "guest/bookings/Complete": defineAsyncComponent(
         () => import("@/guest/bookings/Complete.vue")
+    ),
+    "guest/bookings/Provisional": defineAsyncComponent(
+        () => import("@/guest/bookings/Provisional.vue")
     ),
     "shop/Entry": defineAsyncComponent(
         () => import("@/shop/Entry.vue")
@@ -229,7 +235,17 @@ if (appElement) {
 
     if (pages[pageName]) {
         const component = pages[pageName];
-        createApp(component, propsData).use(vuetify).mount(appElement);
+        const app = createApp(component, propsData);
+
+        // Flash Messages
+        const flashMessages = {
+            success: propsData.flashSuccess || null,
+            error: propsData.flashError || null,
+            status: propsData.flashStatus || null,
+        };
+        app.provide('flash', flashMessages);
+
+        app.use(vuetify).mount(appElement);
     } else {
         console.error("Vue component not found for page:", pageName);
     }

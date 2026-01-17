@@ -30,7 +30,7 @@ class ShopStaffApplicationController extends Controller
      */
     public function approve(Shop $shop, ShopStaffApplication $staff_application): RedirectResponse
     {
-        $this->authorize('update', $staff_application);
+
 
         DB::transaction(function () use ($shop, $staff_application) {
             $staff_application->status = 'approved';
@@ -57,7 +57,7 @@ class ShopStaffApplicationController extends Controller
      */
     public function reject(Shop $shop, ShopStaffApplication $staff_application): RedirectResponse
     {
-        $this->authorize('update', $staff_application);
+
 
         $staff_application->status = 'rejected';
         $staff_application->save();

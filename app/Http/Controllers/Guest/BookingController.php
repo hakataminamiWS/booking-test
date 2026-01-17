@@ -25,11 +25,11 @@ class BookingController extends Controller
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
         $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
             $imageUrl = null;
-            if ($staff->profile && $staff->profile->small_image_url) {
-                $imageUrl = Storage::disk('public')->url($staff->profile->small_image_url);
+            if ($staff->profile && $staff->profile->image_url) {
+                $imageUrl = Storage::disk('public')->url($staff->profile->image_url);
             }
             // StaffモデルのtoArray()結果に、変換済みのURLを上書きする
-            $staff->profile->small_image_url = $imageUrl;
+            $staff->profile->image_url = $imageUrl;
             
             return $staff; 
         });
@@ -90,7 +90,7 @@ class BookingController extends Controller
                 'menu_id' => $menu->id,
                 'start_at' => $startAt,
                 'end_at' => $endAt,
-                'status' => 'confirmed',
+                'status' => 'pending', // 変更: confirmed -> pending
                 'booking_channel' => 'web', // Consistent with logged-in users
                 'menu_name' => $menu->name,
                 'menu_price' => $menu->price,
@@ -115,6 +115,13 @@ class BookingController extends Controller
                 });
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
+            
+            // 4. Create ProvisionalBooking
+            \App\Models\ProvisionalBooking::create([
+                'booking_id' => $booking->id,
+                'shop_id' => $shop->id,
+                'expires_at' => now()->addMinutes(60), // 60分後
+            ]);
 
             // 統計情報の更新
             $crmService->updateStats($booker);
@@ -122,7 +129,26 @@ class BookingController extends Controller
             return $booking;
         });
 
-        return redirect()->route('guest.bookings.complete', ['shop' => $shop->slug, 'booking' => $booking->id]);
+        // 変更: complete -> provisional
+        return redirect()->route('guest.bookings.provisional', ['shop' => $shop->slug, 'booking' => $booking->id]);
+    }
+
+    public function provisional(Shop $shop, $bookingId)
+    {
+        // Simple security check: Ensure booking belongs to this shop
+        $booking = $shop->bookings()
+            ->with(['menu', 'staff.profile', 'bookingOptions'])
+            ->findOrFail($bookingId);
+            
+        // pending以外ならcompleteへリダイレクト（誤ってアクセスした場合など）
+        if ($booking->status !== 'pending') {
+             return redirect()->route('guest.bookings.complete', ['shop' => $shop->slug, 'booking' => $booking->id]);
+        }
+
+        return view('guest.bookings.provisional', [
+            'shop' => $shop,
+            'booking' => $booking,
+        ]);
     }
 
     public function complete(Shop $shop, $bookingId)

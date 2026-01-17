@@ -60,15 +60,16 @@
                                                       persistent-hint
                                                       class="mb-4"></v-text-field>
 
-                                        <v-text-field
-                                                      v-model="formData.contact_phone"
+                                        <v-text-field v-model="formData.contact_phone"
                                                       name="contact_phone"
                                                       label="連絡先電話番号"
                                                       type="tel"
                                                       required
                                                       :rules="[rules.required, rules.maxLength(20)]"
                                                       persistent-hint
-                                                      class="mb-4"></v-text-field>
+                                                      class="mb-4"
+                                                      @blur="formData.contact_phone =
+                                                        formatPhoneNumber(formData.contact_phone)"></v-text-field>
 
                                         <v-textarea
                                                     v-model="formData.note_from_booker"
@@ -154,6 +155,7 @@
 import { ref, computed } from "vue";
 import OwnerLayout from "@/components/owner/OwnerLayout.vue";
 import { formatNumericInput } from "@/composables/useNumericInput";
+import { formatPhoneNumber } from "@/composables/usePhoneInput";
 
 const props = defineProps({
     shop: { type: Object, required: true },

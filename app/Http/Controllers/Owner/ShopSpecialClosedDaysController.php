@@ -18,7 +18,7 @@ class ShopSpecialClosedDaysController extends Controller
      */
     public function create(Shop $shop)
     {
-        $this->authorize('update', $shop);
+
 
         return view('owner.shops.business-hours.special-closed-days.create', compact('shop'));
     }
@@ -28,7 +28,7 @@ class ShopSpecialClosedDaysController extends Controller
      */
     public function store(StoreShopSpecialClosedDayRequest $request, Shop $shop)
     {
-        $this->authorize('update', $shop);
+
 
         $validated = $request->validated();
 
@@ -43,7 +43,7 @@ class ShopSpecialClosedDaysController extends Controller
      */
     public function edit(Shop $shop, ShopSpecialClosedDay $special_closed_day)
     {
-        $this->authorize('update', $shop);
+
 
         return view('owner.shops.business-hours.special-closed-days.edit', compact('shop', 'special_closed_day'));
     }
@@ -53,7 +53,7 @@ class ShopSpecialClosedDaysController extends Controller
      */
     public function update(UpdateShopSpecialClosedDayRequest $request, Shop $shop, ShopSpecialClosedDay $special_closed_day)
     {
-        $this->authorize('update', $shop);
+
 
         $validated = $request->validated();
 

@@ -15,9 +15,9 @@ class ApplicationController extends Controller
         return view('staff.applications.create', compact('shop'));
     }
 
-    public function complete()
+    public function complete(Shop $shop)
     {
-        return view('staff.applications.complete');
+        return view('staff.applications.complete', compact('shop'));
     }
 
     public function store(StoreApplicationRequest $request, Shop $shop)
@@ -28,7 +28,7 @@ class ApplicationController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect()->route('staff.application.complete')
+        return redirect()->route('staff.application.complete', $shop)
             ->with('success', '店舗スタッフへの申し込みが完了しました。オーナーからの承認をお待ちください。');
     }
 }

@@ -60,4 +60,20 @@ class ShopPolicy
         // ユーザーがその店舗のオーナーであるか
         return $user->id === $shop->owner_user_id;
     }
+
+    /**
+     * Determine whether the user can view the shop as a staff.
+     */
+    public function viewAsStaff(User $user, Shop $shop): bool
+    {
+        return $user->shopStaffs()->where('shop_id', $shop->id)->exists();
+    }
+
+    /**
+     * Determine whether the user can view the shop as a booker.
+     */
+    public function viewAsBooker(User $user, Shop $shop): bool
+    {
+        return $user->shopBookers()->where('shop_id', $shop->id)->exists();
+    }
 }

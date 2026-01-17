@@ -117,8 +117,7 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 | `id`              | `bigint`       | `PK`, `AI`                                           | 主キー                                   |
 | `shop_staff_id`   | `bigint`       | `FK (shop_staffs.id)`, `Unique`, `onDelete: CASCADE` | 店舗スタッフ ID                          |
 | `nickname`        | `varchar(255)` |                                                      | 店舗で表示されるニックネーム             |
-| `small_image_url` | `varchar(255)` | `Nullable`                                           | 店舗で表示される画像（小）のファイルパス |
-| `large_image_url` | `varchar(255)` | `Nullable`                                           | 店舗で表示される画像（大）のファイルパス |
+| `image_url`       | `varchar(255)` | `Nullable`                                           | 店舗で表示される画像のファイルパス       |
 | `created_at`      | `timestamp`    |                                                      | 作成日時                                 |
 | `updated_at`      | `timestamp`    |                                                      | 更新日時                                 |
 

@@ -40,6 +40,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the shop staffs associated with the user.
+     */
+    public function shopStaffs(): HasMany
+    {
+        return $this->hasMany(ShopStaff::class);
+    }
+
+    /**
      * Get the contract for the user.
      */
     public function contract(): \Illuminate\Database\Eloquent\Relations\HasOne

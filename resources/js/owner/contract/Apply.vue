@@ -8,12 +8,12 @@
                     </v-card-title>
 
                     <v-card-text>
+                        <FlashMessage />
                         <v-alert
-                            v-if="props.errors && props.errors.length > 0"
-                            type="error"
-                            variant="tonal"
-                            class="mb-4"
-                        >
+                                 v-if="props.errors && props.errors.length > 0"
+                                 type="error"
+                                 variant="tonal"
+                                 class="mb-4">
                             <ul>
                                 <li v-for="error in props.errors" :key="error">
                                     {{ error }}
@@ -27,43 +27,38 @@
                         </p>
                         <form :action="formAction" method="POST">
                             <input
-                                type="hidden"
-                                name="_token"
-                                :value="csrfToken"
-                            />
+                                   type="hidden"
+                                   name="_token"
+                                   :value="csrfToken" />
 
                             <input
-                                type="hidden"
-                                name="user_id"
-                                :value="props.userId"
-                            />
+                                   type="hidden"
+                                   name="user_id"
+                                   :value="props.userId" />
 
                             <v-text-field
-                                :model-value="props.email"
-                                name="email"
-                                label="メールアドレス"
-                                type="email"
-                                variant="outlined"
-                                readonly
-                                class="mb-4"
-                            ></v-text-field>
+                                          :model-value="props.email"
+                                          name="email"
+                                          label="メールアドレス"
+                                          type="email"
+                                          variant="outlined"
+                                          readonly
+                                          class="mb-4"></v-text-field>
 
                             <v-text-field
-                                v-model="customerName"
-                                name="customer_name"
-                                label="お客様名称"
-                                placeholder="例: 株式会社〇〇 / 〇〇ストア"
-                                variant="outlined"
-                                required
-                                class="mb-4"
-                            ></v-text-field>
+                                          v-model="customerName"
+                                          name="customer_name"
+                                          label="お客様名称"
+                                          placeholder="例: 株式会社〇〇 / 〇〇ストア"
+                                          variant="outlined"
+                                          required
+                                          class="mb-4"></v-text-field>
 
                             <v-btn
-                                type="submit"
-                                color="primary"
-                                block
-                                size="large"
-                            >
+                                   type="submit"
+                                   color="primary"
+                                   block
+                                   size="large">
                                 上記の内容で申し込む
                             </v-btn>
                         </form>
@@ -76,6 +71,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import FlashMessage from "@/components/common/FlashMessage.vue";
 
 interface Props {
     userId: number;

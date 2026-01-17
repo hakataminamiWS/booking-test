@@ -78,8 +78,8 @@ class ShopDashboardController extends Controller
                     'customer_name' => $booking->booker_name,
                     'menu_name' => $booking->menu_name,
                     'staff_name' => $booking->assigned_staff_name,
-                    'staff_image_url' => $booking->staff && $booking->staff->profile && $booking->staff->profile->small_image_url
-                        ? Storage::disk('public')->url($booking->staff->profile->small_image_url)
+                    'staff_image_url' => $booking->staff && $booking->staff->profile && $booking->staff->profile->image_url
+                        ? Storage::disk('public')->url($booking->staff->profile->image_url)
                         : null,
                     'status' => $booking->status,
                     'is_past' => $booking->end_at->setTimezone($timezone)->lessThan($now),

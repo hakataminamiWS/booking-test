@@ -49,14 +49,14 @@ class BookingController extends Controller
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
         $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
             $imageUrl = null;
-            if ($staff->profile && $staff->profile->small_image_url) {
-                $imageUrl = Storage::disk('public')->url($staff->profile->small_image_url);
+            if ($staff->profile && $staff->profile->image_url) {
+                $imageUrl = Storage::disk('public')->url($staff->profile->image_url);
             }
             
             $staffData = $staff->toArray();
             $staffData['profile'] = [
                 'nickname' => $staff->profile->nickname ?? '',
-                'small_image_url' => $imageUrl,
+                'image_url' => $imageUrl,
             ];
             return $staffData;
         });
@@ -183,14 +183,14 @@ class BookingController extends Controller
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
         $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
             $imageUrl = null;
-            if ($staff->profile && $staff->profile->small_image_url) {
-                $imageUrl = Storage::disk('public')->url($staff->profile->small_image_url);
+            if ($staff->profile && $staff->profile->image_url) {
+                $imageUrl = Storage::disk('public')->url($staff->profile->image_url);
             }
             
             $staffData = $staff->toArray();
             $staffData['profile'] = [
                 'nickname' => $staff->profile->nickname ?? '',
-                'small_image_url' => $imageUrl,
+                'image_url' => $imageUrl,
             ];
             return $staffData;
         });

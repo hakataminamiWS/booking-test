@@ -43,6 +43,16 @@
                                               readonly
                                               disabled></v-text-field>
 
+                                <v-text-field
+                                              v-model="form.email"
+                                              name="email"
+                                              label="店舗メールアドレス *"
+                                              type="email"
+                                              required
+                                              :rules="[rules.required]"
+                                              hint="予約完了／キャンセル時に、予約システムから送信される確認メールの受信先を指定してください。"
+                                              persistent-hint></v-text-field>
+
                                 <v-select
                                           v-model="form.time_slot_interval"
                                           name="time_slot_interval"
@@ -51,17 +61,6 @@
                                           required
                                           :rules="[rules.required]"></v-select>
 
-                                <v-radio-group
-                                               v-model="form.booking_confirmation_type"
-                                               name="booking_confirmation_type"
-                                               required
-                                               :rules="[rules.required]">
-                                    <template v-slot:label>
-                                        <div>予約承認方法 *</div>
-                                    </template>
-                                    <v-radio label="自動承認" value="automatic"></v-radio>
-                                    <v-radio label="手動承認" value="manual"></v-radio>
-                                </v-radio-group>
 
                                 <v-radio-group v-model="form.accepts_online_bookings" name="accepts_online_bookings"
                                                required :rules="[rules.required]">
@@ -75,17 +74,22 @@
                                 <v-text-field v-model="form.timezone" label="タイムゾーン" readonly disabled></v-text-field>
 
                                 <v-text-field v-model.number="form.cancellation_deadline_minutes
-                                    "
-                                              @update:model-value="form.cancellation_deadline_minutes = formatNumericInput($event) as any"
-                                              name="cancellation_deadline_minutes" label="キャンセル期限（分前） *" required
-                                              :rules="[rules.required, rules.numeric]"
-                                              inputmode="numeric"></v-text-field>
+                                    " @update:model-value="
+                                        form.cancellation_deadline_minutes =
+                                        formatNumericInput($event) as any
+                                        " name="cancellation_deadline_minutes" label="キャンセル期限（分前） *" required
+                                              :rules="[rules.required, rules.numeric]" inputmode="numeric"
+                                              hint="予約の何分前までお客様によるキャンセルを許可するか設定します。(例: 1440 分 = 24 時間前)"
+                                              persistent-hint></v-text-field>
 
-                                <v-text-field v-model.number="form.booking_deadline_minutes"
-                                              @update:model-value="form.booking_deadline_minutes = formatNumericInput($event) as any"
-                                              name="booking_deadline_minutes" label="予約締切（分前） *" required
-                                              :rules="[rules.required, rules.numeric]"
-                                              inputmode="numeric"></v-text-field>
+                                <v-text-field v-model.number="form.booking_deadline_minutes
+                                    " @update:model-value="
+                                        form.booking_deadline_minutes =
+                                        formatNumericInput($event) as any
+                                        " name="booking_deadline_minutes" label="予約締切（分前） *" required
+                                              :rules="[rules.required, rules.numeric]" inputmode="numeric"
+                                              hint="予約の何分前でオンライン予約の受付を締め切るか設定します。(0 は直前まで許可)"
+                                              persistent-hint></v-text-field>
 
                                 <v-card-actions>
                                     <v-btn color="error" @click="deleteDialog = true">削除する</v-btn>
@@ -137,6 +141,7 @@ import { formatNumericInput } from "@/composables/useNumericInput";
 interface Shop {
     name: string;
     slug: string;
+    email: string;
     time_slot_interval: number;
     booking_confirmation_type: string;
     accepts_online_bookings: boolean;
@@ -155,8 +160,8 @@ const props = defineProps<{
 const form = ref({
     name: "",
     slug: "",
+    email: "",
     time_slot_interval: 30,
-    booking_confirmation_type: "automatic",
     accepts_online_bookings: 1,
     timezone: "Asia/Tokyo",
     cancellation_deadline_minutes: 1440,
@@ -171,9 +176,8 @@ onMounted(() => {
 
     form.value.name = source.name ?? "";
     form.value.slug = props.shop.slug; // slug is readonly
+    form.value.email = source.email ?? "";
     form.value.time_slot_interval = source.time_slot_interval ?? 30;
-    form.value.booking_confirmation_type =
-        source.booking_confirmation_type ?? "automatic";
     form.value.accepts_online_bookings = source.hasOwnProperty(
         "accepts_online_bookings"
     )
@@ -204,9 +208,8 @@ const rules = {
 
 const isFormValid = computed(() => {
     const nameValid = rules.required(form.value.name) === true;
+    const emailValid = rules.required(form.value.email) === true;
     const intervalValid = rules.required(form.value.time_slot_interval) === true;
-    const confirmationValid =
-        rules.required(form.value.booking_confirmation_type) === true;
     const acceptsValid =
         rules.required(form.value.accepts_online_bookings) === true;
 
@@ -220,8 +223,7 @@ const isFormValid = computed(() => {
 
     return (
         nameValid &&
-        intervalValid &&
-        confirmationValid &&
+        emailValid &&
         acceptsValid &&
         cancelValid &&
         bookingValid

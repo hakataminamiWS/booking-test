@@ -7,6 +7,9 @@
         $props = [
             'shop' => $shop,
             'errors' => $errors->all(),
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div id="app" data-page="owner/shops/bookers/Index" data-props="{{ json_encode($props) }}"></div>

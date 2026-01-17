@@ -8,6 +8,9 @@
             'shop' => $shop,
             'currentStaffId' => $staff->id,
             'csrfToken' => csrf_token(),
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div id="app" data-page="staff/staffs/Index" data-props="{{ json_encode($props) }}"></div>

@@ -9,6 +9,9 @@
             'csrfToken' => csrf_token(),
             'errors' => $errors->all(),
             'oldInput' => session()->getOldInput(),
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div

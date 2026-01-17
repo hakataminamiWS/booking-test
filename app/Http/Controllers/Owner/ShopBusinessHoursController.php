@@ -15,7 +15,7 @@ class ShopBusinessHoursController extends Controller
 
     public function index(Shop $shop)
     {
-        $this->authorize('view', $shop);
+
 
         $businessHours = [];
         for ($i = 0; $i < 7; $i++) {
@@ -48,7 +48,7 @@ class ShopBusinessHoursController extends Controller
      */
     public function edit(Shop $shop)
     {
-        $this->authorize('update', $shop);
+
 
         $businessHours = [];
         for ($i = 0; $i < 7; $i++) {
@@ -66,7 +66,7 @@ class ShopBusinessHoursController extends Controller
      */
     public function update(UpdateShopBusinessHoursRequest $request, Shop $shop)
     {
-        $this->authorize('update', $shop);
+
 
         $validated = $request->validated();
 

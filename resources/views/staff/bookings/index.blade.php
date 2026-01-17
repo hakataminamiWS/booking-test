@@ -8,6 +8,9 @@
             'shop' => $shop,
             'menus' => $menus,
             'staffs' => $staffs,
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div

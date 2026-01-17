@@ -18,7 +18,7 @@ class ShopOptionController extends Controller
      */
     public function index(Shop $shop)
     {
-        $this->authorize('view', $shop);
+
 
         return view('owner.shops.options.index', compact('shop'));
     }
@@ -28,7 +28,7 @@ class ShopOptionController extends Controller
      */
     public function create(Shop $shop)
     {
-        $this->authorize('update', $shop);
+
 
         return view('owner.shops.options.create', compact('shop'));
     }
@@ -51,7 +51,7 @@ class ShopOptionController extends Controller
      */
     public function edit(Shop $shop, ShopOption $option)
     {
-        $this->authorize('update', $option);
+
 
         return view('owner.shops.options.edit', compact('shop', 'option'));
     }
@@ -74,7 +74,7 @@ class ShopOptionController extends Controller
      */
     public function destroy(Shop $shop, ShopOption $option)
     {
-        $this->authorize('delete', $option);
+
 
         $option->delete();
 

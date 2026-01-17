@@ -45,6 +45,7 @@ class ShopsController extends Controller
 
         $validated = $request->validated();
         $validated['owner_user_id'] = auth()->id();
+        $validated['booking_confirmation_type'] = 'automatic';
 
         Shop::create($validated);
 
@@ -57,7 +58,7 @@ class ShopsController extends Controller
      */
     public function show(Shop $shop) // ルートモデルバインディング
     {
-        $this->authorize('view', $shop);
+
 
         return view('owner.shops.show', compact('shop'));
     }
@@ -67,7 +68,7 @@ class ShopsController extends Controller
      */
     public function edit(Shop $shop)
     {
-        $this->authorize('update', $shop);
+
 
         return view('owner.shops.edit', compact('shop'));
     }
@@ -77,7 +78,9 @@ class ShopsController extends Controller
      */
         public function update(UpdateShopRequest $request, Shop $shop)
         {
-            $shop->update($request->validated());
+            $validated = $request->validated();
+            $validated['booking_confirmation_type'] = 'automatic';
+            $shop->update($validated);
     
             return redirect()->route('owner.shops.show', $shop)
                              ->with('success', '店舗情報を更新しました。');
@@ -88,7 +91,7 @@ class ShopsController extends Controller
          */
         public function destroy(Shop $shop)
         {
-            $this->authorize('delete', $shop);
+
     
             $shop->delete();
     

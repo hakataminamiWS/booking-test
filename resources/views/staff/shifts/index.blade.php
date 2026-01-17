@@ -10,6 +10,9 @@
             'staffs' => $allStaffs,
             'weeksWithShiftStatus' => $weeksWithShiftStatus,
             'currentStaffId' => $currentStaffId,
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div id="app" data-page="staff/shops/shifts/Index" data-props="{{ json_encode($props) }}">

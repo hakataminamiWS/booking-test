@@ -19,7 +19,7 @@ class ShopMenuController extends Controller
      */
     public function index(Shop $shop)
     {
-        $this->authorize('view', $shop);
+
 
         return view('owner.shops.menus.index', compact('shop'));
     }
@@ -29,7 +29,7 @@ class ShopMenuController extends Controller
      */
     public function create(Shop $shop)
     {
-        $this->authorize('update', $shop);
+
 
         $staffs = $shop->staffs()->with('profile')->get();
         $options = $shop->options;
@@ -69,7 +69,7 @@ class ShopMenuController extends Controller
      */
     public function edit(Shop $shop, ShopMenu $menu)
     {
-        $this->authorize('update', $menu);
+
 
         $menu->load('staffs', 'options');
         $staffs = $shop->staffs()->with('profile')->get();
@@ -104,7 +104,7 @@ class ShopMenuController extends Controller
      */
     public function destroy(Shop $shop, ShopMenu $menu)
     {
-        $this->authorize('delete', $menu);
+
 
         $menu->delete();
 

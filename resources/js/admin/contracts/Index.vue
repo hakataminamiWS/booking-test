@@ -9,6 +9,7 @@
                     </v-card-title>
 
                     <v-card-text>
+                        <FlashMessage />
                         <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
                         <v-row class="align-center mb-2" dense>
                             <!-- Filter Button -->
@@ -95,6 +96,12 @@
                                 }}
                             </template>
 
+                            <template v-slot:item.status="{ item }">
+                                <v-chip :color="getContractStatusColor(item.status)" size="small">
+                                    {{ getContractStatusText(item.status) }}
+                                </v-chip>
+                            </template>
+
                             <template v-slot:item.actions="{ item }">
                                 <v-btn
                                        color="primary"
@@ -124,7 +131,9 @@
                                           label="値" dense
                                           hide-details></v-text-field>
                             <v-select v-if="getColumnType(filter.column) === 'select'" v-model="filter.value"
-                                      :items="getColumnItems(filter.column)" label="値" dense hide-details></v-select>
+                                      :items="getColumnItems(filter.column)" item-title="title" item-value="value"
+                                      label="値" dense
+                                      hide-details></v-select>
                             <v-text-field v-if="getColumnType(filter.column) === 'date'" v-model="filter.value"
                                           label="値"
                                           type="date" dense hide-details></v-text-field>
@@ -179,6 +188,10 @@ import { ref, computed } from "vue";
 import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
+import FlashMessage from "@/components/common/FlashMessage.vue";
+import { useContractStatus } from "@/composables/useContractStatus";
+
+const { getContractStatusText, getContractStatusColor } = useContractStatus();
 
 const { smAndDown } = useDisplay();
 
@@ -215,7 +228,11 @@ const filterableColumns = ref([
         text: "ステータス",
         value: "status",
         type: "select",
-        items: ["active", "expired"],
+        items: [
+            { title: getContractStatusText("active"), value: "active" },
+            { title: getContractStatusText("expired"), value: "expired" },
+            { title: getContractStatusText("cancelled"), value: "cancelled" },
+        ],
     },
     { text: "契約開始日 (以降)", value: "start_date_after", type: "date" },
     { text: "契約開始日 (以前)", value: "start_date_before", type: "date" },
@@ -258,10 +275,18 @@ const activeFiltersText = computed(() => {
         const column = filterableColumns.value.find(
             (c) => c.value === f.column
         );
+        let displayValue = f.value;
+        if (column && column.type === 'select' && column.items) {
+            const item = column.items.find((i: any) => i.value === f.value);
+            if (item) {
+                displayValue = item.title;
+            }
+        }
+
         return {
             id: f.id,
             text: column ? column.text : "",
-            value: f.value,
+            value: displayValue,
         };
     });
 });

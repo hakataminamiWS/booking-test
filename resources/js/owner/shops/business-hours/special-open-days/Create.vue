@@ -51,6 +51,7 @@
                                               label="開始時刻 *"
                                               type="time"
                                               required
+                                              style="max-width: 200px; min-width: 180px;"
                                               append-inner-icon="mdi-clock-outline"
                                               @click:append-inner="openDialog('start_time')"></v-text-field>
 
@@ -61,6 +62,7 @@
                                               type="time"
                                               required
                                               :error-messages="form.endTimeError"
+                                              style="max-width: 200px; min-width: 180px;"
                                               append-inner-icon="mdi-clock-outline"
                                               @click:append-inner="openDialog('end_time')"></v-text-field>
 

@@ -94,6 +94,9 @@
 
         <!-- Main Content -->
         <v-main>
+            <v-container class="py-2">
+                <FlashMessage />
+            </v-container>
             <slot></slot>
         </v-main>
     </v-app>
@@ -101,6 +104,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import FlashMessage from "@/components/common/FlashMessage.vue";
 
 interface Shop {
     name: string;
@@ -110,6 +114,7 @@ interface Shop {
 defineProps<{
     shop: Shop;
     currentPage?: string;
+    // flash props are provided globally now
 }>();
 
 const drawer = ref(true);

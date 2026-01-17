@@ -4,7 +4,11 @@
 
 @section('content')
     @php
-        $props = ['contract' => $contract];
+        $props = ['contract' => $contract,
+            'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
+        ];
     @endphp
     <div
         id="app"

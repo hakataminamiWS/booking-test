@@ -101,8 +101,8 @@
                                                                              :title="item.raw.profile?.nickname">
                                                                     <template v-slot:prepend>
                                                                         <v-avatar size="40">
-                                                                            <v-img v-if="item.raw.profile?.small_image_url"
-                                                                                   :src="item.raw.profile?.small_image_url" />
+                                                                            <v-img v-if="item.raw.profile?.image_url"
+                                                                                   :src="item.raw.profile?.image_url" />
                                                                             <v-icon v-else>mdi-account</v-icon>
                                                                         </v-avatar>
                                                                     </template>
@@ -110,8 +110,8 @@
                                                             </template>
                                                             <template v-slot:selection="{ item }">
                                                                 <v-avatar size="32" class="mr-2">
-                                                                    <v-img v-if="item.raw.profile?.small_image_url"
-                                                                           :src="item.raw.profile?.small_image_url" />
+                                                                    <v-img v-if="item.raw.profile?.image_url"
+                                                                           :src="item.raw.profile?.image_url" />
                                                                     <v-icon v-else size="small">mdi-account</v-icon>
                                                                 </v-avatar>
                                                                 {{ item.raw.profile?.nickname }}
@@ -209,11 +209,11 @@
 
                                                         <!-- 直接入力（シフト外選択可能時のみ表示） -->
                                                         <v-text-field v-if="allowOffShift" v-model="directTimeInput"
-                                                                      hide-details
-                                                                      label="シフト外の時間を直接入力" readonly
+                                                                      hide-details label="開始時間を直接入力"
+                                                                      type="time"
+                                                                      style="max-width: 200px; min-width: 180px;"
                                                                       append-inner-icon="mdi-clock-edit-outline"
                                                                       class="mt-2"
-                                                                      @click="timePickerDialog = true"
                                                                       @click:append-inner="timePickerDialog = true">
                                                         </v-text-field>
                                                     </v-card-text>
@@ -373,7 +373,8 @@
                                                       label="連絡先メールアドレス *" type="email" required>
                                         </v-text-field>
                                         <v-text-field v-model="form.contact_phone" name="contact_phone"
-                                                      label="連絡先電話番号 *" type="tel" required>
+                                                      label="連絡先電話番号 *" type="tel" required
+                                                      @blur="form.contact_phone = formatPhoneNumber(form.contact_phone)">
                                         </v-text-field>
                                         <v-textarea v-model="form.shop_memo" name="shop_memo"
                                                     label="店舗側のメモ（予約者には表示されません）" rows="3">
@@ -475,7 +476,7 @@
                                                  :subtitle="`${booker.contact_email || 'メール未登録'
                                                     } / ${booker.contact_phone || '電話番号未登録'
                                                     }`" :active="selectedBookerInDialog === booker.id
-                                                            " @click="selectedBookerInDialog = booker.id">
+                                                        " @click="selectedBookerInDialog = booker.id">
                                         <template v-slot:prepend>
                                             <v-avatar color="grey-lighten-1">
                                                 <v-icon color="white">mdi-account</v-icon>
@@ -541,6 +542,7 @@ import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
 import StaffLayout from "@/components/staff/StaffLayout.vue";
 import BookingStickyFooter from "@/components/common/BookingStickyFooter.vue";
+import { formatPhoneNumber } from "@/composables/usePhoneInput";
 
 // --- 型定義 ---
 interface BusinessHour {
@@ -588,7 +590,7 @@ interface Staff {
     id: number;
     profile: {
         nickname: string;
-        small_image_url: string | null;
+        image_url: string | null;
     };
     schedules: StaffSchedule[];
 }

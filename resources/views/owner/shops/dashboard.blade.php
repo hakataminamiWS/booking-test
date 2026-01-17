@@ -10,5 +10,8 @@
         'shifts' => $shifts,
         'summary' => $summary,
         'nextArrivalId' => $next_arrival_id,
+        'flashSuccess' => session('success'),
+        'flashError' => session('error'),
+        'flashStatus' => session('status'),
     ]) }}"></div>
 @endsection

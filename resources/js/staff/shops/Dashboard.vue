@@ -51,7 +51,8 @@
                                             :link="isCurrentStaff(staff.id)"
                                             :href="isCurrentStaff(staff.id) ? `/shops/${shop.slug}/staff/shifts/edit` : undefined">
                                         {{ staff.name }}
-                                        <v-icon v-if="isCurrentStaff(staff.id)" end size="small">mdi-arrow-right</v-icon>
+                                        <v-icon v-if="isCurrentStaff(staff.id)" end
+                                                size="small">mdi-arrow-right</v-icon>
                                     </v-chip>
                                 </v-chip-group>
                             </div>
@@ -141,6 +142,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useDisplay } from "vuetify";
+import { useBookingStatus } from "@/composables/useBookingStatus";
+
+const { getStatusText, getStatusColor } = useBookingStatus();
 import StaffLayout from '@/components/staff/StaffLayout.vue';
 
 interface Shop {
@@ -215,24 +220,7 @@ const getDotColor = (booking: Booking) => {
     return 'secondary';
 };
 
-const getStatusText = (status: string) => {
-    const map: Record<string, string> = {
-        confirmed: '確定',
-        visited: '来店済',
-        cancelled: 'キャンセル',
-        completed: '完了',
-    };
-    return map[status] || status;
-};
 
-const getStatusColor = (status: string) => {
-    const map: Record<string, string> = {
-        confirmed: 'success',
-        visited: 'grey',
-        cancelled: 'error',
-    };
-    return map[status] || 'grey';
-};
 
 </script>
 

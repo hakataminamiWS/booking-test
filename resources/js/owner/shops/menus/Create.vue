@@ -35,7 +35,8 @@
                                               :rules="[rules.required]"
                                               hint="お客様に表示されるメニューの正式名称を入力します。"
                                               persistent-hint
-                                              class="mb-4"></v-text-field>
+                                              class="mb-4">
+                                </v-text-field>
 
                                 <v-text-field
                                               v-model="formData.price"
@@ -80,33 +81,36 @@
                                           hint="このメニューの予約時に、担当スタッフの選択を必須にするかどうかを設定します。"
                                           persistent-hint
                                           inset
-                                          color="primary"></v-switch>
+                                          color="primary"
+                                          @update:model-value="(val) => { if (val === 0) formData.staff_ids = []; }"></v-switch>
                                 <input
                                        type="hidden"
                                        name="requires_staff_assignment"
                                        :value="formData.requires_staff_assignment ? 1 : 0
                                         " />
 
-                                <v-select
-                                          v-model="formData.staff_ids"
-                                          :items="props.staffs"
-                                          item-title="profile.nickname"
-                                          item-value="id"
-                                          label="担当スタッフ"
-                                          multiple
-                                          chips
-                                          closable-chips
-                                          hint="このメニューを担当できるスタッフをすべて選択してください。"
-                                          persistent-hint
-                                          class="mb-4"></v-select>
+                                <template v-if="formData.requires_staff_assignment">
+                                    <v-select
+                                              v-model="formData.staff_ids"
+                                              :items="props.staffs"
+                                              item-title="profile.nickname"
+                                              item-value="id"
+                                              label="担当スタッフ"
+                                              multiple
+                                              chips
+                                              closable-chips
+                                              hint="このメニューを担当できるスタッフをすべて選択してください。"
+                                              persistent-hint
+                                              class="mb-4"></v-select>
 
-                                <template
-                                          v-for="staffId in formData.staff_ids"
-                                          :key="staffId">
-                                    <input
-                                           type="hidden"
-                                           name="staff_ids[]"
-                                           :value="staffId" />
+                                    <template
+                                              v-for="staffId in formData.staff_ids"
+                                              :key="staffId">
+                                        <input
+                                               type="hidden"
+                                               name="staff_ids[]"
+                                               :value="staffId" />
+                                    </template>
                                 </template>
 
                                 <v-select v-model="formData.option_ids" :items="props.options" item-title="name"
@@ -123,8 +127,8 @@
 
                                 <v-switch v-model="formData.requires_cancellation_deadline
                                     " :true-value="1" :false-value="0" name="requires_cancellation_deadline"
-                                          label="特別なキャンセル期限" hint="店舗の基本設定とは異なるキャンセル期限を設定する場合にオンにします。" persistent-hint
-                                          inset color="primary"></v-switch>
+                                          label="特別なキャンセル期限" hint="店舗の基本設定とは異なるキャンセル期限を設定する場合にオンにします。" inset
+                                          color="primary"></v-switch>
                                 <input type="hidden" name="requires_cancellation_deadline" :value="formData.requires_cancellation_deadline
                                     ? 1
                                     : 0

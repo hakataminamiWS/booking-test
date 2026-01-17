@@ -15,8 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('shop_staff_id')->unique()->constrained('shop_staffs')->onDelete('cascade');
             $table->string('nickname');
-            $table->string('small_image_url')->nullable();
-            $table->string('large_image_url')->nullable();
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }

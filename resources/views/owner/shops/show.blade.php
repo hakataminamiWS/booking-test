@@ -6,6 +6,9 @@
     @php
         $props = [
             'shop' => $shop,
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div

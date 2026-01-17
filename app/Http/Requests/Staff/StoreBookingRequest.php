@@ -32,7 +32,7 @@ class StoreBookingRequest extends FormRequest
             'shop_booker_id' => ['nullable', 'exists:shop_bookers,id'],
             'booker_name' => ['required', 'string', 'max:255'],
             'contact_email' => ['required', 'email', 'max:255'],
-            'contact_phone' => ['required', 'string', 'max:255'],
+            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9-]+$/'],
             'note_from_booker' => ['nullable', 'string'],
             'shop_memo' => ['nullable', 'string'],
         ];

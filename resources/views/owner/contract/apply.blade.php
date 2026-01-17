@@ -7,6 +7,9 @@
         $props['errors'] = $errors->all();
         $props['userId'] = $props['userId'] ?? null; // userId を追加
         $props['email'] = $props['email'] ?? null; // email を追加
+        $props['flashSuccess'] = session('success');
+        $props['flashError'] = session('error');
+        $props['flashStatus'] = session('status');
     @endphp
     <div id="app" data-page="owner/contract/Apply" data-props="{{ json_encode($props) }}"></div>
 @endsection

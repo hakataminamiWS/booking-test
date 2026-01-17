@@ -38,7 +38,7 @@ class StoreShopBookerRequest extends FormRequest
                     return $query->where('shop_id', $shopId);
                 }),
             ],
-            'contact_phone' => ['required', 'string', 'max:20'],
+            'contact_phone' => ['required', 'string', 'max:20', 'regex:/^[0-9-]+$/'],
             'note_from_booker' => ['nullable', 'string'],
             'shop_memo' => ['nullable', 'string'],
             'last_booking_at' => ['nullable', 'date_format:Y-m-d'],

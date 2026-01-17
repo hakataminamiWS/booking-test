@@ -6,6 +6,8 @@
             </v-col>
         </v-row>
 
+        <FlashMessage />
+
         <v-row>
             <v-col cols="12" class="text-center py-8">
                 <h2 class="text-h5 font-weight-bold mb-2">ご予約へ進む</h2>
@@ -52,6 +54,7 @@
 
 <script setup lang="ts">
 import ShopHeader from "@/components/common/ShopHeader.vue";
+import FlashMessage from "@/components/common/FlashMessage.vue";
 
 interface Shop {
     name: string;

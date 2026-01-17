@@ -1,104 +1,87 @@
 <template>
-    <v-container class="container-width-600">
-        <v-row>
-            <v-col cols="12">
-                <v-btn
-                       :href="`/shops/${shop.slug}/booker`"
-                       prepend-icon="mdi-arrow-left"
-                       variant="text">
-                    マイページへ戻る
-                </v-btn>
-            </v-col>
-        </v-row>
+    <BookerLayout :shop="shop" :backLink="`/shops/${shop.slug}/booker`" backLabel="マイページ">
+        <v-container class="container-width-600">
 
-        <v-row>
-            <v-col cols="12">
-                <ShopHeader :shop="shop" />
-            </v-col>
-        </v-row>
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title>プロフィール編集</v-card-title>
+                        <v-card-text>
+                            <FlashMessage />
 
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>プロフィール編集</v-card-title>
-                    <v-card-text>
-                        <v-alert
-                                 v-if="props.successMessage"
-                                 type="success"
-                                 class="mb-4">
-                            {{ props.successMessage }}
-                        </v-alert>
+                            <v-alert
+                                     v-if="props.errors.length > 0"
+                                     type="error"
+                                     class="mb-4">
+                                <ul>
+                                    <li v-for="error in props.errors" :key="error">{{ error }}</li>
+                                </ul>
+                            </v-alert>
 
-                        <v-alert
-                                 v-if="props.errors.length > 0"
-                                 type="error"
-                                 class="mb-4">
-                            <ul>
-                                <li v-for="error in props.errors" :key="error">{{ error }}</li>
-                            </ul>
-                        </v-alert>
+                            <form
+                                  id="form"
+                                  :action="formActionUrl"
+                                  method="POST">
+                                <input
+                                       type="hidden"
+                                       name="_token"
+                                       :value="props.csrfToken" />
+                                <input type="hidden" name="_method" value="PUT" />
 
-                        <form
-                              id="form"
-                              :action="formActionUrl"
-                              method="POST">
-                            <input
-                                   type="hidden"
-                                   name="_token"
-                                   :value="props.csrfToken" />
-                            <input type="hidden" name="_method" value="PUT" />
+                                <v-text-field
+                                              :model-value="props.booker.number"
+                                              label="会員番号（変更不可）"
+                                              readonly
+                                              variant="filled"></v-text-field>
 
-                            <v-text-field
-                                          :model-value="props.booker.number"
-                                          label="会員番号"
-                                          readonly
-                                          variant="filled"></v-text-field>
+                                <v-text-field
+                                              v-model="form.name"
+                                              name="name"
+                                              label="お名前 *"
+                                              required
+                                              :rules="[rules.required, rules.maxLength(255)]"></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.name"
-                                          name="name"
-                                          label="お名前 *"
-                                          required
-                                          :rules="[rules.required, rules.maxLength(255)]"></v-text-field>
+                                <v-textarea
+                                            v-model="form.note_from_booker"
+                                            name="note_from_booker"
+                                            label="店舗へのメモ"
+                                            rows="3"></v-textarea>
 
-                            <v-textarea
-                                        v-model="form.note_from_booker"
-                                        name="note_from_booker"
-                                        label="店舗へのメモ"
-                                        rows="3"></v-textarea>
+                                <v-text-field
+                                              v-model="form.contact_email"
+                                              name="contact_email"
+                                              label="連絡先メールアドレス *"
+                                              type="email"
+                                              :rules="[rules.required, rules.email]"></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.contact_email"
-                                          name="contact_email"
-                                          label="連絡先メールアドレス *"
-                                          type="email"
-                                          :rules="[rules.required, rules.email]"></v-text-field>
+                                <v-text-field
+                                              v-model="form.contact_phone"
+                                              name="contact_phone"
+                                              label="連絡先電話番号 *"
+                                              :rules="[rules.required, rules.maxLength(20)]"
+                                              @blur="form.contact_phone = formatPhoneNumber(form.contact_phone)"></v-text-field>
 
-                            <v-text-field
-                                          v-model="form.contact_phone"
-                                          name="contact_phone"
-                                          label="連絡先電話番号 *"
-                                          :rules="[rules.required, rules.maxLength(20)]"></v-text-field>
+                                <p class="text-caption text-grey">※メールアドレスと電話番号の両方が必須です。</p>
+                            </form>
+                        </v-card-text>
 
-                            <p class="text-caption text-grey">※メールアドレスと電話番号の両方が必須です。</p>
-                        </form>
-                    </v-card-text>
-
-                    <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn form="form" color="primary" type="submit" :disabled="!isFormValid">
-                            更新する
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn form="form" color="primary" type="submit" :disabled="!isFormValid">
+                                更新する
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </BookerLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import ShopHeader from "@/components/common/ShopHeader.vue";
+import { formatPhoneNumber } from "@/composables/usePhoneInput";
+import BookerLayout from "@/components/booker/BookerLayout.vue";
 
 interface Shop {
     name: string;
@@ -120,7 +103,7 @@ const props = defineProps<{
     errors: string[];
     oldInput: { [key: string]: any } | null;
     csrfToken: string;
-    successMessage: string | null;
+
 }>();
 
 const formActionUrl = computed(

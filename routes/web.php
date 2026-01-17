@@ -26,9 +26,10 @@ Route::get('/', function () {
     Route::get('/shops/{shop:slug}', [App\Http\Controllers\ShopEntryController::class, 'show'])->name('shop.entry');
 
     // --- Guest Booking Routes ---
-    Route::prefix('shops/{shop:slug}/guest')->name('guest.')->group(function () {
+    Route::prefix('shops/{shop:slug}/guest')->name('guest.')->middleware('expire.pending')->scopeBindings()->group(function () {
     Route::get('/bookings/create', [App\Http\Controllers\Guest\BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [App\Http\Controllers\Guest\BookingController::class, 'store'])->name('bookings.store');
+    Route::get('/bookings/{booking}/provisional', [App\Http\Controllers\Guest\BookingController::class, 'provisional'])->name('bookings.provisional');
     Route::get('/bookings/{booking}/complete', [App\Http\Controllers\Guest\BookingController::class, 'complete'])->name('bookings.complete');
 
     // Guest API Routes
@@ -49,6 +50,15 @@ Route::get('/', function () {
 // ==============================================================================
 
 Route::middleware('auth')->group(function () {
+
+    // --- Logout Route ---
+    Route::post('/logout', function (\Illuminate\Http\Request $request) {
+        $redirectTo = $request->input('redirect_to', '/');
+        \Illuminate\Support\Facades\Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect($redirectTo);
+    })->name('logout');
 
     // --- Admin Routes ---
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
@@ -73,98 +83,108 @@ Route::middleware('auth')->group(function () {
         Route::get('/shops', [App\Http\Controllers\Owner\ShopsController::class, 'index'])->name('shops.index');
         Route::get('/shops/create', [App\Http\Controllers\Owner\ShopsController::class, 'create'])->name('shops.create');
         Route::post('/shops', [App\Http\Controllers\Owner\ShopsController::class, 'store'])->name('shops.store');
-        Route::get('/shops/{shop:slug}/dashboard', [App\Http\Controllers\Owner\ShopDashboardController::class, 'index'])->name('shops.dashboard');
-        Route::get('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'show'])->name('shops.show');
-        Route::get('/shops/{shop:slug}/edit', [App\Http\Controllers\Owner\ShopsController::class, 'edit'])->name('shops.edit');
-        Route::put('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'update'])->name('shops.update');
-        Route::delete('/shops/{shop:slug}', [App\Http\Controllers\Owner\ShopsController::class, 'destroy'])->name('shops.destroy');
-        Route::get('/shops/{shop:slug}/business-hours', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'index'])->name('shops.business-hours.index');
-        Route::get('/shops/{shop:slug}/business-hours/regular/edit', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'edit'])->name('shops.business-hours.regular.edit');
-        Route::put('/shops/{shop:slug}/business-hours/regular', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'update'])->name('shops.business-hours.regular.update');
-        Route::get('/shops/{shop:slug}/business-hours/special-open-days/create', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'create'])->name('shops.business-hours.special-open-days.create');
-        Route::post('/shops/{shop:slug}/business-hours/special-open-days', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'store'])->name('shops.business-hours.special-open-days.store');
-        Route::get('/shops/{shop:slug}/business-hours/special-open-days/{special_open_day}/edit', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'edit'])->name('shops.business-hours.special-open-days.edit');
-        Route::put('/shops/{shop:slug}/business-hours/special-open-days/{special_open_day}', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'update'])->name('shops.business-hours.special-open-days.update');
-        Route::get('/shops/{shop:slug}/business-hours/special-closed-days/create', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'create'])->name('shops.business-hours.special-closed-days.create');
-        Route::post('/shops/{shop:slug}/business-hours/special-closed-days', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'store'])->name('shops.business-hours.special-closed-days.store');
-        Route::get('/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}/edit', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'edit'])->name('shops.business-hours.special-closed-days.edit');
-        Route::put('/shops/{shop:slug}/business-hours/special-closed-days/{special_closed_day}', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'update'])->name('shops.business-hours.special-closed-days.update');
 
-        Route::get('/shops/{shop:slug}/staff-applications', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'index'])->name('shops.staff-applications.index');
-        Route::put('/shops/{shop:slug}/staff-applications/{staff_application}/approve', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'approve'])->name('shops.staff-applications.approve');
-        Route::put('/shops/{shop:slug}/staff-applications/{staff_application}/reject', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'reject'])->name('shops.staff-applications.reject');
+        // Shop Specific Routes (Authorized)
+        Route::prefix('shops/{shop:slug}')->middleware('can:view,shop')->scopeBindings()->group(function () {
+            Route::get('/dashboard', [App\Http\Controllers\Owner\ShopDashboardController::class, 'index'])->name('shops.dashboard');
+            Route::get('/', [App\Http\Controllers\Owner\ShopsController::class, 'show'])->name('shops.show');
+            Route::get('/edit', [App\Http\Controllers\Owner\ShopsController::class, 'edit'])->name('shops.edit');
+            Route::put('/', [App\Http\Controllers\Owner\ShopsController::class, 'update'])->name('shops.update');
+            Route::delete('/', [App\Http\Controllers\Owner\ShopsController::class, 'destroy'])->name('shops.destroy');
+            Route::get('/business-hours', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'index'])->name('shops.business-hours.index');
+            Route::get('/business-hours/regular/edit', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'edit'])->name('shops.business-hours.regular.edit');
+            Route::put('/business-hours/regular', [App\Http\Controllers\Owner\ShopBusinessHoursController::class, 'update'])->name('shops.business-hours.regular.update');
+            Route::get('/business-hours/special-open-days/create', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'create'])->name('shops.business-hours.special-open-days.create');
+            Route::post('/business-hours/special-open-days', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'store'])->name('shops.business-hours.special-open-days.store');
+            Route::get('/business-hours/special-open-days/{special_open_day}/edit', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'edit'])->name('shops.business-hours.special-open-days.edit');
+            Route::put('/business-hours/special-open-days/{special_open_day}', [App\Http\Controllers\Owner\ShopSpecialOpenDaysController::class, 'update'])->name('shops.business-hours.special-open-days.update');
+            Route::get('/business-hours/special-closed-days/create', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'create'])->name('shops.business-hours.special-closed-days.create');
+            Route::post('/business-hours/special-closed-days', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'store'])->name('shops.business-hours.special-closed-days.store');
+            Route::get('/business-hours/special-closed-days/{special_closed_day}/edit', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'edit'])->name('shops.business-hours.special-closed-days.edit');
+            Route::put('/business-hours/special-closed-days/{special_closed_day}', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'update'])->name('shops.business-hours.special-closed-days.update');
 
-        Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'index'])->name('shops.staffs.index');
-        Route::get('/shops/{shop:slug}/staffs/{staff}/edit', [App\Http\Controllers\Owner\ShopStaffController::class, 'edit'])->name('shops.staffs.edit');
-        Route::put('/shops/{shop:slug}/staffs/{staff}', [App\Http\Controllers\Owner\ShopStaffController::class, 'update'])->name('shops.staffs.update');
-        Route::get('/shops/{shop:slug}/staffs/create', [App\Http\Controllers\Owner\ShopStaffController::class, 'create'])->name('shops.staffs.create');
-        Route::post('/shops/{shop:slug}/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'store'])->name('shops.staffs.store');
+            Route::get('/staff-applications', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'index'])->name('shops.staff-applications.index');
+            Route::put('/staff-applications/{staff_application}/approve', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'approve'])->name('shops.staff-applications.approve');
+            Route::put('/staff-applications/{staff_application}/reject', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'reject'])->name('shops.staff-applications.reject');
 
-        // Shift Management
-        Route::get('/shops/{shop:slug}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'index'])->name('shops.shifts.index');
-        Route::get('/shops/{shop:slug}/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'edit'])->name('shops.staffs.shifts.edit');
-        Route::put('/shops/{shop:slug}/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'update'])->name('shops.staffs.shifts.update');
+            Route::get('/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'index'])->name('shops.staffs.index');
+            Route::get('/staffs/{staff}/edit', [App\Http\Controllers\Owner\ShopStaffController::class, 'edit'])->name('shops.staffs.edit');
+            Route::put('/staffs/{staff}', [App\Http\Controllers\Owner\ShopStaffController::class, 'update'])->name('shops.staffs.update');
+            Route::get('/staffs/create', [App\Http\Controllers\Owner\ShopStaffController::class, 'create'])->name('shops.staffs.create');
+            Route::post('/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'store'])->name('shops.staffs.store');
 
-        // Menu Management
-        Route::get('/shops/{shop:slug}/menus', [App\Http\Controllers\Owner\ShopMenuController::class, 'index'])->name('shops.menus.index');
-        Route::get('/shops/{shop:slug}/menus/create', [App\Http\Controllers\Owner\ShopMenuController::class, 'create'])->name('shops.menus.create');
-        Route::post('/shops/{shop:slug}/menus', [App\Http\Controllers\Owner\ShopMenuController::class, 'store'])->name('shops.menus.store');
-        Route::get('/shops/{shop:slug}/menus/{menu}/edit', [App\Http\Controllers\Owner\ShopMenuController::class, 'edit'])->name('shops.menus.edit');
-        Route::put('/shops/{shop:slug}/menus/{menu}', [App\Http\Controllers\Owner\ShopMenuController::class, 'update'])->name('shops.menus.update');
-        Route::delete('/shops/{shop:slug}/menus/{menu}', [App\Http\Controllers\Owner\ShopMenuController::class, 'destroy'])->name('shops.menus.destroy');
+            // Shift Management
+            Route::get('/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'index'])->name('shops.shifts.index');
+            Route::get('/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'edit'])->name('shops.staffs.shifts.edit');
+            Route::put('/staffs/{staff}/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'update'])->name('shops.staffs.shifts.update');
 
-        // Option Management
-        Route::get('/shops/{shop:slug}/options', [App\Http\Controllers\Owner\ShopOptionController::class, 'index'])->name('shops.options.index');
-        Route::get('/shops/{shop:slug}/options/create', [App\Http\Controllers\Owner\ShopOptionController::class, 'create'])->name('shops.options.create');
-        Route::post('/shops/{shop:slug}/options', [App\Http\Controllers\Owner\ShopOptionController::class, 'store'])->name('shops.options.store');
-        Route::get('/shops/{shop:slug}/options/{option}/edit', [App\Http\Controllers\Owner\ShopOptionController::class, 'edit'])->name('shops.options.edit');
-        Route::put('/shops/{shop:slug}/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'update'])->name('shops.options.update');
-        Route::delete('/shops/{shop:slug}/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'destroy'])->name('shops.options.destroy');
+            // Menu Management
+            Route::get('/menus', [App\Http\Controllers\Owner\ShopMenuController::class, 'index'])->name('shops.menus.index');
+            Route::get('/menus/create', [App\Http\Controllers\Owner\ShopMenuController::class, 'create'])->name('shops.menus.create');
+            Route::post('/menus', [App\Http\Controllers\Owner\ShopMenuController::class, 'store'])->name('shops.menus.store');
+            Route::get('/menus/{menu}/edit', [App\Http\Controllers\Owner\ShopMenuController::class, 'edit'])->name('shops.menus.edit');
+            Route::put('/menus/{menu}', [App\Http\Controllers\Owner\ShopMenuController::class, 'update'])->name('shops.menus.update');
+            Route::delete('/menus/{menu}', [App\Http\Controllers\Owner\ShopMenuController::class, 'destroy'])->name('shops.menus.destroy');
 
-        // Booking Management
-        Route::get('/shops/{shop:slug}/bookings', [App\Http\Controllers\Owner\BookingController::class, 'index'])->name('shops.bookings.index');
-        Route::get('/shops/{shop:slug}/bookings/create', [App\Http\Controllers\Owner\BookingController::class, 'create'])->name('shops.bookings.create');
-        Route::post('/shops/{shop:slug}/bookings', [App\Http\Controllers\Owner\BookingController::class, 'store'])->name('shops.bookings.store');
-        Route::get('/shops/{shop:slug}/bookings/{booking}/edit', [App\Http\Controllers\Owner\BookingController::class, 'edit'])->name('shops.bookings.edit');
-        Route::put('/shops/{shop:slug}/bookings/{booking}', [App\Http\Controllers\Owner\BookingController::class, 'update'])->name('shops.bookings.update');
-        Route::delete('/shops/{shop:slug}/bookings/{booking}', [App\Http\Controllers\Owner\BookingController::class, 'destroy'])->name('shops.bookings.destroy');
+            // Option Management
+            Route::get('/options', [App\Http\Controllers\Owner\ShopOptionController::class, 'index'])->name('shops.options.index');
+            Route::get('/options/create', [App\Http\Controllers\Owner\ShopOptionController::class, 'create'])->name('shops.options.create');
+            Route::post('/options', [App\Http\Controllers\Owner\ShopOptionController::class, 'store'])->name('shops.options.store');
+            Route::get('/options/{option}/edit', [App\Http\Controllers\Owner\ShopOptionController::class, 'edit'])->name('shops.options.edit');
+            Route::put('/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'update'])->name('shops.options.update');
+            Route::delete('/options/{option}', [App\Http\Controllers\Owner\ShopOptionController::class, 'destroy'])->name('shops.options.destroy');
 
-        // Booker Management
-        Route::get('/shops/{shop:slug}/bookers', [App\Http\Controllers\Owner\ShopBookerController::class, 'index'])->name('shops.bookers.index');
-        Route::get('/shops/{shop:slug}/bookers/create', [App\Http\Controllers\Owner\ShopBookerController::class, 'create'])->name('shops.bookers.create');
-        Route::post('/shops/{shop:slug}/bookers', [App\Http\Controllers\Owner\ShopBookerController::class, 'store'])->name('shops.bookers.store');
-        Route::get('/shops/{shop:slug}/bookers/{booker}/edit', [App\Http\Controllers\Owner\ShopBookerController::class, 'edit'])->name('shops.bookers.edit');
-        Route::put('/shops/{shop:slug}/bookers/{booker}', [App\Http\Controllers\Owner\ShopBookerController::class, 'update'])->name('shops.bookers.update');
+            // Booking Management
+            Route::get('/bookings', [App\Http\Controllers\Owner\BookingController::class, 'index'])->name('shops.bookings.index');
+            Route::get('/bookings/create', [App\Http\Controllers\Owner\BookingController::class, 'create'])->name('shops.bookings.create');
+            Route::post('/bookings', [App\Http\Controllers\Owner\BookingController::class, 'store'])->name('shops.bookings.store');
+            Route::get('/bookings/{booking}/edit', [App\Http\Controllers\Owner\BookingController::class, 'edit'])->name('shops.bookings.edit');
+            Route::put('/bookings/{booking}', [App\Http\Controllers\Owner\BookingController::class, 'update'])->name('shops.bookings.update');
+            Route::delete('/bookings/{booking}', [App\Http\Controllers\Owner\BookingController::class, 'destroy'])->name('shops.bookings.destroy');
 
+            // Booker Management
+            Route::get('/bookers', [App\Http\Controllers\Owner\ShopBookerController::class, 'index'])->name('shops.bookers.index');
+            Route::get('/bookers/create', [App\Http\Controllers\Owner\ShopBookerController::class, 'create'])->name('shops.bookers.create');
+            Route::post('/bookers', [App\Http\Controllers\Owner\ShopBookerController::class, 'store'])->name('shops.bookers.store');
+            Route::get('/bookers/{booker}/edit', [App\Http\Controllers\Owner\ShopBookerController::class, 'edit'])->name('shops.bookers.edit');
+            Route::put('/bookers/{booker}', [App\Http\Controllers\Owner\ShopBookerController::class, 'update'])->name('shops.bookers.update');
+        });
 
         // API
+        Route::prefix('api/shops/{shop:slug}')->name('api.shops.')->middleware('can:view,shop')->group(function () {
+             // API routes authorized
+             Route::get('/staff-applications', [App\Http\Controllers\Api\Owner\ShopStaffApplicationController::class, 'index'])->name('staff-applications.index');
+             Route::get('/staffs', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'index'])->name('staffs.index');
+             Route::get('/menus', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'index'])->name('menus.index');
+             Route::get('/menus/{menu}/staffs', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'staffs'])->name('menus.staffs');
+             Route::get('/options', [App\Http\Controllers\Api\Owner\ShopOptionController::class, 'index'])->name('options.index');
+             Route::get('/bookers', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'index'])->name('bookers.index');
+             Route::get('/bookers/{booker}/history', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'history'])->name('bookers.history');
+             Route::get('/bookings/validate-staff', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateStaff'])->name('bookings.validate-staff');
+             Route::get('/bookings/validate-shift', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateShift'])->name('bookings.validate-shift');
+             Route::get('/bookings/validate-conflict', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateConflict'])->name('bookings.validate-conflict');
+             Route::get('/staffs/{staff}/working-days', [App\Http\Controllers\Api\Owner\BookingController::class, 'getWorkingDays'])->name('staffs.working-days');
+             Route::get('/bookings', [App\Http\Controllers\Api\Owner\BookingController::class, 'index'])->name('bookings.index');
+             Route::get('/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Owner\TimeSlotController::class, 'index'])->name('staffs.timeslots.index'); // Fixed name locally collision if any
+             Route::get('/staffs/{staff}/schedule', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'getSchedule'])->name('staffs.schedule');
+        });
+        
+        // General Wrapper API
         Route::prefix('api')->name('api.')->group(function () {
             Route::get('/shops', [App\Http\Controllers\Api\Owner\ShopsController::class, 'index'])->name('shops.index');
             Route::get('/shops/validate-slug', [App\Http\Controllers\Api\Owner\ShopsController::class, 'validateSlug'])->name('shops.validate-slug');
-            Route::get('/shops/{shop:slug}/staff-applications', [App\Http\Controllers\Api\Owner\ShopStaffApplicationController::class, 'index'])->name('api.shops.staff-applications.index');
-            Route::get('/shops/{shop:slug}/staffs', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'index'])->name('api.shops.staffs.index');
-            Route::get('/shops/{shop:slug}/menus', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'index'])->name('api.shops.menus.index');
-            Route::get('/shops/{shop:slug}/menus/{menu}/staffs', [App\Http\Controllers\Api\Owner\ShopMenuController::class, 'staffs'])->name('api.shops.menus.staffs');
-            Route::get('/shops/{shop:slug}/options', [App\Http\Controllers\Api\Owner\ShopOptionController::class, 'index'])->name('api.shops.options.index');
-            Route::get('/shops/{shop:slug}/bookers', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'index'])->name('api.shops.bookers.index');
-            Route::get('/shops/{shop:slug}/bookers/{booker}/history', [App\Http\Controllers\Api\Owner\ShopBookerController::class, 'history'])->name('api.shops.bookers.history');
-            Route::get('/shops/{shop:slug}/bookings/validate-staff', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateStaff'])->name('api.shops.bookings.validate-staff');
-            Route::get('/shops/{shop:slug}/bookings/validate-shift', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateShift'])->name('api.shops.bookings.validate-shift');
-            Route::get('/shops/{shop:slug}/bookings/validate-conflict', [App\Http\Controllers\Api\Owner\BookingController::class, 'validateConflict'])->name('api.shops.bookings.validate-conflict');
-            Route::get('/shops/{shop:slug}/staffs/{staff}/working-days', [App\Http\Controllers\Api\Owner\BookingController::class, 'getWorkingDays'])->name('api.shops.staffs.working-days');
-            Route::get('/shops/{shop:slug}/bookings', [App\Http\Controllers\Api\Owner\BookingController::class, 'index'])->name('api.shops.bookings.index');
-            Route::get('/shops/{shop:slug}/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Owner\TimeSlotController::class, 'index'])->name('staffs.timeslots');
-            Route::get('/shops/{shop:slug}/staffs/{staff}/schedule', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'getSchedule'])->name('api.shops.staffs.schedule');
+             // other generic api routes
         });
     });
 
     // --- Staff Application Routes ---
     Route::get('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'create'])->name('staff.application.create');
     Route::post('/shops/{shop:slug}/staff/apply', [App\Http\Controllers\Staff\ApplicationController::class, 'store'])->name('staff.application.store');
-    Route::get('/staff/apply/complete', [App\Http\Controllers\Staff\ApplicationController::class, 'complete'])->name('staff.application.complete');
+    Route::get('/shops/{shop:slug}/staff/apply/complete', [App\Http\Controllers\Staff\ApplicationController::class, 'complete'])->name('staff.application.complete');
 
     // --- Staff Routes ---
-    Route::prefix('shops/{shop:slug}/staff')->name('staff.')->group(function () { // TODO: Add middleware('staff') later
+    // --- Staff Routes ---
+    Route::prefix('shops/{shop:slug}/staff')->name('staff.')->middleware(['expire.pending', 'can:viewAsStaff,shop'])->scopeBindings()->group(function () {
         // Web
         Route::get('/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'edit'])->name('staffs.edit');
@@ -213,13 +233,19 @@ Route::middleware('auth')->group(function () {
         });
     });
 
-    // --- Booker Shop-specific Routes ---
-    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->group(function () {
-        // Profile
-    Route::get('/', [App\Http\Controllers\Booker\ShopController::class, 'show'])->name('shop.show');
-    Route::get('/profile/edit', [App\Http\Controllers\Booker\ProfileController::class, 'edit'])->name('profile.edit');
+
+    
+    // Booker Registration Routes (No 'can:viewAsBooker' check yet)
+    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->middleware('expire.pending')->group(function () {
         Route::get('/profile/create', [App\Http\Controllers\Booker\ProfileController::class, 'create'])->name('profile.create');
         Route::post('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'store'])->name('profile.store');
+    });
+
+    // Booker Authorized Routes
+    // Booker Authorized Routes
+    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->middleware(['expire.pending', 'can:viewAsBooker,shop'])->scopeBindings()->group(function () {
+        Route::get('/', [App\Http\Controllers\Booker\ShopController::class, 'show'])->name('shop.show');
+        Route::get('/profile/edit', [App\Http\Controllers\Booker\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -227,6 +253,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/bookings', [App\Http\Controllers\Booker\BookingController::class, 'index'])->name('bookings.index');
         Route::get('/bookings/create', [App\Http\Controllers\Booker\BookingController::class, 'create'])->name('bookings.create');
         Route::post('/bookings', [App\Http\Controllers\Booker\BookingController::class, 'store'])->name('bookings.store');
+        Route::get('/bookings/{booking}/provisional', [App\Http\Controllers\Booker\BookingController::class, 'provisional'])->name('bookings.provisional');
         Route::get('/bookings/{booking}', [App\Http\Controllers\Booker\BookingController::class, 'show'])->name('bookings.show');
         Route::delete('/bookings/{booking}', [App\Http\Controllers\Booker\BookingController::class, 'destroy'])->name('bookings.destroy');
 

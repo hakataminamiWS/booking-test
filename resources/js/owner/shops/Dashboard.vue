@@ -136,6 +136,10 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from "vuetify";
+import { useBookingStatus } from "@/composables/useBookingStatus";
+
+const { getStatusText, getStatusColor } = useBookingStatus();
 import { computed } from 'vue';
 import OwnerLayout from '@/components/owner/OwnerLayout.vue';
 
@@ -203,24 +207,7 @@ const getDotColor = (booking: Booking) => {
     return 'secondary';
 };
 
-const getStatusText = (status: string) => {
-    const map: Record<string, string> = {
-        confirmed: '確定',
-        visited: '来店済',
-        cancelled: 'キャンセル',
-        completed: '完了',
-    };
-    return map[status] || status;
-};
 
-const getStatusColor = (status: string) => {
-    const map: Record<string, string> = {
-        confirmed: 'success',
-        visited: 'grey',
-        cancelled: 'error',
-    };
-    return map[status] || 'grey';
-};
 
 </script>
 

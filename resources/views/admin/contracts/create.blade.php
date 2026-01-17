@@ -7,6 +7,9 @@
         $props = [
             'application' => $application,
             'errors' => $errors->getMessages(),
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div id="app" data-page="admin/contracts/Create" data-props="{{ json_encode($props) }}"></div>

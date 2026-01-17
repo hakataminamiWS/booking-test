@@ -80,33 +80,36 @@
                                           hint="このメニューの予約時に、担当スタッフの選択を必須にするかどうかを設定します。"
                                           persistent-hint
                                           inset
-                                          color="primary"></v-switch>
+                                          color="primary"
+                                          @update:model-value="(val) => { if (val === 0) formData.staff_ids = []; }"></v-switch>
                                 <input
                                        type="hidden"
                                        name="requires_staff_assignment"
                                        :value="formData.requires_staff_assignment ? 1 : 0
                                         " />
 
-                                <v-select
-                                          v-model="formData.staff_ids"
-                                          :items="props.staffs"
-                                          item-title="profile.nickname"
-                                          item-value="id"
-                                          label="担当スタッフ"
-                                          multiple
-                                          chips
-                                          closable-chips
-                                          hint="このメニューを担当できるスタッフをすべて選択してください。"
-                                          persistent-hint
-                                          class="mb-4"></v-select>
+                                <template v-if="formData.requires_staff_assignment">
+                                    <v-select
+                                              v-model="formData.staff_ids"
+                                              :items="props.staffs"
+                                              item-title="profile.nickname"
+                                              item-value="id"
+                                              label="担当スタッフ"
+                                              multiple
+                                              chips
+                                              closable-chips
+                                              hint="このメニューを担当できるスタッフをすべて選択してください。"
+                                              persistent-hint
+                                              class="mb-4"></v-select>
 
-                                <template
-                                          v-for="staffId in formData.staff_ids"
-                                          :key="staffId">
-                                    <input
-                                           type="hidden"
-                                           name="staff_ids[]"
-                                           :value="staffId" />
+                                    <template
+                                              v-for="staffId in formData.staff_ids"
+                                              :key="staffId">
+                                        <input
+                                               type="hidden"
+                                               name="staff_ids[]"
+                                               :value="staffId" />
+                                    </template>
                                 </template>
 
                                 <v-select v-model="formData.option_ids" :items="props.options" item-title="name"

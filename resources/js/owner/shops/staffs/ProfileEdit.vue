@@ -26,18 +26,11 @@
                                               :rules="[rules.required]"></v-text-field>
 
                                 <ImageUploader
-                                               label="プロフィール画像(小)"
-                                               :initial-url="props.staff.profile?.small_image_url ?? null"
-                                               :max-size="2"
-                                               recommended-resolution="正方形 (推奨)"
-                                               input-name="small_image" />
-
-                                <ImageUploader
-                                               label="プロフィール画像(大)"
-                                               :initial-url="props.staff.profile?.large_image_url ?? null"
+                                               label="プロフィール画像"
+                                               :initial-url="props.staff.profile?.image_url ?? null"
                                                :max-size="5"
-                                               recommended-resolution="横長 (推奨)"
-                                               input-name="large_image" />
+                                               recommended-resolution="正方形 (推奨)"
+                                               input-name="image" />
                             </form>
                         </v-card-text>
 
@@ -66,8 +59,7 @@ interface Shop {
 
 interface ShopStaffProfile {
     nickname: string;
-    small_image_url: string | null;
-    large_image_url: string | null;
+    image_url: string | null;
 }
 
 interface ShopStaff {
@@ -81,7 +73,7 @@ const props = defineProps<{
     errors: string[];
     oldInput: { [key: string]: any } | null;
     csrfToken: string;
-    successMessage: string | null;
+
 }>();
 
 const staffsIndexUrl = computed(() => `/owner/shops/${props.shop.slug}/staffs`);

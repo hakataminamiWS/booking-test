@@ -222,12 +222,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed, ref } from "vue";
 import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
 import OwnerLayout from "@/components/owner/OwnerLayout.vue";
+import { useBookingStatus } from "@/composables/useBookingStatus";
 import FilterDateRangePicker from "@/components/common/FilterDateRangePicker.vue";
+
+const { getStatusText, getStatusColor } = useBookingStatus();
 
 interface Shop {
     id: number;
@@ -590,23 +593,7 @@ const formatCurrency = (amount: number) => {
     return amount.toLocaleString() + "円";
 };
 
-const getStatusText = (status: string) => {
-    switch (status) {
-        case 'confirmed': return '確定';
-        case 'pending': return '保留';
-        case 'cancelled': return 'キャンセル';
-        default: return status;
-    }
-};
 
-const getStatusColor = (status: string) => {
-    switch (status) {
-        case 'confirmed': return 'success';
-        case 'pending': return 'warning';
-        case 'cancelled': return 'error';
-        default: return 'grey';
-    }
-};
 
 const getChannelText = (channel: string) => {
     switch (channel) {

@@ -54,13 +54,13 @@ class BookingController extends Controller
         $menus = $shop->menus()->with(['options', 'staffs.profile'])->get();
         $staffs = $shop->staffs()->with(['profile', 'schedules'])->get()->map(function ($staff) {
             $imageUrl = null;
-            if ($staff->profile && $staff->profile->small_image_url) {
-                $imageUrl = Storage::disk('public')->url($staff->profile->small_image_url);
+            if ($staff->profile && $staff->profile->image_url) {
+                $imageUrl = Storage::disk('public')->url($staff->profile->image_url);
             }
             
             // プロフィール情報の形式を調整
             // StaffモデルのtoArray()結果に、変換済みのURLを上書きする
-            $staff->profile->small_image_url = $imageUrl;
+            $staff->profile->image_url = $imageUrl;
             
             return $staff; 
         });
@@ -103,14 +103,15 @@ class BookingController extends Controller
         $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone('UTC');
         $endAt = $startAt->copy()->addMinutes($totalDuration);
 
-        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $booker, $startAt, $endAt, $crmService) {
-            $booking = $shop->bookings()->create([
+        // トランザクション内で予約を作成
+        $booking = DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $booker, $startAt, $endAt, $crmService) {
+             $booking = $shop->bookings()->create([
                 'shop_booker_id' => $booker->id,
                 'assigned_staff_id' => $validated['assigned_staff_id'] ?? null,
                 'menu_id' => $menu->id,
                 'start_at' => $startAt,
                 'end_at' => $endAt,
-                'status' => 'confirmed',
+                'status' => 'pending',
                 'booking_channel' => 'web',
                 'menu_name' => $menu->name,
                 'menu_price' => $menu->price,
@@ -134,13 +135,45 @@ class BookingController extends Controller
                 });
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
+            
+            // 仮予約レコードの作成
+            \App\Models\ProvisionalBooking::create([
+                'booking_id' => $booking->id,
+                'shop_id' => $shop->id,
+                'expires_at' => now()->addMinutes(60),
+            ]);
 
             // 統計情報の更新
             $crmService->updateStats($booker);
+            
+            return $booking;
         });
 
-        return redirect()->route('booker.bookings.index', ['shop' => $shop->slug])
-            ->with('success', '予約を登録しました。');
+        return redirect()->route('booker.bookings.provisional', ['shop' => $shop->slug, 'booking' => $booking->id]);
+            // ->with('success', '仮予約を受け付けました。メールをご確認ください。'); // Flash message is optional as the page itself explains it
+    }
+    
+    public function provisional(Shop $shop, Booking $booking)
+    {
+        $booker = $this->getAuthenticatedBooker($shop);
+
+        // Ensure the booking belongs to this booker
+        if ($booking->shop_booker_id !== $booker->id) {
+            abort(403);
+        }
+        
+        // pending以外ならshowへ
+        if ($booking->status !== 'pending') {
+             return redirect()->route('booker.bookings.show', ['shop' => $shop->slug, 'booking' => $booking->id]);
+        }
+        
+        $booking->load(['bookingOptions', 'staff.profile', 'menu']);
+
+        return view('booker.bookings.provisional', [
+            'shop' => $shop,
+            'booker' => $booker,
+            'booking' => $booking,
+        ]);
     }
 
     /**

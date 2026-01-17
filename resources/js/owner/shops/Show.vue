@@ -39,18 +39,6 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>予約承認方法</td>
-                                        <td>
-                                            {{
-                                                props.shop
-                                                    .booking_confirmation_type ===
-                                                    "automatic"
-                                                    ? "自動承認"
-                                                    : "手動承認"
-                                            }}
-                                        </td>
-                                    </tr>
-                                    <tr>
                                         <td>オンライン予約受付</td>
                                         <td>
                                             <v-chip

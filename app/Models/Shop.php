@@ -10,6 +10,11 @@ class Shop extends Model
 {
     use HasFactory;
 
+    public const RESERVED_SLUGS = [
+        'create',
+        'edit',
+    ];
+
     protected $fillable = [
         'owner_user_id',
         'name',

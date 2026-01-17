@@ -4,9 +4,8 @@
         <v-row>
             <v-col cols="12">
                 <v-btn
-                    :href="'/admin/contract-applications'"
-                    prepend-icon="mdi-arrow-left"
-                >
+                       :href="'/admin/contract-applications'"
+                       prepend-icon="mdi-arrow-left">
                     契約申し込み一覧へ戻る
                 </v-btn>
             </v-col>
@@ -15,68 +14,56 @@
         <!-- Contents -->
         <v-row>
             <v-col cols="12">
+                <FlashMessage />
                 <v-card>
                     <v-card-title
-                        :class="{
-                            'd-flex': true,
-                            'flex-column': smAndDown,
-                            'align-start': smAndDown,
-                            'justify-space-between': !smAndDown,
-                            'align-center': !smAndDown,
-                        }"
-                    >
+                                  :class="{
+                                    'd-flex': true,
+                                    'flex-column': smAndDown,
+                                    'align-start': smAndDown,
+                                    'justify-space-between': !smAndDown,
+                                    'align-center': !smAndDown,
+                                }">
                         <span>契約申し込み詳細</span>
                         <v-btn
-                            :href="editUrl"
-                            color="primary"
-                            :class="{ 'mt-2': smAndDown }"
-                        >
+                               :href="editUrl"
+                               color="primary"
+                               :class="{ 'mt-2': smAndDown }">
                             申し込みステータスを編集する
                         </v-btn>
                     </v-card-title>
                     <v-divider></v-divider>
 
                     <v-card-text>
-                        <v-list-item>
-                            <v-list-item-title>申込ID</v-list-item-title>
-                            <v-list-item-subtitle>{{
-                                contractApplication.id
-                            }}</v-list-item-subtitle>
-                        </v-list-item>
+                        <v-card variant="text" class="mb-4">
+                            <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">申込ID</v-card-title>
+                            <v-card-text class="pa-0 text-body-1">{{ contractApplication.id }}</v-card-text>
+                        </v-card>
 
-                        <v-list-item>
-                            <v-list-item-title>お客様名称</v-list-item-title>
-                            <v-list-item-subtitle>{{
-                                contractApplication.customer_name
-                            }}</v-list-item-subtitle>
-                        </v-list-item>
+                        <v-card variant="text" class="mb-4">
+                            <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">お客様名称</v-card-title>
+                            <v-card-text class="pa-0 text-body-1">{{ contractApplication.customer_name }}</v-card-text>
+                        </v-card>
 
-                        <v-list-item>
-                            <v-list-item-title
-                                >メールアドレス</v-list-item-title
-                            >
-                            <v-list-item-subtitle>{{
-                                contractApplication.email
-                            }}</v-list-item-subtitle>
-                        </v-list-item>
+                        <v-card variant="text" class="mb-4">
+                            <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">メールアドレス</v-card-title>
+                            <v-card-text class="pa-0 text-body-1">{{ contractApplication.email }}</v-card-text>
+                        </v-card>
 
-                        <v-list-item>
-                            <v-list-item-title
-                                >申し込みステータス</v-list-item-title
-                            >
-                            <v-list-item-subtitle>{{
-                                contractApplication.status
-                            }}</v-list-item-subtitle>
-                        </v-list-item>
+                        <v-card variant="text" class="mb-4">
+                            <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">申し込みステータス</v-card-title>
+                            <v-card-text class="pa-0 text-body-1">
+                                <v-chip :color="getAppStatusColor(contractApplication.status)" size="small">
+                                    {{ getAppStatusText(contractApplication.status) }}
+                                </v-chip>
+                            </v-card-text>
+                        </v-card>
 
-                        <v-list-item>
-                            <v-list-item-title>申込日時</v-list-item-title>
-                            <v-list-item-subtitle>{{
-                                new Date(
-                                    contractApplication.created_at
-                                ).toLocaleString()
-                            }}</v-list-item-subtitle>
-                        </v-list-item>
+                        <v-card variant="text" class="mb-4">
+                            <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">申込日時</v-card-title>
+                            <v-card-text class="pa-0 text-body-1">{{ new
+                                Date(contractApplication.created_at).toLocaleString() }}</v-card-text>
+                        </v-card>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -87,6 +74,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useDisplay } from "vuetify";
+import FlashMessage from "@/components/common/FlashMessage.vue";
+import { useContractStatus } from "@/composables/useContractStatus";
+
+const { getAppStatusText, getAppStatusColor } = useContractStatus();
 
 interface User {
     id: number;

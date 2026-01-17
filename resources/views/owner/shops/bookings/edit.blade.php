@@ -23,6 +23,9 @@
             'errors' => $errors->all(),
             'oldInput' => session()->getOldInput(),
             'csrfToken' => csrf_token(),
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div

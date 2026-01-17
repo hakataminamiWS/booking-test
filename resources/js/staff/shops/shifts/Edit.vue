@@ -84,7 +84,8 @@ schedule, scheduleIndex
                                                 <v-text-field label="開始時刻" v-model="schedule.start_time"
                                                               :name="`schedules[${dayIndex}][${scheduleIndex}][start_time]`"
                                                               type="time"
-                                                              style="max-width: 150px" class="mr-2" :error-messages="schedule.startTimeError
+                                                              style="max-width: 200px; min-width: 180px;" class="mr-2"
+                                                              :error-messages="schedule.startTimeError
                                                                 " append-inner-icon="mdi-clock-outline"
                                                               @click:append-inner="
                                                                 openDialog(
@@ -96,7 +97,8 @@ schedule, scheduleIndex
                                                 <v-text-field label="終了時刻" v-model="schedule.end_time"
                                                               :name="`schedules[${dayIndex}][${scheduleIndex}][end_time]`"
                                                               type="time"
-                                                              style="max-width: 150px" class="mr-2" :error-messages="schedule.endTimeError
+                                                              style="max-width: 200px; min-width: 180px;" class="mr-2"
+                                                              :error-messages="schedule.endTimeError
                                                                 " append-inner-icon="mdi-clock-outline"
                                                               @click:append-inner="
                                                                 openDialog(

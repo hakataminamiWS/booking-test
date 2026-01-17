@@ -34,7 +34,7 @@ class StoreBookingRequest extends FormRequest
             // Booker info (Guest specific)
             'booker_name' => ['required', 'string', 'max:255'],
             'contact_email' => ['required_without:contact_phone', 'nullable', 'email', 'max:255'],
-            'contact_phone' => ['required_without:contact_email', 'nullable', 'string', 'max:20'],
+            'contact_phone' => ['required_without:contact_email', 'nullable', 'string', 'max:20', 'regex:/^[0-9-]+$/'],
         ];
     }
 

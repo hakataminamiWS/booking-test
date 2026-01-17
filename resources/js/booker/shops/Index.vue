@@ -14,6 +14,7 @@
                         <span>登録店舗一覧</span>
                     </v-card-title>
                     <v-card-text>
+                        <FlashMessage />
                         <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
                         <v-row class="align-center mb-2" dense>
                             <!-- Filter Button -->
@@ -137,8 +138,8 @@
                                           label="値" dense
                                           hide-details></v-text-field>
                             <v-text-field v-if="getColumnType(filter.column) === 'date'" v-model="filter.value"
-                                          label="値" type="date" dense
-                                          hide-details></v-text-field>
+                                          label="値"
+                                          type="date" dense hide-details></v-text-field>
                         </v-col>
                         <v-col cols="1">
                             <v-btn icon size="small" @click="removeFilter(filter.id)">
@@ -190,6 +191,7 @@ import { ref, computed } from "vue";
 import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
+import FlashMessage from "@/components/common/FlashMessage.vue";
 
 const { smAndDown } = useDisplay();
 

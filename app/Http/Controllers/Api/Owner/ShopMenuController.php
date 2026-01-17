@@ -72,15 +72,15 @@ class ShopMenuController extends Controller
         $staffs = $staffsQuery->get()->map(function ($staff) {
             // スタッフ画像のパスをURLに変換
             $imageUrl = null;
-            if ($staff->profile?->small_image_url) {
-                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->small_image_url);
+            if ($staff->profile?->image_url) {
+                $imageUrl = \Illuminate\Support\Facades\Storage::disk('public')->url($staff->profile->image_url);
             }
             // Vueコンポーネントが期待する形式に変換
             return [
                 'id' => $staff->id,
                 'profile' => [
                     'nickname' => $staff->profile->nickname ?? '',
-                    'small_image_url' => $imageUrl,
+                    'image_url' => $imageUrl,
                 ],
             ];
         });

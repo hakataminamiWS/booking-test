@@ -34,8 +34,8 @@ class ShopMenuController extends Controller
                 'id' => $staff->id,
                 'profile' => [
                     'nickname' => $staff->profile->nickname ?? '',
-                    'small_image_url' => $staff->profile->small_image_url 
-                        ? Storage::disk('public')->url($staff->profile->small_image_url) 
+                    'image_url' => $staff->profile->image_url 
+                        ? Storage::disk('public')->url($staff->profile->image_url) 
                         : null,
                 ],
             ];

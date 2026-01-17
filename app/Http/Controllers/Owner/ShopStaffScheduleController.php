@@ -26,7 +26,7 @@ class ShopStaffScheduleController extends Controller
      */
     public function index(Request $request, Shop $shop)
     {
-        $this->authorize('view', $shop);
+
 
         $month = $request->input('month', today()->format('Y-m'));
         $targetMonth = Carbon::createFromFormat('Y-m', $month, $shop->timezone)->startOfMonth();
@@ -83,7 +83,7 @@ class ShopStaffScheduleController extends Controller
      */
     public function edit(Request $request, Shop $shop, ShopStaff $staff)
     {
-        $this->authorize('update', $staff);
+
 
         $staff->load('profile'); // 追加
 

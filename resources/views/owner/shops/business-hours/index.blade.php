@@ -9,6 +9,9 @@
             'businessHours' => $businessHours,
             'specialOpenDays' => $specialOpenDays,
             'specialClosedDays' => $specialClosedDays,
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div

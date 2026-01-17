@@ -10,7 +10,10 @@
             'errors' => $errors->all(),
             'oldInput' => session()->getOldInput(),
             'csrfToken' => csrf_token(),
-            'successMessage' => session('success'),
+            'flashSuccess' => session('success'),
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div id="app" data-page="booker/profile/Edit" data-props="{{ json_encode($props) }}"></div>

@@ -9,6 +9,9 @@
             'booker' => $booker,
             'csrfToken' => csrf_token(),
             'errors' => $errors->all(),
+                    'flashSuccess' => session('success'),
+            'flashError' => session('error'),
+            'flashStatus' => session('status'),
         ];
     @endphp
     <div id="app" data-page="staff/shops/bookers/Edit" data-props="{{ json_encode($props) }}"></div>

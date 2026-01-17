@@ -1,0 +1,103 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags: ['v*']  # v1.0.0 などのタグ push でデプロイ
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'デプロイするタグ（例: v1.0.0）※ロールバック時に使用'
+        required: true
+        type: string
+
+env:
+  DEPLOY_PATH: /home/net-get/yoyaku/
+  RSYNC_EXCLUDE: |
+    .env
+    .env.*
+    database.sqlite
+    storage/app/public/*
+    storage/logs/*
+    storage/framework/*
+    node_modules
+    .git
+    .github
+    tests
+    phpunit.xml
+    vite.config.js
+    package*.json
+    composer.*
+    *.md
+    .vscode
+    .idea
+    docs
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout specified tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Display deployment info
+        run: |
+          echo "🚀 Deploying: ${{ github.event.inputs.tag || github.ref_name }}"
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, bcmath, xml, ctype, pdo, pdo_mysql, pdo_sqlite
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install Composer
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Clear Laravel caches
+        run: |
+          echo "APP_KEY=" > .env
+          php artisan key:generate --force
+          php artisan config:clear && php artisan route:clear && php artisan view:clear
+          rm .env
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Create exclude file
+        run: echo "${{ env.RSYNC_EXCLUDE }}" > .rsync-exclude
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SAKURA_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SAKURA_SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: |
+          rsync -avz --delete --exclude-from='.rsync-exclude' \
+            ./ ${{ secrets.SAKURA_SSH_USER }}@${{ secrets.SAKURA_SSH_HOST }}:${{ env.DEPLOY_PATH }}
+
+      - name: Optimize on server
+        run: |
+          ssh ${{ secrets.SAKURA_SSH_USER }}@${{ secrets.SAKURA_SSH_HOST }} \
+            "cd ${{ env.DEPLOY_PATH }} && php artisan config:cache && php artisan route:cache && php artisan view:cache" || true

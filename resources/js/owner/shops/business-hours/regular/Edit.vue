@@ -70,6 +70,7 @@ item, index
                                                               :name="`business_hours[${index}][start_time]`"
                                                               :disabled="!item.is_open"
                                                               :required="item.is_open"
+                                                              style="max-width: 200px; min-width: 180px;"
                                                               append-inner-icon="mdi-clock-outline"
                                                               @click:append-inner="
                                                                 openDialog(
@@ -87,6 +88,7 @@ item, index
                                                               :required="item.is_open"
                                                               :error-messages="item.endTimeError
                                                                 "
+                                                              style="max-width: 200px; min-width: 180px;"
                                                               append-inner-icon="mdi-clock-outline"
                                                               @click:append-inner="
                                                                 openDialog(

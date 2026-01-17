@@ -24,7 +24,7 @@ class UpdateProfileRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'contact_email' => ['required', 'nullable', 'email', 'max:255'],
-            'contact_phone' => ['required', 'nullable', 'string', 'max:20'],
+            'contact_phone' => ['required', 'nullable', 'string', 'max:20', 'regex:/^[0-9-]+$/'],
             'note_from_booker' => ['nullable', 'string', 'max:1000'],
         ];
     }

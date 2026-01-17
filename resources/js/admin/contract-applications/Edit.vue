@@ -3,6 +3,7 @@
         <!-- Error Messages -->
         <v-row v-if="props.errors.length > 0">
             <v-col cols="12">
+                <FlashMessage />
                 <v-alert type="error" title="入力エラー">
                     <ul>
                         <li v-for="(error, i) in props.errors" :key="i">
@@ -27,8 +28,7 @@
             <v-col cols="12">
                 <v-card>
                     <v-card-title
-                        class="d-flex justify-space-between align-center"
-                    >
+                                  class="d-flex justify-space-between align-center">
                         契約申し込み編集
                     </v-card-title>
                     <v-divider></v-divider>
@@ -36,10 +36,9 @@
                     <!-- Update Form -->
                     <form :action="updateUrl" method="POST">
                         <input
-                            type="hidden"
-                            name="_token"
-                            :value="props.csrfToken"
-                        />
+                               type="hidden"
+                               name="_token"
+                               :value="props.csrfToken" />
                         <input type="hidden" name="_method" value="PUT" />
 
                         <v-card-text>
@@ -47,36 +46,30 @@
                             <v-row>
                                 <v-col cols="12" md="6">
                                     <v-text-field
-                                        label="申込ID"
-                                        :model-value="
-                                            props.contractApplication.id
-                                        "
-                                        readonly
-                                        disabled
-                                    ></v-text-field>
+                                                  label="申込ID"
+                                                  :model-value="props.contractApplication.id
+                                                    "
+                                                  readonly
+                                                  disabled></v-text-field>
                                 </v-col>
 
                                 <v-col cols="12" md="6">
                                     <v-text-field
-                                        label="お客様名称"
-                                        :model-value="
-                                            props.contractApplication
-                                                .customer_name
-                                        "
-                                        readonly
-                                        disabled
-                                    ></v-text-field>
+                                                  label="お客様名称"
+                                                  :model-value="props.contractApplication
+                                                    .customer_name
+                                                    "
+                                                  readonly
+                                                  disabled></v-text-field>
                                 </v-col>
 
                                 <v-col cols="12" md="6">
                                     <v-text-field
-                                        label="メールアドレス"
-                                        :model-value="
-                                            props.contractApplication.email
-                                        "
-                                        readonly
-                                        disabled
-                                    ></v-text-field>
+                                                  label="メールアドレス"
+                                                  :model-value="props.contractApplication.email
+                                                    "
+                                                  readonly
+                                                  disabled></v-text-field>
                                 </v-col>
                             </v-row>
 
@@ -84,15 +77,12 @@
                             <v-row>
                                 <v-col cols="12" md="6">
                                     <v-select
-                                        name="status"
-                                        label="申し込みステータス"
-                                        v-model="form.status"
-                                        :items="[
-                                            'pending',
-                                            'approved',
-                                            'rejected',
-                                        ]"
-                                    ></v-select>
+                                              name="status"
+                                              label="申し込みステータス"
+                                              v-model="form.status"
+                                              :items="statusItems"
+                                              item-title="title"
+                                              item-value="value"></v-select>
                                 </v-col>
                             </v-row>
                         </v-card-text>
@@ -110,6 +100,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import FlashMessage from "@/components/common/FlashMessage.vue";
+import { useContractStatus } from "@/composables/useContractStatus";
 
 // --- Interfaces ---
 interface User {
@@ -131,6 +123,14 @@ const props = defineProps<{
     errors: string[];
     oldInput: { [key: string]: any } | null;
 }>();
+
+const { getAppStatusText } = useContractStatus();
+
+const statusItems = [
+    { title: getAppStatusText("pending"), value: "pending" },
+    { title: getAppStatusText("approved"), value: "approved" },
+    { title: getAppStatusText("rejected"), value: "rejected" },
+];
 
 // --- Form State ---
 const form = ref({

@@ -17,8 +17,7 @@ class ShopStaffProfile extends Model
     protected $fillable = [
         'shop_staff_id',
         'nickname',
-        'small_image_url',
-        'large_image_url',
+        'image_url',
     ];
 
     public function shopStaff(): BelongsTo
