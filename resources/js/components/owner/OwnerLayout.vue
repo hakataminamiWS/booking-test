@@ -85,9 +85,14 @@
             <template #append>
                 <v-divider></v-divider>
                 <v-list density="compact" nav>
+                    <!-- ログアウトフォーム (非表示) -->
+                    <form id="logout-form" action="/logout" method="POST" style="display: none;">
+                        <input type="hidden" name="_token" :value="csrfToken">
+                    </form>
+
                     <v-list-item
-                                 href="/owner/shops"
-                                 title="店舗一覧へ戻る"></v-list-item>
+                                 title="ログアウト"
+                                 @click="logout"></v-list-item>
                 </v-list>
             </template>
         </v-navigation-drawer>
@@ -119,6 +124,7 @@ defineProps<{
 
 const drawer = ref(true);
 const windowWidth = ref(window.innerWidth);
+const csrfToken = ref('');
 
 const isMobile = computed(() => windowWidth.value < 768);
 
@@ -126,11 +132,23 @@ const handleResize = () => {
     windowWidth.value = window.innerWidth;
 };
 
+const logout = () => {
+    const form = document.getElementById('logout-form') as HTMLFormElement;
+    if (form) {
+        form.submit();
+    }
+};
+
 onMounted(() => {
     window.addEventListener("resize", handleResize);
     // モバイル時は初期状態でドロワーを閉じる
     if (isMobile.value) {
         drawer.value = false;
+    }
+    // CSRFトークンを取得
+    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+    if (tokenMeta) {
+        csrfToken.value = tokenMeta.getAttribute('content') || '';
     }
 });
 

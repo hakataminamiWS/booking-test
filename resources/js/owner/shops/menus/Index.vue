@@ -135,27 +135,22 @@
                                 }">
                                     {{
                                         item.requires_cancellation_deadline
-                                            ? `${item.cancellation_deadline_minutes} 分前`
-                                            : `店舗設定（${props.shop
-                                                .cancellation_deadline_minutes !==
-                                                null
-                                                ? props.shop
+                                            ? formatDeadline(
+                                                item.cancellation_deadline_minutes
+                                            )
+                                            : `店舗設定（${formatDeadline(
+                                                props.shop
                                                     .cancellation_deadline_minutes
-                                                : ""
-                                            }分前）`
+                                            )}）`
                                     }}
                                 </template>
                                 <template v-slot:item.booking_deadline_minutes="{ item }">
                                     {{
                                         item.requires_booking_deadline
-                                            ? `${item.booking_deadline_minutes} 分前`
-                                            : `店舗設定（${props.shop
-                                                .booking_deadline_minutes !==
-                                                null
-                                                ? props.shop
-                                                    .booking_deadline_minutes
-                                                : ""
-                                            }分前）`
+                                            ? formatDeadline(item.booking_deadline_minutes)
+                                            : `店舗設定（${formatDeadline(
+                                                props.shop.booking_deadline_minutes
+                                            )}）`
                                     }}
                                 </template>
                                 <template v-slot:item.actions="{ item }">
@@ -255,7 +250,9 @@ import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
 import OwnerLayout from "@/components/owner/OwnerLayout.vue";
+
 import { formatNumericInput } from "@/composables/useNumericInput";
+import { useTimeFormatter } from "@/composables/useTimeFormatter";
 
 interface Shop {
     name: string;
@@ -270,10 +267,17 @@ const props = defineProps<{
 }>();
 
 const shopShowUrl = computed(() => `/owner/shops/${props.shop.slug}`);
+const { formatDeadline } = useTimeFormatter();
 
 const { smAndDown } = useDisplay();
 
-type Options = InstanceType<typeof VDataTableServer>["$props"]["options"];
+type Options = {
+    page: number;
+    itemsPerPage: number;
+    sortBy: readonly any[];
+    groupBy: readonly any[];
+    search: string | undefined;
+};
 type Headers = InstanceType<typeof VDataTableServer>["$props"]["headers"];
 
 // --- Component State ---
@@ -352,6 +356,8 @@ const removeFilter = (id: number) => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 
@@ -399,6 +405,8 @@ const applyFilters = (shouldCloseDialog = true) => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 
@@ -428,6 +436,8 @@ const applySort = () => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 
@@ -439,6 +449,8 @@ const removeSort = () => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 

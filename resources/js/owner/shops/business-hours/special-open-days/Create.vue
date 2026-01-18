@@ -14,6 +14,21 @@
                                        :value="props.csrfToken" />
 
                                 <v-alert
+                                         type="info"
+                                         variant="tonal"
+                                         class="mb-4"
+                                         icon="mdi-information">
+                                    <div class="text-caption text-sm-body-2">
+                                        <p class="font-weight-bold mb-2">【特別営業日の設定について】</p>
+                                        <ul class="ml-4">
+                                            <li>
+                                                通常休業日のシフト登録時に、警告が出なくなります（日付、開始時刻、終了時刻の指定が可能です）。
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </v-alert>
+
+                                <v-alert
                                          v-if="props.errors.length > 0"
                                          type="error"
                                          class="mb-4">

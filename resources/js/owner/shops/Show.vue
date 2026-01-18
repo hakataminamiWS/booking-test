@@ -65,19 +65,21 @@
                                         <td>キャンセル期限</td>
                                         <td>
                                             {{
-                                                props.shop
-                                                    .cancellation_deadline_minutes
+                                                formatDeadline(
+                                                    props.shop
+                                                        .cancellation_deadline_minutes
+                                                )
                                             }}
-                                            分前
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>予約締切</td>
                                         <td>
                                             {{
-                                                props.shop.booking_deadline_minutes
+                                                formatDeadline(
+                                                    props.shop.booking_deadline_minutes
+                                                )
                                             }}
-                                            分前
                                         </td>
                                     </tr>
                                     <tr>
@@ -113,6 +115,7 @@
 <script setup lang="ts">
 import { useDisplay } from "vuetify";
 import OwnerLayout from "@/components/owner/OwnerLayout.vue";
+import { useTimeFormatter } from "@/composables/useTimeFormatter";
 
 interface Shop {
     id: number;
@@ -133,4 +136,6 @@ const props = defineProps<{
 }>();
 
 const { smAndDown } = useDisplay();
+const { formatDeadline } = useTimeFormatter();
+
 </script>

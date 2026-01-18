@@ -19,10 +19,19 @@ class ShopBusinessHoursController extends Controller
 
         $businessHours = [];
         for ($i = 0; $i < 7; $i++) {
-            $businessHours[$i] = ShopBusinessHoursRegular::firstOrNew(
+            $businessHour = ShopBusinessHoursRegular::firstOrNew(
                 ['shop_id' => $shop->id, 'day_of_week' => $i],
                 ['is_open' => false, 'start_time' => null, 'end_time' => null]
             );
+
+            if ($businessHour->start_time) {
+                $businessHour->start_time = Carbon::parse($businessHour->start_time)->format('H:i');
+            }
+            if ($businessHour->end_time) {
+                $businessHour->end_time = Carbon::parse($businessHour->end_time)->format('H:i');
+            }
+
+            $businessHours[$i] = $businessHour;
         }
 
         $specialOpenDays = $shop->shopSpecialOpenDays()
@@ -52,10 +61,19 @@ class ShopBusinessHoursController extends Controller
 
         $businessHours = [];
         for ($i = 0; $i < 7; $i++) {
-            $businessHours[$i] = ShopBusinessHoursRegular::firstOrNew(
+            $businessHour = ShopBusinessHoursRegular::firstOrNew(
                 ['shop_id' => $shop->id, 'day_of_week' => $i],
                 ['is_open' => false, 'start_time' => null, 'end_time' => null]
             );
+
+            if ($businessHour->start_time) {
+                $businessHour->start_time = Carbon::parse($businessHour->start_time)->format('H:i');
+            }
+            if ($businessHour->end_time) {
+                $businessHour->end_time = Carbon::parse($businessHour->end_time)->format('H:i');
+            }
+
+            $businessHours[$i] = $businessHour;
         }
 
         return view('owner.shops.business-hours.regular.edit', compact('shop', 'businessHours'));

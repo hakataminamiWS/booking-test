@@ -114,4 +114,18 @@ class ShopStaffController extends Controller
         return redirect()->route('owner.shops.staffs.index', ['shop' => $shop])
             ->with('success', '予約枠用スタッフを登録しました。');
     }
+
+    public function destroy(Shop $shop, ShopStaff $staff)
+    {
+        // 自分自身を削除しようとしていないかチェック
+        if ($staff->user_id === \Illuminate\Support\Facades\Auth::id()) {
+            return redirect()->route('owner.shops.staffs.index', ['shop' => $shop])
+                ->with('error', '自分自身を削除することはできません。');
+        }
+
+        $staff->delete();
+
+        return redirect()->route('owner.shops.staffs.index', ['shop' => $shop])
+            ->with('success', 'スタッフを削除しました。');
+    }
 }
