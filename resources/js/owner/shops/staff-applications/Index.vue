@@ -12,7 +12,14 @@
                                         'justify-space-between': !smAndDown,
                                         'align-center': !smAndDown,
                                     }">
-                            <span>スタッフ登録申し込み一覧</span>
+                            <span>スタッフ申請一覧</span>
+                            <v-btn
+                                   prepend-icon="mdi-link-variant"
+                                   :href="`/owner/shops/${props.shop.slug}/staff-applications/share`"
+                                   :class="{ 'mt-2': smAndDown }"
+                                   color="primary">
+                                申請リンクを作成
+                            </v-btn>
                         </v-card-title>
                         <v-card-text>
                             <!-- ControlBar: Filter, Sort, Total Items Count, Pagination, etc. -->
@@ -90,9 +97,9 @@
                                                  class="elevation-1 mt-4">
                                 <template v-slot:item.status="{ item }">
                                     <v-chip
-                                            :color="statusColor(item.status)"
+                                            :color="getStatusColor(item.status)"
                                             dark
-                                            small>{{ item.status }}</v-chip>
+                                            small>{{ getStatusText(item.status) }}</v-chip>
                                 </template>
                                 <template v-slot:item.created_at="{ item }">
                                     {{ new Date(item.created_at).toLocaleString() }}
@@ -100,36 +107,55 @@
 
                                 <template v-slot:item.actions="{ item }">
                                     <div
-                                         class="d-flex"
+                                         class="d-flex align-center"
                                          :class="{ 'justify-end': smAndDown }">
-                                        <form
-                                              :action="`/owner/shops/${props.shop.slug}/staff-applications/${item.id}/reject`"
-                                              method="POST"
-                                              class="mr-2">
-                                            <input
-                                                   type="hidden"
-                                                   name="_token"
-                                                   :value="props.csrfToken" />
-                                            <input
-                                                   type="hidden"
-                                                   name="_method"
-                                                   value="PUT" />
-                                            <v-btn color="error" type="submit">却下する</v-btn>
-                                        </form>
+                                        <v-btn
+                                               v-if="item.status !== 'pending'"
+                                               variant="outlined"
+                                               color="error"
+                                               class="mr-2"
+                                               @click="confirmDelete(item)">
+                                            申請を削除する（登録済みスタッフは削除されません）
+                                        </v-btn>
 
-                                        <form
-                                              :action="`/owner/shops/${props.shop.slug}/staff-applications/${item.id}/approve`"
-                                              method="POST">
-                                            <input
-                                                   type="hidden"
-                                                   name="_token"
-                                                   :value="props.csrfToken" />
-                                            <input
-                                                   type="hidden"
-                                                   name="_method"
-                                                   value="PUT" />
-                                            <v-btn color="primary" type="submit">承認する</v-btn>
-                                        </form>
+                                        <template v-if="item.status === 'pending'">
+                                            <form
+                                                  :action="`/owner/shops/${props.shop.slug}/staff-applications/${item.id}/reject`"
+                                                  method="POST"
+                                                  class="mr-2">
+                                                <input
+                                                       type="hidden"
+                                                       name="_token"
+                                                       :value="props.csrfToken" />
+                                                <input
+                                                       type="hidden"
+                                                       name="_method"
+                                                       value="PUT" />
+                                                <v-btn
+                                                       color="error"
+                                                       type="submit">
+                                                    却下する
+                                                </v-btn>
+                                            </form>
+
+                                            <form
+                                                  :action="`/owner/shops/${props.shop.slug}/staff-applications/${item.id}/approve`"
+                                                  method="POST">
+                                                <input
+                                                       type="hidden"
+                                                       name="_token"
+                                                       :value="props.csrfToken" />
+                                                <input
+                                                       type="hidden"
+                                                       name="_method"
+                                                       value="PUT" />
+                                                <v-btn
+                                                       color="primary"
+                                                       type="submit">
+                                                    承認する
+                                                </v-btn>
+                                            </form>
+                                        </template>
                                     </div>
                                 </template>
                             </v-data-table-server>
@@ -137,6 +163,28 @@
                     </v-card>
                 </v-col>
             </v-row>
+
+            <!-- Delete Confirmation Dialog -->
+            <v-dialog v-model="deleteDialog" max-width="500px">
+                <v-card>
+                    <v-card-title class="headline">削除確認</v-card-title>
+                    <v-card-text>
+                        本当にこのスタッフ申請を削除しますか？<br>
+                        申請者: {{ deletionTarget?.name }}
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="deleteDialog = false">キャンセル</v-btn>
+                        <form v-if="deletionTarget"
+                              :action="`/owner/shops/${props.shop.slug}/staff-applications/${deletionTarget.id}`"
+                              method="POST">
+                            <input type="hidden" name="_token" :value="props.csrfToken" />
+                            <input type="hidden" name="_method" value="DELETE" />
+                            <v-btn color="error" type="submit" @click="deleteDialog = false">削除する</v-btn>
+                        </form>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
 
             <!-- Filter Dialog -->
             <v-dialog v-model="filterDialog" max-width="800px">
@@ -209,6 +257,7 @@ import type { VDataTableServer } from "vuetify/components";
 import axios from "axios";
 import { useDisplay } from "vuetify";
 import OwnerLayout from "@/components/owner/OwnerLayout.vue";
+import { useStaffApplicationStatus } from "@/composables/useStaffApplicationStatus";
 
 interface Shop {
     name: string;
@@ -223,8 +272,15 @@ const props = defineProps<{
 const shopShowUrl = computed(() => `/owner/shops/${props.shop.slug}`);
 
 const { smAndDown } = useDisplay();
+const { getStatusText, getStatusColor } = useStaffApplicationStatus();
 
-type Options = InstanceType<typeof VDataTableServer>["$props"]["options"];
+type Options = {
+    page: number;
+    itemsPerPage: number;
+    sortBy: readonly any[];
+    groupBy: readonly any[];
+    search: string | undefined;
+};
 type Headers = InstanceType<typeof VDataTableServer>["$props"]["headers"];
 
 // --- Component State ---
@@ -244,6 +300,15 @@ const totalPages = computed(() =>
 );
 let isInitialLoad = true;
 
+// --- Delete Dialog ---
+const deleteDialog = ref(false);
+const deletionTarget = ref<any>(null);
+
+const confirmDelete = (item: any) => {
+    deletionTarget.value = item;
+    deleteDialog.value = true;
+};
+
 // --- Filtering ---
 interface Filter {
     id: number;
@@ -258,7 +323,11 @@ const filterableColumns = ref([
         text: "ステータス",
         value: "status",
         type: "select",
-        items: ["pending", "approved", "rejected"],
+        items: [
+            { title: "承認待ち", value: "pending" },
+            { title: "承認済み", value: "approved" },
+            { title: "却下", value: "rejected" },
+        ],
     },
 ]);
 
@@ -274,10 +343,8 @@ const getColumnType = (columnValue: string | null) => {
 };
 const getColumnItems = (columnValue: string | null) => {
     if (!columnValue) return [];
-    return (
-        filterableColumns.value.find((c) => c.value === columnValue)?.items ||
-        []
-    );
+    const items = filterableColumns.value.find((c) => c.value === columnValue)?.items || [];
+    return items;
 };
 
 const addFilter = () => {
@@ -298,6 +365,8 @@ const removeFilter = (id: number) => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 
@@ -306,10 +375,16 @@ const activeFiltersText = computed(() => {
         const column = filterableColumns.value.find(
             (c) => c.value === f.column
         );
+        let displayValue = f.value;
+        if (column?.type === 'select') {
+            const item = column.items?.find((i: any) => i.value === f.value);
+            if (item) displayValue = item.title;
+        }
+
         return {
             id: f.id,
             text: column ? column.text : "",
-            value: f.value,
+            value: displayValue,
         };
     });
 });
@@ -326,6 +401,8 @@ const applyFilters = (shouldCloseDialog = true) => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 
@@ -353,6 +430,8 @@ const applySort = () => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 
@@ -364,6 +443,8 @@ const removeSort = () => {
         page: page.value,
         itemsPerPage: itemsPerPage.value,
         sortBy: [],
+        groupBy: [],
+        search: undefined,
     });
 };
 
@@ -451,19 +532,6 @@ const loadItems = async (options: Options) => {
         console.error("Failed to load items:", error);
     } finally {
         loading.value = false;
-    }
-};
-
-const statusColor = (status: string) => {
-    switch (status) {
-        case "pending":
-            return "orange";
-        case "approved":
-            return "green";
-        case "rejected":
-            return "red";
-        default:
-            return "grey";
     }
 };
 

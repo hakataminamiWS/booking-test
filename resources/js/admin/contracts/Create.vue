@@ -1,95 +1,96 @@
 <template>
-    <v-container>
-        <v-row>
-            <v-col cols="12">
-                <v-btn :href="'/admin/contracts'" prepend-icon="mdi-arrow-left">
-                    契約一覧へ
-                </v-btn>
-            </v-col>
-        </v-row>
+    <AdminLayout current-page="contracts">
+        <v-container>
+            <v-row>
+                <v-col cols="12">
+                    <v-btn :href="'/admin/contracts'" prepend-icon="mdi-arrow-left">
+                        契約一覧へ
+                    </v-btn>
+                </v-col>
+            </v-row>
 
-        <v-row>
-            <v-col cols="12">
-                <v-card>
-                    <v-card-title>
-                        <span>契約新規作成</span>
-                    </v-card-title>
-                    <v-card-text>
-                        <FlashMessage />
-                        <v-alert
-                                 v-if="props.errors.length > 0"
-                                 type="error"
-                                 class="mb-4">
-                            <ul>
-                                <li v-for="(error, i) in props.errors" :key="i">
-                                    {{ error }}
-                                </li>
-                            </ul>
-                        </v-alert>
-                        <!-- Application Info -->
-                        <v-card variant="outlined" class="mb-6">
-                            <v-card-item>
-                                <v-card-title>申し込み情報</v-card-title>
-                            </v-card-item>
-                            <v-list-item
-                                         :title="`申込 ID: ${application.id}`"></v-list-item>
-                            <v-list-item
-                                         :title="`お客様名称: ${application.customer_name}`"></v-list-item>
-                            <v-list-item
-                                         :title="`メールアドレス: ${application.email}`"></v-list-item>
-                            <v-list-item>
-                                <template v-slot:title>
-                                    申し込みステータス:
-                                    <v-chip :color="getAppStatusColor(application.status)" size="small" class="ml-2">
-                                        {{ getAppStatusText(application.status) }}
-                                    </v-chip>
-                                </template>
-                            </v-list-item>
-                        </v-card>
+            <v-row>
+                <v-col cols="12">
+                    <v-card>
+                        <v-card-title>
+                            <span>契約新規作成</span>
+                        </v-card-title>
+                        <v-card-text>
+                            <v-alert
+                                     v-if="props.errors.length > 0"
+                                     type="error"
+                                     class="mb-4">
+                                <ul>
+                                    <li v-for="(error, i) in props.errors" :key="i">
+                                        {{ error }}
+                                    </li>
+                                </ul>
+                            </v-alert>
+                            <!-- Application Info -->
+                            <v-card variant="outlined" class="mb-6">
+                                <v-card-item>
+                                    <v-card-title>申し込み情報</v-card-title>
+                                </v-card-item>
+                                <v-list-item
+                                             :title="`申込 ID: ${application.id}`"></v-list-item>
+                                <v-list-item
+                                             :title="`お客様名称: ${application.customer_name}`"></v-list-item>
+                                <v-list-item
+                                             :title="`メールアドレス: ${application.email}`"></v-list-item>
+                                <v-list-item>
+                                    <template v-slot:title>
+                                        申し込みステータス:
+                                        <v-chip :color="getAppStatusColor(application.status)" size="small" class="ml-2">
+                                            {{ getAppStatusText(application.status) }}
+                                        </v-chip>
+                                    </template>
+                                </v-list-item>
+                            </v-card>
 
-                        <!-- Contract Form -->
-                        <form method="POST" action="/admin/contracts">
-                            <input type="hidden" name="application_id" :value="application.id" />
-                            <input type="hidden" name="user_id" :value="application.user.id" />
-                            <input type="hidden" name="_token" :value="csrfToken" />
+                            <!-- Contract Form -->
+                            <form method="POST" action="/admin/contracts">
+                                <input type="hidden" name="application_id" :value="application.id" />
+                                <input type="hidden" name="user_id" :value="application.user.id" />
+                                <input type="hidden" name="_token" :value="csrfToken" />
 
-                            <v-text-field v-model="form.name" name="name" label="契約名" required
-                                          :rules="[rules.required]"></v-text-field>
+                                <v-text-field v-model="form.name" name="name" label="契約名" required
+                                              :rules="[rules.required]"></v-text-field>
 
-                            <v-text-field v-model="form.max_shops" @update:model-value="
-                                form.max_shops = formatNumericInput($event) as any
-                                " name="max_shops" label="店舗上限数" :rules="[rules.required, rules.numeric]"
-                                          inputmode="numeric" required></v-text-field>
+                                <v-text-field v-model="form.max_shops" @update:model-value="
+                                    form.max_shops = formatNumericInput($event) as any
+                                    " name="max_shops" label="店舗上限数" :rules="[rules.required, rules.numeric]"
+                                              inputmode="numeric" required></v-text-field>
 
-                            <v-select v-model="form.status" name="status" :items="['active', 'expired']" label="契約ステータス"
-                                      required
-                                      :rules="[rules.required]"></v-select>
+                                <v-select v-model="form.status" name="status" :items="statusItems" item-title="title"
+                                          item-value="value" label="契約ステータス" required
+                                          :rules="[rules.required]"></v-select>
 
-                            <v-text-field v-model="form.start_date" name="start_date" label="契約開始日" type="date" required
-                                          :rules="[rules.required]"></v-text-field>
+                                <v-text-field v-model="form.start_date" name="start_date" label="契約開始日" type="date" required
+                                              :rules="[rules.required]"></v-text-field>
 
-                            <v-text-field v-model="form.end_date" name="end_date" label="契約終了日" type="date" required
-                                          :rules="[rules.required]"></v-text-field>
+                                <v-text-field v-model="form.end_date" name="end_date" label="契約終了日" type="date" required
+                                              :rules="[rules.required]"></v-text-field>
 
-                            <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn type="submit" color="primary" :disabled="application.status !== 'pending' ||
-                                    !isFormValid
-                                    "> 契約を作成する
-                                </v-btn>
-                            </v-card-actions>
-                        </form>
-                    </v-card-text>
-                </v-card>
-            </v-col>
-        </v-row>
-    </v-container>
+                                <v-card-actions>
+                                    <v-spacer></v-spacer>
+                                    <v-btn type="submit" color="primary" :disabled="application.status !== 'pending' ||
+                                        !isFormValid
+                                        "> 契約を作成する
+                                    </v-btn>
+                                </v-card-actions>
+                            </form>
+                        </v-card-text>
+                    </v-card>
+                </v-col>
+            </v-row>
+        </v-container>
+    </AdminLayout>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { formatNumericInput } from "@/composables/useNumericInput";
-import FlashMessage from "@/components/common/FlashMessage.vue";
+import AdminLayout from "@/components/admin/AdminLayout.vue";
 import { useContractStatus } from "@/composables/useContractStatus";
 
 const props = defineProps<{
@@ -97,7 +98,12 @@ const props = defineProps<{
     errors: string[];
 }>();
 
-const { getAppStatusText, getAppStatusColor } = useContractStatus();
+const { getAppStatusText, getAppStatusColor, getContractStatusText } = useContractStatus();
+
+const statusItems = [
+    { title: getContractStatusText('active'), value: 'active' },
+    { title: getContractStatusText('expired'), value: 'expired' },
+];
 
 const csrfToken = ref("");
 

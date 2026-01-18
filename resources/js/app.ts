@@ -77,6 +77,9 @@ const pages = {
     "owner/shops/staff-applications/Index": defineAsyncComponent(
         () => import("@/owner/shops/staff-applications/Index.vue")
     ),
+    "owner/shops/staff-applications/Share": defineAsyncComponent(
+        () => import("@/owner/shops/staff-applications/Share.vue")
+    ),
     "owner/shops/staffs/Index": defineAsyncComponent(
         () => import("@/owner/shops/staffs/Index.vue")
     ),

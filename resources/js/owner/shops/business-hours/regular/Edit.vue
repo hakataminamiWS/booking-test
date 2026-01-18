@@ -7,6 +7,32 @@
                     <v-card>
                         <v-card-title>営業時間・定休日設定</v-card-title>
                         <v-card-text>
+                            <v-alert
+                                     type="info"
+                                     variant="tonal"
+                                     class="mb-4"
+                                     icon="mdi-information">
+                                <div class="text-caption text-sm-body-2">
+                                    <p class="font-weight-bold mb-2">【営業時間・定休日の設定について】</p>
+                                    <ul class="ml-4">
+                                        <li>
+                                            本設定は、シフト登録時に参考となるものです。
+                                        </li>
+                                        <li>
+                                            予約枠の計算には影響しません（予約枠は、シフト登録内容および予約状況によって計算されます）。
+                                        </li>
+                                        <li>
+                                            <strong>営業日：</strong>
+                                            チェックを入れると、開始時刻、および終了時刻を設定できます。
+                                        </li>
+                                        <li>
+                                            <strong>開始時間、終了時間：</strong>
+                                            シフト登録時のデフォルトとして表示されます。時間外にシフトを登録する際に、警告を表示します（警告を無視して登録可能です）。
+                                        </li>
+                                    </ul>
+                                </div>
+                            </v-alert>
+
                             <form :action="formAction" method="POST">
                                 <input
                                        type="hidden"

@@ -104,14 +104,17 @@ Route::middleware('auth')->group(function () {
             Route::put('/business-hours/special-closed-days/{special_closed_day}', [App\Http\Controllers\Owner\ShopSpecialClosedDaysController::class, 'update'])->name('shops.business-hours.special-closed-days.update');
 
             Route::get('/staff-applications', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'index'])->name('shops.staff-applications.index');
+            Route::get('/staff-applications/share', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'share'])->name('shops.staff-applications.share');
             Route::put('/staff-applications/{staff_application}/approve', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'approve'])->name('shops.staff-applications.approve');
             Route::put('/staff-applications/{staff_application}/reject', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'reject'])->name('shops.staff-applications.reject');
+            Route::delete('/staff-applications/{staff_application}', [App\Http\Controllers\Owner\ShopStaffApplicationController::class, 'destroy'])->name('shops.staff-applications.destroy');
 
             Route::get('/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'index'])->name('shops.staffs.index');
             Route::get('/staffs/{staff}/edit', [App\Http\Controllers\Owner\ShopStaffController::class, 'edit'])->name('shops.staffs.edit');
             Route::put('/staffs/{staff}', [App\Http\Controllers\Owner\ShopStaffController::class, 'update'])->name('shops.staffs.update');
             Route::get('/staffs/create', [App\Http\Controllers\Owner\ShopStaffController::class, 'create'])->name('shops.staffs.create');
             Route::post('/staffs', [App\Http\Controllers\Owner\ShopStaffController::class, 'store'])->name('shops.staffs.store');
+            Route::delete('/staffs/{staff}', [App\Http\Controllers\Owner\ShopStaffController::class, 'destroy'])->name('shops.staffs.destroy');
 
             // Shift Management
             Route::get('/shifts', [App\Http\Controllers\Owner\ShopStaffScheduleController::class, 'index'])->name('shops.shifts.index');

@@ -107,16 +107,47 @@
                                     {{ new Date(item.created_at).toLocaleString() }}
                                 </template>
                                 <template v-slot:item.actions="{ item }">
-                                    <v-btn
-                                           color="primary"
-                                           :href="`/owner/shops/${props.shop.slug}/staffs/${item.id}/edit`">プロフィールを編集する
-                                    </v-btn>
+                                    <div class="d-flex align-center">
+                                        <v-btn
+                                               variant="plain"
+                                               color="error"
+                                               class="mr-2"
+                                               @click="confirmDelete(item)">
+                                            スタッフを削除する
+                                        </v-btn>
+                                        <v-btn
+                                               color="primary"
+                                               :href="`/owner/shops/${props.shop.slug}/staffs/${item.id}/edit`">プロフィールを編集する
+                                        </v-btn>
+                                    </div>
                                 </template>
                             </v-data-table-server>
                         </v-card-text>
                     </v-card>
                 </v-col>
             </v-row>
+
+            <!-- Delete Confirmation Dialog -->
+            <v-dialog v-model="deleteDialog" max-width="500px">
+                <v-card>
+                    <v-card-title class="headline">削除確認</v-card-title>
+                    <v-card-text>
+                        このスタッフを削除してもよろしいですか？スタッフ削除後も予約データは残ります。<br>
+                        スタッフ名: {{ deletionTarget?.profile?.nickname || '（未設定）' }}
+                    </v-card-text>
+                    <v-card-actions>
+                        <v-spacer></v-spacer>
+                        <v-btn color="blue darken-1" text @click="deleteDialog = false">キャンセル</v-btn>
+                        <form v-if="deletionTarget"
+                              :action="`/owner/shops/${props.shop.slug}/staffs/${deletionTarget.id}`"
+                              method="POST">
+                            <input type="hidden" name="_token" :value="props.csrfToken" />
+                            <input type="hidden" name="_method" value="DELETE" />
+                            <v-btn color="error" type="submit" @click="deleteDialog = false">削除する</v-btn>
+                        </form>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
 
             <!-- Filter Dialog -->
             <v-dialog v-model="filterDialog" max-width="800px">
@@ -216,6 +247,8 @@ const loading = ref(false);
 const totalItems = ref(0);
 const page = ref(1);
 const itemsPerPage = ref(20);
+const deleteDialog = ref(false);
+const deletionTarget = ref<any>(null); // To store the item to be deleted
 const from = computed(() => (page.value - 1) * itemsPerPage.value + 1);
 const to = computed(() =>
     Math.min(page.value * itemsPerPage.value, totalItems.value)
@@ -432,6 +465,11 @@ const loadItems = async (options: Options) => {
     } finally {
         loading.value = false;
     }
+};
+
+const confirmDelete = (item: any) => {
+    deletionTarget.value = item;
+    deleteDialog.value = true;
 };
 
 const statusColor = (userId: number | null) => {

@@ -155,4 +155,20 @@ class Shop extends Model
     {
         return $this->shopSpecialClosedDays();
     }
+
+    /**
+     * Alias for shopSpecialOpenDays() to support route parameter {special_open_day} (inferred plural)
+     */
+    public function specialOpenDays(): HasMany
+    {
+        return $this->shopSpecialOpenDays();
+    }
+
+    /**
+     * Alias for shopSpecialClosedDays() to support route parameter {special_closed_day} (inferred plural)
+     */
+    public function specialClosedDays(): HasMany
+    {
+        return $this->shopSpecialClosedDays();
+    }
 }

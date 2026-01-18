@@ -13,6 +13,16 @@
                     {{ backLabel }}
                 </v-btn>
                 <v-app-bar-title>{{ shop.name }}</v-app-bar-title>
+
+                <v-spacer></v-spacer>
+
+                <!-- ログアウト -->
+                <form id="logout-form" action="/logout" method="POST" style="display: none;">
+                    <input type="hidden" name="_token" :value="csrfToken">
+                </form>
+                <v-btn variant="text" class="text-white" @click="logout">
+                    ログアウト
+                </v-btn>
             </v-container>
         </v-app-bar>
 
@@ -27,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
 import FlashMessage from "@/components/common/FlashMessage.vue";
 
 interface Shop {
@@ -39,6 +50,22 @@ defineProps<{
     backLink?: string;
     backLabel?: string;
 }>();
+
+const csrfToken = ref('');
+
+const logout = () => {
+    const form = document.getElementById('logout-form') as HTMLFormElement;
+    if (form) {
+        form.submit();
+    }
+};
+
+onMounted(() => {
+    const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+    if (tokenMeta) {
+        csrfToken.value = tokenMeta.getAttribute('content') || '';
+    }
+});
 </script>
 
 <style scoped>

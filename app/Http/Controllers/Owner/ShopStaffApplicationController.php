@@ -26,11 +26,22 @@ class ShopStaffApplicationController extends Controller
     }
 
     /**
+     * Display the staff application share page.
+     */
+    public function share(Shop $shop)
+    {
+        return view('owner.shops.staff-applications.share', compact('shop'));
+    }
+
+    /**
      * Approve the specified staff application.
      */
     public function approve(Shop $shop, ShopStaffApplication $staff_application): RedirectResponse
     {
-
+        if ($staff_application->status !== 'pending') {
+            return redirect()->route('owner.shops.staff-applications.index', ['shop' => $shop])
+                ->with('error', '承認待ちの申請のみ承認できます。');
+        }
 
         DB::transaction(function () use ($shop, $staff_application) {
             $staff_application->status = 'approved';
@@ -57,12 +68,26 @@ class ShopStaffApplicationController extends Controller
      */
     public function reject(Shop $shop, ShopStaffApplication $staff_application): RedirectResponse
     {
-
+        if ($staff_application->status !== 'pending') {
+            return redirect()->route('owner.shops.staff-applications.index', ['shop' => $shop])
+                ->with('error', '承認待ちの申請のみ却下できます。');
+        }
 
         $staff_application->status = 'rejected';
         $staff_application->save();
 
         return redirect()->route('owner.shops.staff-applications.index', ['shop' => $shop])
             ->with('success', '申し込みを却下しました。');
+    }
+
+    /**
+     * Remove the specified staff application.
+     */
+    public function destroy(Shop $shop, ShopStaffApplication $staff_application): RedirectResponse
+    {
+        $staff_application->delete();
+
+        return redirect()->route('owner.shops.staff-applications.index', ['shop' => $shop])
+            ->with('success', '申し込みを削除しました。');
     }
 }
