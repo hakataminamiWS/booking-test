@@ -3,13 +3,11 @@
 namespace App\Notifications\Shop;
 
 use App\Models\Booking;
-use App\Services\BookingCancellationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class BookingConfirmedNotification extends Notification implements ShouldQueue
+class BookingProvisionalExpiredNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -24,10 +22,9 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): \Illuminate\Mail\Mailable
     {
-        // Userモデルならオーナーとみなす (簡易判定。厳密には isAdmin とか isOwnerOf を見るべきだが、notifyを送るコンテキストで制御する前提)
         $isOwner = $notifiable instanceof \App\Models\User;
 
-        return (new \App\Mail\Shop\BookingConfirmedMail($this->booking, $isOwner))
+        return (new \App\Mail\Shop\BookingProvisionalExpiredMail($this->booking, $isOwner))
             ->to($notifiable->email);
     }
 }

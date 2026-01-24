@@ -21,20 +21,11 @@ class BookingCancelledNotification extends Notification implements ShouldQueue
         return ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): \Illuminate\Mail\Mailable
     {
-        $shop = $this->booking->shop;
+        $isOwner = $notifiable instanceof \App\Models\User;
 
-        return (new MailMessage)
-            ->subject('【' . $shop->name . '】予約キャンセルのお知らせ')
-            ->replyTo($shop->email, $shop->name)
-            ->greeting($this->booking->booker_name . ' 様')
-            ->line('以下の予約をキャンセルしました。')
-            ->line('--------------------------------------------------')
-            ->line('店舗: ' . $shop->name)
-            ->line('日時: ' . $this->booking->start_at->format('Y年m月d日 H:i'))
-            ->line('メニュー: ' . $this->booking->menu_name)
-            ->line('--------------------------------------------------')
-            ->line('またのご来店を心よりお待ちしております。');
+        return (new \App\Mail\Shop\BookingCanceledMail($this->booking, $isOwner))
+            ->to($notifiable->email);
     }
 }

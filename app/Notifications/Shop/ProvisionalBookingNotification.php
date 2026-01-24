@@ -21,21 +21,11 @@ class ProvisionalBookingNotification extends Notification implements ShouldQueue
         return ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): \Illuminate\Mail\Mailable
     {
-        $shop = $this->booking->shop;
+        $isOwner = $notifiable instanceof \App\Models\User;
 
-        return (new MailMessage)
-            ->subject('【' . $shop->name . '】仮予約を受け付けました')
-            ->replyTo($shop->email, $shop->name)
-            ->greeting($this->booking->booker_name . ' 様')
-            ->line('仮予約を受け付けました。')
-            ->line('店舗からの確定連絡をお待ちください。')
-            ->line('--------------------------------------------------')
-            ->line('店舗: ' . $shop->name)
-            ->line('日時: ' . $this->booking->start_at->format('Y年m月d日 H:i'))
-            ->line('メニュー: ' . $this->booking->menu_name)
-            ->line('--------------------------------------------------')
-            ->line('※この時点ではまだ予約は確定しておりません。');
+        return (new \App\Mail\Shop\BookingProvisionalMail($this->booking, $isOwner))
+            ->to($notifiable->email);
     }
 }
