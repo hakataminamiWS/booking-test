@@ -152,29 +152,13 @@ class BookingController extends Controller
 
         // pending以外ならcompleteへリダイレクト（誤ってアクセスした場合など）
         if ($booking->status !== 'pending') {
-             return redirect()->route('guest.bookings.complete', ['shop' => $shop->slug, 'booking' => $booking->id]);
+             return redirect()->route('shop.entry', ['shop' => $shop->slug]);
         }
 
         // ViewにはIDのみを渡す (個人情報保護)
         return view('guest.bookings.provisional', [
             'shop' => $shop,
             'booking' => ['id' => $booking->id],
-        ]);
-    }
-
-    public function complete(Shop $shop, $bookingId)
-    {
-        // ... (省略: 今回修正範囲外だが、念のため同様の思想が望ましい。しかしinstructionはcompleteには触れない方針)
-        // 今回の指示は provisional と verify
-        // completeメソッドは修正対象外とする
-        
-        $booking = $shop->bookings()
-            ->with(['menu', 'staff.profile', 'bookingOptions'])
-            ->findOrFail($bookingId);
-
-        return view('guest.bookings.complete', [
-            'shop' => $shop,
-            'booking' => $booking,
         ]);
     }
 

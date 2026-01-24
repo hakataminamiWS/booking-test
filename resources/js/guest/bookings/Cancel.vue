@@ -31,7 +31,8 @@
                                 <div class="mb-6">
                                     <h3 class="text-subtitle-1 font-weight-bold mb-2">予約日時・担当</h3>
                                     <v-card variant="text" class="px-0 mb-4">
-                                        <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">予約日時</v-card-title>
+                                        <v-card-title
+                                                      class="pa-0 text-subtitle-2 text-grey-darken-1">予約日時</v-card-title>
                                         <v-card-text class="pa-0 text-body-1 font-weight-bold text-high-emphasis">
                                             {{ formatDate(booking.start_at) }}<br />
                                             {{ formatTime(booking.start_at) }} 〜 {{ formatTime(booking.end_at) }}
@@ -40,7 +41,8 @@
                                     </v-card>
 
                                     <v-card variant="text" class="px-0 mb-4">
-                                        <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">担当スタッフ</v-card-title>
+                                        <v-card-title
+                                                      class="pa-0 text-subtitle-2 text-grey-darken-1">担当スタッフ</v-card-title>
                                         <v-card-text class="pa-0 text-body-1 font-weight-bold text-high-emphasis">
                                             {{ booking.assigned_staff_name || '指名なし' }}
                                         </v-card-text>
@@ -56,21 +58,27 @@
                                         <v-list-item class="px-0">
                                             <div class="d-flex justify-space-between align-center w-100">
                                                 <div>
-                                                    <div class="text-high-emphasis font-weight-medium">{{ booking.menu_name }}</div>
-                                                    <div class="text-caption text-grey">{{ booking.menu_duration }}分</div>
+                                                    <div class="text-high-emphasis font-weight-medium">{{
+                                                        booking.menu_name }}</div>
+                                                    <div class="text-caption text-grey">{{ booking.menu_duration }}分
+                                                    </div>
                                                 </div>
-                                                <div class="text-body-1 font-weight-bold">¥{{ booking.menu_price.toLocaleString() }}</div>
+                                                <div class="text-body-1 font-weight-bold">¥{{
+                                                    booking.menu_price.toLocaleString() }}</div>
                                             </div>
                                         </v-list-item>
 
                                         <template v-if="booking.bookingOptions && booking.bookingOptions.length > 0">
-                                            <v-list-item v-for="opt in booking.bookingOptions" :key="opt.option_name" class="px-0 pt-2">
+                                            <v-list-item v-for="opt in booking.bookingOptions" :key="opt.option_name"
+                                                         class="px-0 pt-2">
                                                 <div class="d-flex justify-space-between align-center w-100">
                                                     <div>
                                                         <div class="text-high-emphasis">{{ opt.option_name }}</div>
-                                                        <div class="text-caption text-grey">+{{ opt.option_duration ?? 0 }}分</div>
+                                                        <div class="text-caption text-grey">+{{ opt.option_duration ?? 0
+                                                            }}分</div>
                                                     </div>
-                                                    <div class="text-body-1">¥{{ opt.option_price?.toLocaleString() ?? 0 }}</div>
+                                                    <div class="text-body-1">¥{{ opt.option_price?.toLocaleString() ?? 0
+                                                        }}</div>
                                                 </div>
                                             </v-list-item>
                                         </template>
@@ -79,7 +87,8 @@
                                     <v-divider class="my-4"></v-divider>
                                     <div class="d-flex justify-space-between align-center py-2">
                                         <span class="text-subtitle-1 font-weight-bold">合計金額</span>
-                                        <span class="text-h6 font-weight-bold text-primary">¥{{ totalPrice.toLocaleString() }}</span>
+                                        <span class="text-h6 font-weight-bold text-primary">¥{{
+                                            totalPrice.toLocaleString() }}</span>
                                     </div>
                                 </div>
 
@@ -88,34 +97,46 @@
                                     <v-divider class="mb-6"></v-divider>
                                     <div class="mb-6">
                                         <h3 class="text-subtitle-1 font-weight-bold mb-2">お客様からのメモ</h3>
-                                        <p class="text-body-1 text-grey-darken-1" style="white-space: pre-wrap;">{{ booking.note_from_booker }}</p>
+                                        <p class="text-body-1 text-grey-darken-1" style="white-space: pre-wrap;">{{
+                                            booking.note_from_booker }}</p>
                                     </div>
                                 </template>
                             </v-card-text>
 
-                            <v-card-actions class="px-4 pb-6 d-flex flex-column flex-sm-row-reverse gap-3 justify-center">
-                                <v-form @submit.prevent="submitCancel" class="w-100 w-sm-auto">
-                                    <v-btn
-                                        type="submit"
-                                        color="error"
-                                        block
-                                        height="48"
-                                        class="font-weight-bold"
-                                        :loading="loading"
-                                        min-width="200">
-                                        予約をキャンセルする
-                                    </v-btn>
-                                </v-form>
-
-                                <v-btn
-                                    variant="text"
-                                    block
-                                    class="w-100 w-sm-auto mt-0"
-                                    height="48"
-                                    @click="goTop">
+                            <v-card-actions
+                                            class="cancel-actions px-4 pb-6 d-flex flex-row gap-3 justify-center flex-wrap">
+                                <v-btn variant="text" height="48" @click="goTop" class="cancel-btn">
                                     キャンセルせずに戻る
                                 </v-btn>
+
+                                <v-spacer class="cancel-spacer"></v-spacer>
+
+                                <v-btn color="error" height="48" class="font-weight-bold cancel-form"
+                                       @click="confirmDialog = true">
+                                    予約をキャンセルする
+                                </v-btn>
                             </v-card-actions>
+
+                            <!-- キャンセル確認ダイアログ -->
+                            <v-dialog v-model="confirmDialog" max-width="500px">
+                                <v-card>
+                                    <v-card-title class="text-h5">
+                                        本当にキャンセルしますか？
+                                    </v-card-title>
+                                    <v-card-text>
+                                        この操作は取り消せません。
+                                    </v-card-text>
+                                    <v-card-actions>
+                                        <v-btn color="blue-darken-1" variant="text" @click="confirmDialog = false">
+                                            戻る
+                                        </v-btn>
+                                        <v-spacer></v-spacer>
+                                        <v-btn color="error" variant="text" :loading="loading" @click="submitCancel">
+                                            この予約をキャンセルする
+                                        </v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </v-dialog>
                         </v-card>
                     </template>
                 </v-col>
@@ -160,6 +181,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const loading = ref(false);
+const confirmDialog = ref(false);
 
 const totalPrice = computed(() => {
     let total = props.booking.menu_price;
@@ -190,9 +212,8 @@ const formatTime = (dateStr: string) => {
 };
 
 const submitCancel = () => {
-    if (!confirm('本当にキャンセルしてよろしいですか？')) return;
     loading.value = true;
-    
+
     // Create form for submission (Standard POST with CSRF)
     const form = document.createElement('form');
     form.method = 'POST';
@@ -223,5 +244,21 @@ const goTop = () => {
 
 .gap-3 {
     gap: 12px;
+}
+
+/* 狭い画面では縦並びにしてボタンを揃える */
+@media (max-width: 450px) {
+    .cancel-actions {
+        flex-direction: column !important;
+    }
+
+    .cancel-spacer {
+        display: none;
+    }
+
+    .cancel-btn,
+    .cancel-form {
+        width: 100%;
+    }
 }
 </style>

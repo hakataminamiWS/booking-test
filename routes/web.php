@@ -30,7 +30,6 @@ Route::get('/', function () {
     Route::get('/bookings/create', [App\Http\Controllers\Guest\BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [App\Http\Controllers\Guest\BookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}/provisional', [App\Http\Controllers\Guest\BookingController::class, 'provisional'])->name('bookings.provisional');
-    Route::get('/bookings/{booking}/complete', [App\Http\Controllers\Guest\BookingController::class, 'complete'])->name('bookings.complete');
 
     // 予約確定 (Signed URL)
     Route::get('/bookings/{booking}/verify', [App\Http\Controllers\Guest\BookingController::class, 'verify'])
