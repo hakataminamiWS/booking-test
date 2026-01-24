@@ -45,6 +45,15 @@ class EmailSendTest extends TestCase
             'timezone' => 'Asia/Tokyo',
         ]);
         
+        // 追加要件: メニュー情報が必要 (キャンセル期限計算のため)
+        $menu = $shop->menus()->create([
+            'name' => 'カット',
+            'price' => 3000,
+            'duration' => 60,
+            'requires_cancellation_deadline' => true,
+            'cancellation_deadline_minutes' => 60, // 1時間前まで
+        ]);
+        
         $booker = ShopBooker::create([
             'shop_id' => $shop->id,
             'name' => 'テスト予約者',
@@ -56,18 +65,31 @@ class EmailSendTest extends TestCase
             'shop_id' => $shop->id,
             'shop_booker_id' => $booker->id,
             'status' => 'confirmed',
-            'menu_id' => null, 
-            'menu_name' => 'カット',
-            'menu_price' => 3000,
-            'menu_duration' => 60,
+            'menu_id' => $menu->id, 
+            'menu_name' => $menu->name,
+            'menu_price' => $menu->price,
+            'menu_duration' => $menu->duration,
             'assigned_staff_id' => null,
             'assigned_staff_name' => 'テストスタッフ',
             'timezone' => 'Asia/Tokyo',
-            'start_at' => now()->addDay(),
-            'end_at' => now()->addDay()->addHour(),
+            // JST 10:00 を作成 -> UTC 01:00 に変換して保存
+            // これによりメール表示時(JST変換)に 10:00 に戻る
+            'start_at' => \Illuminate\Support\Carbon::create(2026, 1, 25, 10, 0, 0, 'Asia/Tokyo')->setTimezone('UTC'),
+            'end_at' => \Illuminate\Support\Carbon::create(2026, 1, 25, 11, 0, 0, 'Asia/Tokyo')->setTimezone('UTC'),
             'booker_name' => $booker->name,
             'contact_email' => $booker->contact_email,
             'contact_phone' => $booker->contact_phone,
+            'note_from_booker' => '髪を短くしたいです。よろしくお願いします。',
+        ]);
+        
+        // 追加要件: 仮予約有効期限情報 (ProvisionalBooking)
+        // 予約開始(10:00)の6時間前 = 04:00 JST -> UTC に変換して保存
+        $expiresAt = \Illuminate\Support\Carbon::create(2026, 1, 25, 10, 0, 0, 'Asia/Tokyo')->subHours(6);
+        
+        \App\Models\ProvisionalBooking::create([
+            'booking_id' => $booking->id,
+            'shop_id' => $shop->id,
+            'expires_at' => $expiresAt->setTimezone('UTC'),
         ]);
 
         return [$shop, $booker, $booking, $owner];

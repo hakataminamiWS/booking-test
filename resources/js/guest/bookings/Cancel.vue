@@ -27,45 +27,92 @@
                             </v-card-title>
 
                             <v-card-text class="px-4 pb-4">
+                                <!-- Time & Staff Section -->
                                 <div class="mb-6">
                                     <h3 class="text-subtitle-1 font-weight-bold mb-2">予約日時・担当</h3>
                                     <v-card variant="text" class="px-0 mb-4">
-                                        <v-card-title
-                                                      class="pa-0 text-subtitle-2 text-grey-darken-1">予約日時</v-card-title>
+                                        <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">予約日時</v-card-title>
                                         <v-card-text class="pa-0 text-body-1 font-weight-bold text-high-emphasis">
                                             {{ formatDate(booking.start_at) }}<br />
                                             {{ formatTime(booking.start_at) }} 〜 {{ formatTime(booking.end_at) }}
+                                            <span class="text-body-2 text-grey ml-1">({{ totalDuration }}分)</span>
                                         </v-card-text>
                                     </v-card>
 
                                     <v-card variant="text" class="px-0 mb-4">
-                                        <v-card-title
-                                                      class="pa-0 text-subtitle-2 text-grey-darken-1">メニュー</v-card-title>
+                                        <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">担当スタッフ</v-card-title>
                                         <v-card-text class="pa-0 text-body-1 font-weight-bold text-high-emphasis">
-                                            {{ booking.menu_name }}
+                                            {{ booking.assigned_staff_name || '指名なし' }}
                                         </v-card-text>
                                     </v-card>
                                 </div>
+
+                                <v-divider class="mb-6"></v-divider>
+
+                                <!-- Menu Details Section -->
+                                <div class="mb-6">
+                                    <h3 class="text-subtitle-1 font-weight-bold mb-2">メニュー詳細</h3>
+                                    <v-list density="compact" class="pa-0">
+                                        <v-list-item class="px-0">
+                                            <div class="d-flex justify-space-between align-center w-100">
+                                                <div>
+                                                    <div class="text-high-emphasis font-weight-medium">{{ booking.menu_name }}</div>
+                                                    <div class="text-caption text-grey">{{ booking.menu_duration }}分</div>
+                                                </div>
+                                                <div class="text-body-1 font-weight-bold">¥{{ booking.menu_price.toLocaleString() }}</div>
+                                            </div>
+                                        </v-list-item>
+
+                                        <template v-if="booking.bookingOptions && booking.bookingOptions.length > 0">
+                                            <v-list-item v-for="opt in booking.bookingOptions" :key="opt.option_name" class="px-0 pt-2">
+                                                <div class="d-flex justify-space-between align-center w-100">
+                                                    <div>
+                                                        <div class="text-high-emphasis">{{ opt.option_name }}</div>
+                                                        <div class="text-caption text-grey">+{{ opt.option_duration ?? 0 }}分</div>
+                                                    </div>
+                                                    <div class="text-body-1">¥{{ opt.option_price?.toLocaleString() ?? 0 }}</div>
+                                                </div>
+                                            </v-list-item>
+                                        </template>
+                                    </v-list>
+
+                                    <v-divider class="my-4"></v-divider>
+                                    <div class="d-flex justify-space-between align-center py-2">
+                                        <span class="text-subtitle-1 font-weight-bold">合計金額</span>
+                                        <span class="text-h6 font-weight-bold text-primary">¥{{ totalPrice.toLocaleString() }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Note Section -->
+                                <template v-if="booking.note_from_booker">
+                                    <v-divider class="mb-6"></v-divider>
+                                    <div class="mb-6">
+                                        <h3 class="text-subtitle-1 font-weight-bold mb-2">お客様からのメモ</h3>
+                                        <p class="text-body-1 text-grey-darken-1" style="white-space: pre-wrap;">{{ booking.note_from_booker }}</p>
+                                    </div>
+                                </template>
                             </v-card-text>
 
-                            <v-card-actions class="px-4 pb-6 d-flex flex-column gap-3">
-                                <v-form @submit.prevent="submitCancel" class="w-100">
+                            <v-card-actions class="px-4 pb-6 d-flex flex-column flex-sm-row-reverse gap-3 justify-center">
+                                <v-form @submit.prevent="submitCancel" class="w-100 w-sm-auto">
                                     <v-btn
-                                           type="submit"
-                                           color="error"
-                                           block
-                                           height="48"
-                                           class="font-weight-bold"
-                                           :loading="loading">
+                                        type="submit"
+                                        color="error"
+                                        block
+                                        height="48"
+                                        class="font-weight-bold"
+                                        :loading="loading"
+                                        min-width="200">
                                         予約をキャンセルする
                                     </v-btn>
                                 </v-form>
 
                                 <v-btn
-                                       variant="text"
-                                       block
-                                       class="mt-2"
-                                       @click="goTop">
+                                    variant="text"
+                                    block
+                                    class="w-100 w-sm-auto mt-0"
+                                    height="48"
+                                    @click="goTop">
                                     キャンセルせずに戻る
                                 </v-btn>
                             </v-card-actions>
@@ -86,22 +133,49 @@ interface Shop {
     slug: string;
 }
 
+interface BookingOption {
+    option_name: string;
+    option_price?: number;
+    option_duration?: number;
+}
+
 interface Booking {
     id: number;
     start_at: string;
     end_at: string;
     menu_name: string;
+    menu_price: number;
+    menu_duration: number;
+    assigned_staff_name: string;
     status: string;
+    note_from_booker?: string;
+    bookingOptions: BookingOption[];
     shop: Shop;
 }
 
 interface Props {
     booking: Booking;
-    token: string;
+    cancelUrl: string;
 }
 
 const props = defineProps<Props>();
 const loading = ref(false);
+
+const totalPrice = computed(() => {
+    let total = props.booking.menu_price;
+    props.booking.bookingOptions?.forEach(opt => {
+        total += opt.option_price ?? 0;
+    });
+    return total;
+});
+
+const totalDuration = computed(() => {
+    let total = props.booking.menu_duration;
+    props.booking.bookingOptions?.forEach(opt => {
+        total += opt.option_duration ?? 0;
+    });
+    return total;
+});
 
 const formatDate = (dateStr: string) => {
     if (!dateStr) return "";
@@ -118,11 +192,11 @@ const formatTime = (dateStr: string) => {
 const submitCancel = () => {
     if (!confirm('本当にキャンセルしてよろしいですか？')) return;
     loading.value = true;
-    // Helper form submission to include CSRF automatically if meta tag is present (standard Laravel blade layout has it)
-    // Or create a form element and submit it.
+    
+    // Create form for submission (Standard POST with CSRF)
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `/bookings/cancel/${props.token}`;
+    form.action = props.cancelUrl;
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     if (csrfToken) {
@@ -138,7 +212,6 @@ const submitCancel = () => {
 };
 
 const goTop = () => {
-    // Redirect to shop top? Accessing shop entry from booking shop slug
     window.location.href = `/shops/${props.booking.shop.slug}`;
 };
 </script>

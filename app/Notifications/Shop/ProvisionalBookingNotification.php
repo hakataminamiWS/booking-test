@@ -23,9 +23,10 @@ class ProvisionalBookingNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): \Illuminate\Mail\Mailable
     {
-        $isOwner = $notifiable instanceof \App\Models\User;
+        $isOwner = $notifiable instanceof \App\Models\Shop
+            || $notifiable instanceof \App\Models\User;
 
         return (new \App\Mail\Shop\BookingProvisionalMail($this->booking, $isOwner))
-            ->to($notifiable->email);
+            ->to($notifiable->contact_email ?? $notifiable->email);
     }
 }

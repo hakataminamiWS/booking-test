@@ -14,12 +14,24 @@
 以下の内容で予約が確定しました。
 --------------------------------------------------
 店舗: {{ $shop->name }}
-日時: {{ $booking->start_at->format('Y年m月d日 H:i') }}
+日時: {{ $booking->start_at->setTimezone($booking->timezone)->format('Y年m月d日 H:i') }} 〜 {{ $booking->end_at->setTimezone($booking->timezone)->format('H:i') }}
 メニュー: {{ $booking->menu_name }}
 金額: ¥{{ number_format($booking->menu_price) }}
+担当者: {{ $booking->assigned_staff_name ?? '指名なし' }}
 --------------------------------------------------
 
-予約内容の確認・キャンセル:
-{{ route('guest.bookings.cancel.show', ['token' => app(App\Services\BookingCancellationService::class)->generateToken($booking)]) }}
+@if ($booking->note_from_booker)
+[お客様からのメモ]
+{{ $booking->note_from_booker }}
+
+@endif
+@php
+    $deadline = app(\App\Services\CancellationDeadlineService::class)
+        ->getFormattedDeadline($shop, $booking->menu, $booking->start_at);
+@endphp
+キャンセル可能期限: {{ $deadline }} まで
+
+▼ 予約内容のキャンセルはこちら ▼
+{!! $cancelUrl !!}
 
 ご来店を心よりお待ちしております。

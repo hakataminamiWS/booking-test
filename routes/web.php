@@ -22,10 +22,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// --- Guest Cancellation Routes ---
-Route::get('/bookings/cancel/{token}', [App\Http\Controllers\Guest\BookingCancellationController::class, 'show'])->name('guest.bookings.cancel.show');
-Route::post('/bookings/cancel/{token}', [App\Http\Controllers\Guest\BookingCancellationController::class, 'perform'])->name('guest.bookings.cancel.perform');
-
 // --- Shop Entry Route ---
     Route::get('/shops/{shop:slug}', [App\Http\Controllers\ShopEntryController::class, 'show'])->name('shop.entry');
 
@@ -35,6 +31,19 @@ Route::post('/bookings/cancel/{token}', [App\Http\Controllers\Guest\BookingCance
     Route::post('/bookings', [App\Http\Controllers\Guest\BookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}/provisional', [App\Http\Controllers\Guest\BookingController::class, 'provisional'])->name('bookings.provisional');
     Route::get('/bookings/{booking}/complete', [App\Http\Controllers\Guest\BookingController::class, 'complete'])->name('bookings.complete');
+
+    // 予約確定 (Signed URL)
+    Route::get('/bookings/{booking}/verify', [App\Http\Controllers\Guest\BookingController::class, 'verify'])
+        ->name('bookings.verify')
+        ->middleware('signed');
+
+    // 予約キャンセル (Signed URL)
+    Route::get('/bookings/{booking}/cancel', [App\Http\Controllers\Guest\BookingCancellationController::class, 'show'])
+        ->name('bookings.cancel.show')
+        ->middleware('signed');
+    Route::post('/bookings/{booking}/cancel', [App\Http\Controllers\Guest\BookingCancellationController::class, 'perform'])
+        ->name('bookings.cancel.perform')
+        ->middleware('signed');
 
     // Guest API Routes
     Route::prefix('api')->name('api.')->group(function () {

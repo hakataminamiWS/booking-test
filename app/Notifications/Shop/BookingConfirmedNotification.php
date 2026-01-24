@@ -24,10 +24,11 @@ class BookingConfirmedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): \Illuminate\Mail\Mailable
     {
-        // Userモデルならオーナーとみなす (簡易判定。厳密には isAdmin とか isOwnerOf を見るべきだが、notifyを送るコンテキストで制御する前提)
-        $isOwner = $notifiable instanceof \App\Models\User;
+        // Shop or User ならオーナー向け
+        $isOwner = $notifiable instanceof \App\Models\Shop
+            || $notifiable instanceof \App\Models\User;
 
         return (new \App\Mail\Shop\BookingConfirmedMail($this->booking, $isOwner))
-            ->to($notifiable->email);
+            ->to($notifiable->contact_email ?? $notifiable->email);
     }
 }

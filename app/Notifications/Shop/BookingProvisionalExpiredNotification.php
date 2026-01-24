@@ -22,9 +22,10 @@ class BookingProvisionalExpiredNotification extends Notification implements Shou
 
     public function toMail(object $notifiable): \Illuminate\Mail\Mailable
     {
-        $isOwner = $notifiable instanceof \App\Models\User;
+        $isOwner = $notifiable instanceof \App\Models\Shop
+            || $notifiable instanceof \App\Models\User;
 
         return (new \App\Mail\Shop\BookingProvisionalExpiredMail($this->booking, $isOwner))
-            ->to($notifiable->email);
+            ->to($notifiable->contact_email ?? $notifiable->email);
     }
 }

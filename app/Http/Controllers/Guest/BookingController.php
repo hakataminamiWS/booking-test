@@ -120,7 +120,7 @@ class BookingController extends Controller
             \App\Models\ProvisionalBooking::create([
                 'booking_id' => $booking->id,
                 'shop_id' => $shop->id,
-                'expires_at' => now()->addMinutes(60), // 60分後
+                'expires_at' => now()->addMinutes(10), // 10分後
             ]);
 
             // 統計情報の更新
@@ -128,6 +128,9 @@ class BookingController extends Controller
 
             return $booking;
         });
+
+        // セッションに予約IDを保存 (セキュリティ対策)
+        session(['guest_booking_id' => $booking->id]);
 
         // 仮予約通知送信
         $booking->booker->notify(new \App\Notifications\Shop\ProvisionalBookingNotification($booking));
@@ -139,32 +142,106 @@ class BookingController extends Controller
     public function provisional(Shop $shop, $bookingId)
     {
         // Simple security check: Ensure booking belongs to this shop
-        $booking = $shop->bookings()
-            ->with(['menu', 'staff.profile', 'bookingOptions'])
-            ->findOrFail($bookingId);
+        // 必要なのはIDとステータスチェックだけなので、リレーションロードは不要
+        $booking = $shop->bookings()->findOrFail($bookingId);
             
+        // セキュリティチェック: セッションに保存されたIDと一致するか
+        if (session('guest_booking_id') != $bookingId) {
+             abort(403);
+        }
+
         // pending以外ならcompleteへリダイレクト（誤ってアクセスした場合など）
         if ($booking->status !== 'pending') {
              return redirect()->route('guest.bookings.complete', ['shop' => $shop->slug, 'booking' => $booking->id]);
         }
 
+        // ViewにはIDのみを渡す (個人情報保護)
         return view('guest.bookings.provisional', [
             'shop' => $shop,
-            'booking' => $booking,
+            'booking' => ['id' => $booking->id],
         ]);
     }
 
     public function complete(Shop $shop, $bookingId)
     {
-        // Simple security check: Ensure booking belongs to this shop
-        // Ideally we might want a signed URL or session flash to prevent ID enumeration/viewing others,
-        // but for now we'll just check shop association.
-        // A robust solution would be to use a signed route for completion or check session.
+        // ... (省略: 今回修正範囲外だが、念のため同様の思想が望ましい。しかしinstructionはcompleteには触れない方針)
+        // 今回の指示は provisional と verify
+        // completeメソッドは修正対象外とする
+        
         $booking = $shop->bookings()
             ->with(['menu', 'staff.profile', 'bookingOptions'])
             ->findOrFail($bookingId);
 
         return view('guest.bookings.complete', [
+            'shop' => $shop,
+            'booking' => $booking,
+        ]);
+    }
+
+    /**
+     * 署名付きURLによる予約確定アクション
+     */
+    public function verify(Shop $shop, \App\Models\Booking $booking, DB $db = null) // DB facade injected for testing or use global
+    {
+        // 1. ステータスチェック (既に確定済みなら完了画面へ)
+        if ($booking->status === 'confirmed') {
+             $booking->load(['menu', 'staff.profile', 'bookingOptions']);
+             // 必要な情報のみを許可 (ホワイトリスト)
+             $booking->setVisible([
+                'id', 'start_at', 'end_at', 
+                'menu_name', 'menu_price', 'menu_duration', 
+                'assigned_staff_name', 
+                'note_from_booker',
+                'bookingOptions', 
+                'menu', 
+                'staff'
+             ]);
+             return view('guest.bookings.verified', ['shop' => $shop, 'booking' => $booking]);
+        }
+
+        // 2. 仮予約存在チェック
+        // 仮予約レコードがない、またはstatusがpendingでない場合はエラー
+        if ($booking->status !== 'pending' || !$booking->provisionalBooking) {
+            abort(404, '予約が見つからないか、既に無効になっています。');
+        }
+
+        // 3. 有効期限チェック (Double Check)
+        // URL署名の期限とは別に、DB上の有効期限も確認する
+        if ($booking->provisionalBooking->expires_at->isPast()) {
+            abort(403, '予約の有効期限が切れています。');
+        }
+
+        // 4. 確定処理
+        DB::transaction(function () use ($booking) {
+            // ステータス更新
+            $booking->update(['status' => 'confirmed']);
+            
+            // 仮予約レコード削除
+            $booking->provisionalBooking()->delete();
+        });
+
+        // 5. 確定メール送信 (Booker)
+        $booking->booker->notify(new \App\Notifications\Shop\BookingConfirmedNotification($booking));
+
+        // 6. 確定メール送信 (Shop)
+        if ($shop->email) {
+            $booking->shop->notify(new \App\Notifications\Shop\BookingConfirmedNotification($booking));
+        }
+
+        // 7. 完了画面へ
+        $booking->load(['menu', 'staff.profile', 'bookingOptions']);
+        // 必要な情報のみを許可 (ホワイトリスト)
+        $booking->setVisible([
+            'id', 'start_at', 'end_at', 
+            'menu_name', 'menu_price', 'menu_duration', 
+            'assigned_staff_name', 
+            'note_from_booker',
+            'bookingOptions', 
+            'menu', 
+            'staff'
+        ]);
+
+        return view('guest.bookings.verified', [
             'shop' => $shop,
             'booking' => $booking,
         ]);

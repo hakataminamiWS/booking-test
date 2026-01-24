@@ -63,8 +63,10 @@ class Booking extends Model
         return $this->belongsTo(ShopMenu::class, 'menu_id');
     }
 
-    public function cancellationToken(): \Illuminate\Database\Eloquent\Relations\HasOne
+
+
+    public function provisionalBooking(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(BookingCancellationToken::class);
+        return $this->hasOne(ProvisionalBooking::class);
     }
 }

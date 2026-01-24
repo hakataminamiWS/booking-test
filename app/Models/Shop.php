@@ -5,10 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Notifications\Notifiable;
 
 class Shop extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
+
+    /**
+     * Route notifications for the mail channel.
+     *
+     * @return string|null
+     */
+    public function routeNotificationForMail($notification): ?string
+    {
+        return $this->email;
+    }
 
     public const RESERVED_SLUGS = [
         'create',

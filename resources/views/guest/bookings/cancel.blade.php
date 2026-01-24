@@ -6,7 +6,7 @@
     @php
         $props = [
             'booking' => $booking,
-            'token' => $token,
+            'cancelUrl' => $cancelUrl,
             'flashSuccess' => session('success'),
             'flashError' => session('error'),
         ];

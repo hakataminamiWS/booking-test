@@ -6,10 +6,16 @@
 以下の予約がキャンセルされました。
 --------------------------------------------------
 店舗: {{ $shop->name }}
-日時: {{ $booking->start_at->format('Y年m月d日 H:i') }}
+日時: {{ $booking->start_at->setTimezone($booking->timezone)->format('Y年m月d日 H:i') }} 〜 {{ $booking->end_at->setTimezone($booking->timezone)->format('H:i') }}
 メニュー: {{ $booking->menu_name }}
 金額: ¥{{ number_format($booking->menu_price) }}
+担当者: {{ $booking->assigned_staff_name ?? '指名なし' }}
 予約者: {{ $booking->booker_name }} 様
 --------------------------------------------------
 
+@if ($booking->note_from_booker)
+[お客様からのメモ]
+{{ $booking->note_from_booker }}
+
+@endif
 管理画面で確認してください。

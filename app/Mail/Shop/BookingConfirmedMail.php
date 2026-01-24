@@ -50,8 +50,24 @@ class BookingConfirmedMail extends Mailable
             ? 'emails.shop.booking_confirmed_owner'
             : 'emails.shop.booking_confirmed';
 
+        // キャンセル用URL (予約者向けのみ)
+        $cancelUrl = null;
+        if (!$this->forOwner) {
+            $deadlineService = app(\App\Services\CancellationDeadlineService::class);
+            $deadline = $deadlineService->calculate($this->booking->shop, $this->booking->menu, $this->booking->start_at);
+            
+            $cancelUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'guest.bookings.cancel.show',
+                $deadline,
+                ['shop' => $this->booking->shop->slug, 'booking' => $this->booking->id]
+            );
+        }
+
         return new Content(
             text: $view,
+            with: [
+                'cancelUrl' => $cancelUrl,
+            ],
         );
     }
 }

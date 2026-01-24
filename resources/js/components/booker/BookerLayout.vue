@@ -2,7 +2,7 @@
     <v-app>
         <!-- Mobile App Bar -->
         <v-app-bar color="primary" density="compact">
-            <v-container class="d-flex align-center pa-0 header-container">
+            <v-container class="d-flex align-center py-0 px-4 header-container">
                 <!-- Back Link -->
                 <v-btn
                        v-if="backLink"

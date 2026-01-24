@@ -9,7 +9,7 @@
                     <v-card class="mb-6" variant="text">
                         <v-card-text class="text-center py-6">
                             <v-icon size="64" color="success" class="mb-4">mdi-check-circle-outline</v-icon>
-                            <h2 class="text-h5 font-weight-bold mb-2">予約を受け付けました</h2>
+                            <h2 class="text-h5 font-weight-bold mb-2">予約が確定しました</h2>
                             <p class="text-body-1 text-grey-darken-1">完了メールをお送りしましたのでご確認ください。</p>
                         </v-card-text>
 
@@ -85,15 +85,17 @@
                                         totalPrice.toLocaleString() }}</span>
                                 </div>
                             </div>
+
+                            <!-- Note Section -->
+                            <template v-if="booking.note_from_booker">
+                                <v-divider class="mb-6"></v-divider>
+                                <div class="mb-6">
+                                    <h3 class="text-subtitle-1 font-weight-bold mb-2">お客様からのメモ</h3>
+                                    <p class="text-body-1 text-grey-darken-1" style="white-space: pre-wrap;">{{ booking.note_from_booker }}</p>
+                                </div>
+                            </template>
                         </v-card-text>
                     </v-card>
-
-                    <div class="text-center">
-                        <v-btn color="primary" variant="outlined" :href="`/shops/${shop.slug}/guest/bookings/create`"
-                               block class="py-6">
-                            新しい予約をする
-                        </v-btn>
-                    </div>
                 </v-col>
             </v-row>
         </v-container>
@@ -123,6 +125,7 @@ interface Booking {
     menu_price: number;
     menu_duration: number;
     assigned_staff_name: string;
+    note_from_booker?: string;
     bookingOptions: BookingOption[];
 }
 

@@ -49,8 +49,21 @@ class BookingProvisionalMail extends Mailable
             ? 'emails.shop.booking_provisional_owner'
             : 'emails.shop.booking_provisional';
 
+        // 予約確定用URL (予約者向けのみ)
+        $verifyUrl = null;
+        if (!$this->forOwner && $this->booking->provisionalBooking) {
+            $verifyUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                'guest.bookings.verify',
+                $this->booking->provisionalBooking->expires_at,
+                ['shop' => $this->booking->shop->slug, 'booking' => $this->booking->id]
+            );
+        }
+
         return new Content(
             text: $view,
+            with: [
+                'verifyUrl' => $verifyUrl,
+            ],
         );
     }
 }

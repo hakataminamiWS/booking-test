@@ -9,43 +9,91 @@ use Illuminate\Http\Request;
 
 class BookingCancellationController extends Controller
 {
-    public function show(string $token, BookingCancellationService $service)
+    public function show(\App\Models\Shop $shop, Booking $booking)
     {
-        $booking = $service->resolveBooking($token);
+        // 既にキャンセル済みの場合
+        if ($booking->status === 'cancelled') {
+             return redirect()->route('shop.entry', $shop->slug)->with('error', 'この予約は既にキャンセルされています。');
+        }
 
-        if (!$booking) {
-            abort(404, 'キャンセル期限切れ、または無効なURLです。');
+        // キャンセル期限チェック
+        $deadlineService = app(\App\Services\CancellationDeadlineService::class);
+        $cancelDeadline = $deadlineService->calculate($shop, $booking->menu, $booking->start_at);
+        
+        if (now()->gt($cancelDeadline)) {
+            abort(403, 'キャンセル可能な期限を過ぎています。店舗へ直接お問い合わせください。');
         }
         
         // Eager load necessary relations for display
         $booking->load(['shop', 'menu', 'bookingOptions']);
 
+        // POST用の署名付きURLを生成 (有効期限はキャンセル期限と同じ)
+        $cancelUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'guest.bookings.cancel.perform',
+            $cancelDeadline,
+            ['shop' => $shop->slug, 'booking' => $booking->id]
+        );
+
+        // 必要な情報のみを許可 (ホワイトリスト)
+        $booking->setVisible([
+            'id', 'start_at', 'end_at', 
+            'menu_name', 'menu_price', 'menu_duration', 
+            'assigned_staff_name', 
+            'note_from_booker',
+            'status', // Cancel.vueで使用
+            'bookingOptions', 
+            'menu', 
+            'shop'
+        ]);
+
         return view('guest.bookings.cancel', [
             'booking' => $booking,
-            'token' => $token,
+            'cancelUrl' => $cancelUrl,
+            // tokenは不要
         ]);
     }
 
-    public function perform(string $token, BookingCancellationService $service)
+    public function perform(\App\Models\Shop $shop, Booking $booking, BookingCancellationService $service)
     {
-        $booking = $service->resolveBooking($token);
+        // 既にキャンセル済みの場合
+        if ($booking->status === 'cancelled') {
+            return redirect()->back()->with('error', 'この予約は既にキャンセルされています。');
+        }
 
-        if (!$booking) {
-            abort(404);
+        // キャンセル期限チェック (Double Check)
+        $deadlineService = app(\App\Services\CancellationDeadlineService::class);
+        $cancelDeadline = $deadlineService->calculate($shop, $booking->menu, $booking->start_at);
+
+        if (now()->gt($cancelDeadline)) {
+            abort(403, 'キャンセル可能な期限を過ぎています。店舗へ直接お問い合わせください。');
         }
 
         $service->cancel($booking);
         
-        // Notify cancellation
+        // Notify cancellation (Booker)
         $booking->booker->notify(new \App\Notifications\Shop\BookingCancelledNotification($booking));
 
-        // Use Inertia-like redirect or return view with success prop?
-        // Since we are posting to this same controller, we can just return back with success (if we were staying on same page)
-        // Or render a success view.
-        // Let's redirect back and let the Vue component handle "success" state if it persists, 
-        // or actually, since the booking is now cancelled, showing the "Cancel" form again might be weird if we check status.
-        // But the service might allow cancelling again (idempotent).
-        
-        return redirect()->back()->with('success', '予約をキャンセルしました。');
+        // Notify cancellation (Shop)
+        if ($shop->email) {
+            $booking->shop->notify(new \App\Notifications\Shop\BookingCancelledNotification($booking));
+        }
+
+        // 必要な情報のみを許可 (ホワイトリスト)
+        $booking->setVisible([
+            'id', 'start_at', 'end_at', 
+            'menu_name', 'menu_price', 'menu_duration', 
+            'assigned_staff_name', 
+            'note_from_booker',
+            'status',
+            'bookingOptions', 
+            'menu', 
+            'shop'
+        ]);
+
+        // キャンセル完了画面を表示
+        return view('guest.bookings.cancelled', [
+            'shop' => $shop,
+            'booking' => $booking,
+        ]);
     }
 }
