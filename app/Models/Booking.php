@@ -62,4 +62,9 @@ class Booking extends Model
     {
         return $this->belongsTo(ShopMenu::class, 'menu_id');
     }
+
+    public function cancellationToken(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(BookingCancellationToken::class);
+    }
 }

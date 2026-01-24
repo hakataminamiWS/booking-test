@@ -129,6 +129,9 @@ class BookingController extends Controller
             return $booking;
         });
 
+        // 仮予約通知送信
+        $booking->booker->notify(new \App\Notifications\Shop\ProvisionalBookingNotification($booking));
+
         // 変更: complete -> provisional
         return redirect()->route('guest.bookings.provisional', ['shop' => $shop->slug, 'booking' => $booking->id]);
     }

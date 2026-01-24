@@ -22,6 +22,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// --- Guest Cancellation Routes ---
+Route::get('/bookings/cancel/{token}', [App\Http\Controllers\Guest\BookingCancellationController::class, 'show'])->name('guest.bookings.cancel.show');
+Route::post('/bookings/cancel/{token}', [App\Http\Controllers\Guest\BookingCancellationController::class, 'perform'])->name('guest.bookings.cancel.perform');
+
 // --- Shop Entry Route ---
     Route::get('/shops/{shop:slug}', [App\Http\Controllers\ShopEntryController::class, 'show'])->name('shop.entry');
 
