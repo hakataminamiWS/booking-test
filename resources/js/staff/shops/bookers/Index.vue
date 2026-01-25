@@ -100,6 +100,14 @@
                                                  @update:options="loadItems"
                                                  hide-default-footer
                                                  class="elevation-1 mt-4">
+                                <template v-slot:item.is_guest="{ item }">
+                                    <v-chip v-if="item.is_guest" color="warning" size="small" variant="flat">
+                                        ゲスト
+                                    </v-chip>
+                                    <v-chip v-else color="info" size="small" variant="flat">
+                                        会員
+                                    </v-chip>
+                                </template>
                                 <template v-slot:item.updated_at="{ item }">
                                     {{ new Date(item.updated_at).toLocaleString() }}
                                 </template>
@@ -261,6 +269,15 @@ const filterableColumns = ref([
     { text: "連絡先電話番号", value: "contact_phone", type: "text" },
     { text: "最終予約日時", value: "last_booking_at", type: "date-range" },
     { text: "予約回数", value: "booking_count", type: "number-range" },
+    {
+        text: "会員種別",
+        value: "is_guest",
+        type: "select",
+        items: [
+            { text: "ゲスト", value: "true" },
+            { text: "会員", value: "false" },
+        ]
+    },
 ]);
 
 const filters = ref<Filter[]>([]);
@@ -498,6 +515,7 @@ const loadItems = async (options: Options) => {
 
 const headers: Headers = [
     { title: "会員番号", key: "number", sortable: false },
+    { title: "会員種別", key: "is_guest", sortable: false },
     { title: "名前", key: "name", sortable: false },
     { title: "よみかた", key: "crm.name_kana", sortable: false },
     { title: "連絡先メールアドレス", key: "contact_email", sortable: false },

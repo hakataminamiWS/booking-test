@@ -26,7 +26,7 @@ Route::get('/', function () {
     Route::get('/shops/{shop:slug}', [App\Http\Controllers\ShopEntryController::class, 'show'])->name('shop.entry');
 
     // --- Guest Booking Routes ---
-    Route::prefix('shops/{shop:slug}/guest')->name('guest.')->middleware('expire.pending')->scopeBindings()->group(function () {
+    Route::prefix('shops/{shop:slug}/guest')->name('guest.')->scopeBindings()->group(function () {
     Route::get('/bookings/create', [App\Http\Controllers\Guest\BookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [App\Http\Controllers\Guest\BookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{booking}/provisional', [App\Http\Controllers\Guest\BookingController::class, 'provisional'])->name('bookings.provisional');
@@ -182,6 +182,7 @@ Route::middleware('auth')->group(function () {
              Route::get('/bookings', [App\Http\Controllers\Api\Owner\BookingController::class, 'index'])->name('bookings.index');
              Route::get('/staffs/{staff}/timeslots', [App\Http\Controllers\Api\Owner\TimeSlotController::class, 'index'])->name('staffs.timeslots.index'); // Fixed name locally collision if any
              Route::get('/staffs/{staff}/schedule', [App\Http\Controllers\Api\Owner\ShopStaffController::class, 'getSchedule'])->name('staffs.schedule');
+             Route::post('/test-email', [App\Http\Controllers\Api\Owner\ShopsController::class, 'testEmail'])->name('test-email');
         });
         
         // General Wrapper API
@@ -199,7 +200,7 @@ Route::middleware('auth')->group(function () {
 
     // --- Staff Routes ---
     // --- Staff Routes ---
-    Route::prefix('shops/{shop:slug}/staff')->name('staff.')->middleware(['expire.pending', 'can:viewAsStaff,shop'])->scopeBindings()->group(function () {
+    Route::prefix('shops/{shop:slug}/staff')->name('staff.')->middleware(['can:viewAsStaff,shop'])->scopeBindings()->group(function () {
         // Web
         Route::get('/dashboard', [App\Http\Controllers\Staff\DashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [App\Http\Controllers\Staff\ShopStaffController::class, 'edit'])->name('staffs.edit');
@@ -251,14 +252,14 @@ Route::middleware('auth')->group(function () {
 
     
     // Booker Registration Routes (No 'can:viewAsBooker' check yet)
-    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->middleware('expire.pending')->group(function () {
+    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->group(function () {
         Route::get('/profile/create', [App\Http\Controllers\Booker\ProfileController::class, 'create'])->name('profile.create');
         Route::post('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'store'])->name('profile.store');
     });
 
     // Booker Authorized Routes
     // Booker Authorized Routes
-    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->middleware(['expire.pending', 'can:viewAsBooker,shop'])->scopeBindings()->group(function () {
+    Route::prefix('shops/{shop:slug}/booker')->name('booker.')->middleware(['can:viewAsBooker,shop'])->scopeBindings()->group(function () {
         Route::get('/', [App\Http\Controllers\Booker\ShopController::class, 'show'])->name('shop.show');
         Route::get('/profile/edit', [App\Http\Controllers\Booker\ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [App\Http\Controllers\Booker\ProfileController::class, 'update'])->name('profile.update');

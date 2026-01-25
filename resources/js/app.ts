@@ -211,6 +211,9 @@ const pages = {
     "guest/bookings/Cancel": defineAsyncComponent(
         () => import("@/guest/bookings/Cancel.vue")
     ),
+    "guest/bookings/Cancelled": defineAsyncComponent(
+        () => import("@/guest/bookings/Cancelled.vue")
+    ),
     "shop/Entry": defineAsyncComponent(
         () => import("@/shop/Entry.vue")
     ),

@@ -11,9 +11,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            \App\Http\Middleware\ExpirePendingBookings::class,
+        ]);
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'owner' => \App\Http\Middleware\OwnerMiddleware::class,
+            // 'expire.pending' alias can be removed if not used elsewhere, or kept for clarity. 
+            // Since we are applying it globally to web, alias is less useful but harmless.
             'expire.pending' => \App\Http\Middleware\ExpirePendingBookings::class,
         ]);
 

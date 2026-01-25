@@ -32,6 +32,27 @@ class BookingExpirationService
 
         DB::transaction(function () use ($expiredBookingIds) {
             // bookings テーブルのステータスを 'expired' に更新
+            $bookings = Booking::whereIn('id', $expiredBookingIds)
+                ->where('status', 'pending')
+                ->get();
+
+            foreach ($bookings as $booking) {
+                // メール送信 (オーナー宛)
+                try {
+                    $booking->shop->notify(new \App\Notifications\Shop\BookingProvisionalExpiredNotification($booking));
+                } catch (\Exception $e) {
+                    Log::error("Failed to send booking expiration email to owner: {$e->getMessage()}");
+                }
+
+                // メール送信 (予約者宛)
+                try {
+                    // ゲスト予約の場合でも ShopBooker は作成されており、Notifiable トレイトを持っている前提
+                    $booking->booker->notify(new \App\Notifications\Shop\BookingProvisionalExpiredNotification($booking));
+                } catch (\Exception $e) {
+                    Log::error("Failed to send booking expiration email to booker: {$e->getMessage()}");
+                }
+            }
+
             Booking::whereIn('id', $expiredBookingIds)
                 ->where('status', 'pending') // 念のため現在のステータスもチェック
                 ->update(['status' => 'expired']);

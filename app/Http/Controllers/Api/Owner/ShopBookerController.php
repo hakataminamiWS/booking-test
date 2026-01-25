@@ -60,6 +60,14 @@ class ShopBookerController extends Controller
             });
         }
 
+        if ($request->filled('is_guest')) {
+            if (filter_var($request->is_guest, FILTER_VALIDATE_BOOLEAN)) {
+                $query->whereNull('shop_bookers.user_id');
+            } else {
+                $query->whereNotNull('shop_bookers.user_id');
+            }
+        }
+
         // Sorting
         $sortBy = $request->input('sort_by', 'name');
         $sortOrder = $request->input('sort_order', 'asc');
@@ -73,6 +81,11 @@ class ShopBookerController extends Controller
         }
 
         $bookers = $query->paginate($request->input('per_page', 20));
+
+        $bookers->through(function ($booker) {
+            $booker->is_guest = is_null($booker->user_id);
+            return $booker;
+        });
 
         return response()->json($bookers);
     }

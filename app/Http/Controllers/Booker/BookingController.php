@@ -149,6 +149,9 @@ class BookingController extends Controller
             return $booking;
         });
 
+        // 仮予約通知送信
+        $booking->booker->notify(new \App\Notifications\Shop\ProvisionalBookingNotification($booking));
+
         return redirect()->route('booker.bookings.provisional', ['shop' => $shop->slug, 'booking' => $booking->id]);
             // ->with('success', '仮予約を受け付けました。メールをご確認ください。'); // Flash message is optional as the page itself explains it
     }

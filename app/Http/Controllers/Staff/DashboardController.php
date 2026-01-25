@@ -72,7 +72,7 @@ class DashboardController extends Controller
         $bookings = $shop->bookings()
             ->with(['staff.profile', 'menu', 'booker'])
             ->whereBetween('start_at', [$todayStart, $todayEnd])
-            ->whereIn('status', ['confirmed', 'visited'])
+            ->where('status', 'confirmed')
             ->orderBy('start_at')
             ->get()
             ->map(function ($booking) use ($timezone, $now) {
