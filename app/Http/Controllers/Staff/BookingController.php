@@ -96,7 +96,7 @@ class BookingController extends Controller
         $startAt = Carbon::parse($validated['start_at'], $shop->timezone)->setTimezone('UTC');
         $endAt = $startAt->copy()->addMinutes($totalDuration);
 
-        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt, $crmService) {
+        $booking = DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt, $crmService) {
             if (empty($validated['shop_booker_id'])) {
                 $booker = $shop->bookers()->create([
                     'name' => $validated['booker_name'],
@@ -277,6 +277,14 @@ class BookingController extends Controller
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
         });
+
+        // 予約変更通知送信 (予約者)
+        $booking->booker->notify(new \App\Notifications\Shop\BookingUpdatedNotification($booking));
+        
+        // 予約変更通知送信 (オーナー - 控え)
+        if ($shop->email) {
+            $shop->notify(new \App\Notifications\Shop\BookingUpdatedNotification($booking));
+        }
 
         return redirect()->route('staff.bookings.index', ['shop' => $shop->slug])
             ->with('success', '予約を更新しました。');
