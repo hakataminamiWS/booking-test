@@ -105,7 +105,7 @@ class BookingController extends Controller
         // Calculate end_at based on duration
         $endAt = $startAt->copy()->addMinutes($totalDuration);
 
-        DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt, $crmService) {
+        $booking = DB::transaction(function () use ($validated, $shop, $menu, $options, $staff, $startAt, $endAt, $crmService) {
             // ----------------------------------------------------------------
             // 予約者 (ShopBooker) の準備
             // ----------------------------------------------------------------
@@ -338,6 +338,14 @@ class BookingController extends Controller
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
         });
+
+        // 予約変更通知送信 (予約者)
+        $booking->booker->notify(new \App\Notifications\Shop\BookingUpdatedNotification($booking));
+        
+        // 予約変更通知送信 (オーナー - 控え)
+        if ($shop->email) {
+            $shop->notify(new \App\Notifications\Shop\BookingUpdatedNotification($booking));
+        }
 
         return redirect()->route('owner.shops.bookings.index', ['shop' => $shop->slug])
             ->with('success', '予約を更新しました。');

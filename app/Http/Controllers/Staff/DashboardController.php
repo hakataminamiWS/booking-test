@@ -56,8 +56,8 @@ class DashboardController extends Controller
 
         // 2. Today's Cancellations
         $todayCancellations = $shop->bookings()
-            ->whereBetween('updated_at', [$todayStart, $todayEnd])
-            ->where('status', 'cancelled')
+            ->whereBetween('start_at', [$todayStart, $todayEnd])
+            ->whereIn('status', ['cancelled', 'expired'])
             ->count();
 
         $today = now()->timezone($shop->timezone)->format('Y-m-d');
