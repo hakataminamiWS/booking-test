@@ -313,6 +313,7 @@ const filterableColumns = ref([
             { text: "確定", value: "confirmed" },
             { text: "保留", value: "pending" },
             { text: "キャンセル", value: "cancelled" },
+            { text: "期限切れ", value: "expired" },
         ]
     },
     {

@@ -88,7 +88,7 @@
 
                             <!-- Notes Section -->
                             <v-card v-if="booking.note_from_booker" variant="text" class="px-0 mb-4">
-                                <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">備考</v-card-title>
+                                <v-card-title class="pa-0 text-subtitle-2 text-grey-darken-1">お客様からのメモ</v-card-title>
                                 <v-card-text class="pa-0 text-body-1">
                                     <v-sheet border rounded class="pa-3 bg-grey-lighten-4">
                                         <p class="text-body-2" style="white-space: pre-wrap;">{{

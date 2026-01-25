@@ -56,4 +56,15 @@ class ShopsController extends Controller
 
         return response()->json(['is_valid' => true]);
     }
+
+    public function testEmail(Shop $shop): JsonResponse
+    {
+        if (!$shop->email) {
+            return response()->json(['message' => '店舗メールアドレスが設定されていません。'], 422);
+        }
+
+        $shop->notify(new \App\Notifications\Shop\TestEmailNotification($shop));
+
+        return response()->json(['message' => 'テストメールを送信しました。']);
+    }
 }

@@ -327,7 +327,8 @@ user_id が NULL の場合、そのスタッフはオーナーのみが操作可
 | `booker_name`          | `varchar(255)` |                                                        | 予約者名（スナップショット）                               |
 | `contact_email`        | `varchar(255)` |                                                        | 予約者メールアドレス（スナップショット）                   |
 | `contact_phone`        | `varchar(255)` |                                                        | 予約者電話番号（スナップショット）                         |
-| `memo`                 | `text`         | `Nullable`                                             | 予約時のメモ。予約者、および店舗側が参照可能               |
+| `note_from_booker`     | `text`         | `Nullable`                                             | 予約時のメモ。予約者が入力するメモ。                       |
+| `shop_memo`            | `text`         | `Nullable`                                             | 店舗側の管理用メモ。予約者には表示されない。               |
 | `booking_channel`      | `varchar(255)` | `Not NULL`, `Default: 'web'`                           | 予約経路 (例: `web`, `line`, `instagram`)                  |
 | `created_at`           | `timestamp`    |                                                        | 作成日時                                                   |
 | `updated_at`           | `timestamp`    |                                                        | 更新日時                                                   |

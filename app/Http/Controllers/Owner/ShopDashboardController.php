@@ -49,10 +49,10 @@ class ShopDashboardController extends Controller
             'range_end' => $nextWeekEnd->timezone($shop->timezone)->format('m/d'),
         ];
 
-        // 2. Today's Cancellations
+        // 2. Today's Cancellations (本日予約開始のキャンセル・期限切れ予約)
         $todayCancellations = $shop->bookings()
-            ->whereBetween('updated_at', [$todayStart, $todayEnd])
-            ->where('status', 'cancelled')
+            ->whereBetween('start_at', [$todayStart, $todayEnd])
+            ->whereIn('status', ['cancelled', 'expired'])
             ->count();
 
         $today = now()->timezone($shop->timezone)->format('Y-m-d');
@@ -67,7 +67,7 @@ class ShopDashboardController extends Controller
         $bookings = $shop->bookings()
             ->with(['staff.profile', 'menu', 'booker'])
             ->whereBetween('start_at', [$todayStart, $todayEnd])
-            ->whereIn('status', ['confirmed', 'visited'])
+            ->where('status', 'confirmed')
             ->orderBy('start_at')
             ->get()
             ->map(function ($booking) use ($timezone, $now) {

@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Notifications\Notifiable;
 
 class ShopBooker extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -67,5 +68,15 @@ class ShopBooker extends Model
     public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Booking::class, 'shop_booker_id');
+    }
+
+    /**
+     * Route notifications for the mail channel.
+     *
+     * @return  array<string, string>|string
+     */
+    public function routeNotificationForMail($notification): array|string
+    {
+        return [$this->contact_email => $this->name];
     }
 }

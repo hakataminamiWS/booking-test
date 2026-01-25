@@ -95,7 +95,7 @@
                                                       name="name_kana"
                                                       label="よみかた"
                                                       :rules="[rules.maxLength(255)]"
-                                                      hint="（任意）"
+                                                      hint="（お客様に表示されません）"
                                                       persistent-hint
                                                       class="mb-4"></v-text-field>
 
@@ -103,7 +103,7 @@
                                                     v-model="formData.shop_memo"
                                                     name="shop_memo"
                                                     label="店舗側メモ"
-                                                    hint="お客様に関する店舗側で管理するメモ。（任意）"
+                                                    hint="お客様に関する店舗側で管理するメモ（お客様に表示されません）"
                                                     persistent-hint
                                                     class="mb-4"></v-textarea>
 
@@ -112,7 +112,7 @@
                                                       name="last_booking_at"
                                                       label="最終予約日"
                                                       :rules="lastBookingAtRule"
-                                                      hint="YYYY-MM-DD形式で入力。（任意）"
+                                                      hint="YYYY-MM-DD形式で入力"
                                                       persistent-hint
                                                       class="mb-4"
                                                       append-inner-icon="mdi-calendar"
@@ -134,7 +134,7 @@
                                                       label="予約回数"
                                                       inputmode="numeric"
                                                       :rules="[rules.numeric]"
-                                                      hint="数値を入力。（任意）"
+                                                      hint="数値を入力"
                                                       persistent-hint
                                                       class="mb-4"></v-text-field>
                                     </v-card-text>

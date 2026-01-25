@@ -24,6 +24,7 @@ class UpdateShopRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
             'time_slot_interval' => ['required', 'integer'],
             'accepts_online_bookings' => ['required', 'boolean'],
             'timezone' => ['sometimes', 'string', 'timezone'],
@@ -41,6 +42,7 @@ class UpdateShopRequest extends FormRequest
     {
         return [
             'name' => '店舗名',
+            'email' => 'メールアドレス',
             'time_slot_interval' => '予約枠の間隔',
             'accepts_online_bookings' => 'オンライン予約受付',
             'cancellation_deadline_minutes' => 'キャンセル期限',

@@ -189,11 +189,15 @@ class BookingController extends Controller
                 $booking->bookingOptions()->createMany($bookingOptions->all());
             }
 
-            // ----------------------------------------------------------------
             // 統計情報の更新
             // ----------------------------------------------------------------
             $crmService->updateStats($booker);
+
+            return $booking;
         });
+
+        // 予約確定通知送信
+        $booking->booker->notify(new \App\Notifications\Shop\BookingConfirmedNotification($booking));
 
         return redirect()->route('owner.shops.bookings.index', ['shop' => $shop->slug])
             ->with('success', '予約を登録しました。');
@@ -347,6 +351,9 @@ class BookingController extends Controller
 
 
         $booking->update(['status' => 'cancelled']);
+
+        // キャンセル通知送信
+        $booking->booker->notify(new \App\Notifications\Shop\BookingCancelledNotification($booking));
 
         return redirect()->route('owner.shops.bookings.index', ['shop' => $shop->slug])
             ->with('success', '予約をキャンセルしました。');

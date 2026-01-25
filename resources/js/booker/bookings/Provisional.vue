@@ -10,7 +10,7 @@
                             <h2 class="text-h5 font-weight-bold mb-2">仮予約を受け付けました</h2>
                             <p class="text-body-1 text-grey-darken-1">
                                 ご登録のメールアドレスに確認メールをお送りしました。<br>メール内のリンクをクリックして、予約を確定してください。<br><span
-                                      class='text-caption text-grey'>（有効期限：60分）</span></p>
+                                      class='text-caption text-grey'>（有効期限：10分）</span></p>
                         </v-card-text>
 
                         <v-divider></v-divider>
@@ -85,6 +85,15 @@
                                         totalPrice.toLocaleString() }}</span>
                                 </div>
                             </div>
+
+                            <!-- Note Section -->
+                            <template v-if="booking.note_from_booker">
+                                <v-divider class="mb-6"></v-divider>
+                                <div class="mb-6">
+                                    <h3 class="text-subtitle-1 font-weight-bold mb-2">お客様からのメモ</h3>
+                                    <p class="text-body-1 text-grey-darken-1" style="white-space: pre-wrap;">{{ booking.note_from_booker }}</p>
+                                </div>
+                            </template>
                         </v-card-text>
                     </v-card>
 
@@ -128,6 +137,7 @@ interface Booking {
     menu_price: number;
     menu_duration: number;
     assigned_staff_name: string;
+    note_from_booker?: string;
     bookingOptions: BookingOption[];
 }
 

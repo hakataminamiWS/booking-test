@@ -140,7 +140,7 @@ class BookingController extends Controller
             \App\Models\ProvisionalBooking::create([
                 'booking_id' => $booking->id,
                 'shop_id' => $shop->id,
-                'expires_at' => now()->addMinutes(60),
+                'expires_at' => now()->addMinutes(10),
             ]);
 
             // 統計情報の更新
@@ -148,6 +148,9 @@ class BookingController extends Controller
             
             return $booking;
         });
+
+        // 仮予約通知送信
+        $booking->booker->notify(new \App\Notifications\Shop\ProvisionalBookingNotification($booking));
 
         return redirect()->route('booker.bookings.provisional', ['shop' => $shop->slug, 'booking' => $booking->id]);
             // ->with('success', '仮予約を受け付けました。メールをご確認ください。'); // Flash message is optional as the page itself explains it
@@ -216,15 +219,9 @@ class BookingController extends Controller
             abort(403);
         }
 
-        // Check if cancellation is allowed
-        // 優先度: メニュー個別設定 > 店舗全体設定
-        $deadlineMinutes = $shop->cancellation_deadline_minutes ?? 1440; // Default fallback
-
-        if ($booking->menu && $booking->menu->requires_cancellation_deadline) {
-            $deadlineMinutes = $booking->menu->cancellation_deadline_minutes ?? $deadlineMinutes;
-        }
-
-        $cancellationDeadline = Carbon::parse($booking->start_at)->subMinutes($deadlineMinutes);
+        // Check if cancellation is allowed using CancellationDeadlineService
+        $deadlineService = app(\App\Services\CancellationDeadlineService::class);
+        $cancellationDeadline = $deadlineService->calculate($shop, $booking->menu, $booking->start_at);
 
         if (now()->greaterThan($cancellationDeadline)) {
             return redirect()->route('booker.bookings.show', ['shop' => $shop->slug, 'booking' => $booking->id])
@@ -232,6 +229,14 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => 'cancelled']);
+
+        // Notify cancellation (Booker)
+        $booking->booker->notify(new \App\Notifications\Shop\BookingCancelledNotification($booking));
+
+        // Notify cancellation (Shop)
+        if ($shop->email) {
+            $booking->shop->notify(new \App\Notifications\Shop\BookingCancelledNotification($booking));
+        }
 
         return redirect()->route('booker.bookings.index', ['shop' => $shop->slug])
             ->with('success', '予約をキャンセルしました。');

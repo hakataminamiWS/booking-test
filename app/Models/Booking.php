@@ -62,4 +62,11 @@ class Booking extends Model
     {
         return $this->belongsTo(ShopMenu::class, 'menu_id');
     }
+
+
+
+    public function provisionalBooking(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProvisionalBooking::class);
+    }
 }

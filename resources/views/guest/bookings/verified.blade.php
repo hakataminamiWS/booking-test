@@ -1,16 +1,14 @@
 @extends('app')
 
-@section('title', '予約完了')
+@section('title', '予約確定完了 - ' . $shop->name)
 
 @section('content')
     @php
         $props = [
             'shop' => $shop,
             'booking' => $booking,
-                    'flashSuccess' => session('success'),
-            'flashError' => session('error'),
-            'flashStatus' => session('status'),
         ];
     @endphp
+    {{-- Complete.vue を再利用 --}}
     <div id="app" data-page="guest/bookings/Complete" data-props="{{ json_encode($props) }}"></div>
 @endsection
